@@ -1,15 +1,12 @@
-# Python
 .venv/
 __pycache__/
 *.pyc
-.ipynb_checkpoints/
+.pytest_cache/
+.ruff_cache/
 
-# FastF1 cache
 cache/
 
-# Secrets
 .env
 
-# IDE / OS
 .idea/
 .DS_Store

@@ -1,6 +1,5 @@
-fastf1>=3.8
-pandas>=2.2
-numpy>=2.0
-matplotlib>=3.9
-jupyter>=1.1
-streamlit>=1.40
+fastf1==3.8.3
+matplotlib==3.11.2
+numpy==2.4.6
+pandas==2.3.3
+streamlit==1.64.0
