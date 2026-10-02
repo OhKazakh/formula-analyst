@@ -1,0 +1,176 @@
+{
+  "year": 2024,
+  "round": 16,
+  "event": "Italian Grand Prix",
+  "total_laps": 53,
+  "order": [
+    "LEC",
+    "PIA",
+    "NOR",
+    "SAI",
+    "HAM",
+    "VER",
+    "RUS",
+    "PER",
+    "ALB",
+    "MAG",
+    "ALO",
+    "COL",
+    "RIC",
+    "OCO",
+    "GAS",
+    "BOT",
+    "HUL",
+    "ZHO",
+    "STR",
+    "TSU"
+  ],
+  "corners": [
+    {
+      "Number": 1,
+      "Letter": "",
+      "Distance": 876.830088071082
+    },
+    {
+      "Number": 2,
+      "Letter": "",
+      "Distance": 936.1908867018275
+    },
+    {
+      "Number": 3,
+      "Letter": "",
+      "Distance": 1459.7284322766136
+    },
+    {
+      "Number": 4,
+      "Letter": "",
+      "Distance": 2085.0763633417864
+    },
+    {
+      "Number": 5,
+      "Letter": "",
+      "Distance": 2144.2210057663156
+    },
+    {
+      "Number": 6,
+      "Letter": "",
+      "Distance": 2499.9256170050403
+    },
+    {
+      "Number": 7,
+      "Letter": "",
+      "Distance": 2813.281699863082
+    },
+    {
+      "Number": 8,
+      "Letter": "",
+      "Distance": 3873.4275097369145
+    },
+    {
+      "Number": 9,
+      "Letter": "",
+      "Distance": 3975.5878919177485
+    },
+    {
+      "Number": 10,
+      "Letter": "",
+      "Distance": 4077.9036202560173
+    },
+    {
+      "Number": 11,
+      "Letter": "",
+      "Distance": 5157.716135980688
+    }
+  ],
+  "driver_styles": {
+    "LEC": {
+      "color": "#e8002d",
+      "linestyle": "solid"
+    },
+    "PIA": {
+      "color": "#ff8000",
+      "linestyle": "dashed"
+    },
+    "NOR": {
+      "color": "#ff8000",
+      "linestyle": "solid"
+    },
+    "SAI": {
+      "color": "#e8002d",
+      "linestyle": "dashed"
+    },
+    "HAM": {
+      "color": "#27f4d2",
+      "linestyle": "solid"
+    },
+    "VER": {
+      "color": "#0600ef",
+      "linestyle": "solid"
+    },
+    "RUS": {
+      "color": "#27f4d2",
+      "linestyle": "dashed"
+    },
+    "PER": {
+      "color": "#0600ef",
+      "linestyle": "dashed"
+    },
+    "ALB": {
+      "color": "#00a0dd",
+      "linestyle": "solid"
+    },
+    "MAG": {
+      "color": "#b6babd",
+      "linestyle": "solid"
+    },
+    "ALO": {
+      "color": "#00665f",
+      "linestyle": "solid"
+    },
+    "COL": {
+      "color": "#00a0dd",
+      "linestyle": "dashed"
+    },
+    "RIC": {
+      "color": "#364aa9",
+      "linestyle": "dashed"
+    },
+    "OCO": {
+      "color": "#ff87bc",
+      "linestyle": "dashed"
+    },
+    "GAS": {
+      "color": "#ff87bc",
+      "linestyle": "solid"
+    },
+    "BOT": {
+      "color": "#00e700",
+      "linestyle": "dashed"
+    },
+    "HUL": {
+      "color": "#b6babd",
+      "linestyle": "dashed"
+    },
+    "ZHO": {
+      "color": "#00e700",
+      "linestyle": "solid"
+    },
+    "STR": {
+      "color": "#00665f",
+      "linestyle": "dashed"
+    },
+    "TSU": {
+      "color": "#364aa9",
+      "linestyle": "solid"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}
