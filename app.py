@@ -2,47 +2,76 @@ from datetime import date
 
 import pandas as pd
 import streamlit as st
-from fastf1.core import Session
 from matplotlib.figure import Figure
 
-from src import analysis
+from src import analysis, races
 
 FIRST_SEASON = 2018
 DEFAULT_YEAR = 2024
 DEFAULT_EVENT = "Italian Grand Prix"
 
 st.set_page_config(page_title="Formula Analyst", page_icon="🏁", layout="wide")
-analysis.enable_cache()
+races.enable_cache()
+
+
+@st.cache_data(ttl="1h", show_spinner=False)
+def live_timing() -> bool:
+    return races.live_timing_available()
+
+
+@st.cache_data(show_spinner=False)
+def bundled_races() -> pd.DataFrame:
+    return races.saved_races()
 
 
 @st.cache_data(ttl="1d", show_spinner=False)
 def calendar(year: int) -> pd.DataFrame:
-    return analysis.race_calendar(year)
+    return races.race_calendar(year)
 
 
-@st.cache_resource(show_spinner=False, max_entries=2)
-def race(year: int, event: str) -> Session:
-    return analysis.load_race(year, event)
+@st.cache_data(show_spinner=False, max_entries=16)
+def load(year: int, event: str) -> races.Race:
+    return races.load_race(year, event)
 
 
 def show(fig: Figure) -> None:
     st.pyplot(fig)
 
 
+def season_events(year: int, bundled: pd.DataFrame, online: bool) -> list[str]:
+    offline_events = bundled.loc[bundled["Year"] == year, "EventName"].tolist()
+    if not online:
+        return offline_events
+    try:
+        return calendar(year)["EventName"].tolist()
+    except Exception:
+        return offline_events
+
+
 def sidebar() -> tuple[int, str]:
     st.sidebar.header("Race")
-    years = list(range(date.today().year, FIRST_SEASON - 1, -1))
-    year = st.sidebar.selectbox("Season", years, index=years.index(DEFAULT_YEAR))
-    try:
-        events = calendar(year)["EventName"].tolist()
-    except Exception as exc:
-        st.sidebar.error(f"Couldn't load the {year} calendar: {exc}")
+    bundled = bundled_races()
+    online = live_timing()
+
+    seasons = set(bundled["Year"])
+    if online:
+        seasons |= set(range(FIRST_SEASON, date.today().year + 1))
+    if not seasons:
+        st.sidebar.error("No race data is available.")
         st.stop()
+    years = sorted(seasons, reverse=True)
+    default_year = years.index(DEFAULT_YEAR) if DEFAULT_YEAR in years else 0
+    year = st.sidebar.selectbox("Season", years, index=default_year)
+
+    events = season_events(year, bundled, online)
     if not events:
         st.sidebar.warning("No completed races for this season yet.")
         st.stop()
     default = events.index(DEFAULT_EVENT) if DEFAULT_EVENT in events else len(events) - 1
     event = st.sidebar.selectbox("Grand Prix", events, index=default)
+
+    if not online:
+        st.sidebar.info("Live timing data is unavailable here, so only bundled races are listed.")
     st.sidebar.caption(
         "Timing data via [FastF1](https://github.com/theOehrly/Fast-F1). "
         "Unofficial and non-commercial."
@@ -50,9 +79,9 @@ def sidebar() -> tuple[int, str]:
     return year, event
 
 
-def pace_tab(session: Session, laps: pd.DataFrame, clean: pd.DataFrame, order: list[str]) -> None:
+def pace_tab(race: races.Race, clean: pd.DataFrame) -> None:
     st.subheader("How did each driver's pace change over the race?")
-    drivers = st.multiselect("Drivers", order, default=order[:3])
+    drivers = st.multiselect("Drivers", race.order, default=race.order[:3])
     left, right, _ = st.columns([1, 1, 2])
     representative = left.toggle(
         "Representative laps only",
@@ -71,36 +100,34 @@ def pace_tab(session: Session, laps: pd.DataFrame, clean: pd.DataFrame, order: l
         st.info("Pick at least one driver.")
         return
 
-    data = (clean if representative else laps).copy()
+    data = (clean if representative else race.laps).copy()
     column = "LapTimeSeconds"
     if fuel:
-        data["FuelCorrected"] = analysis.fuel_corrected(data, session.total_laps)
+        data["FuelCorrected"] = analysis.fuel_corrected(data, race.total_laps)
         column = "FuelCorrected"
-    show(analysis.pace_figure(data, drivers, session, column))
+    show(analysis.pace_figure(data, drivers, race.driver_styles, column))
 
 
-def strategy_tab(session: Session, laps: pd.DataFrame, order: list[str]) -> None:
+def strategy_tab(race: races.Race) -> None:
     st.subheader("What tyre strategy did everyone run?")
-    stints = analysis.stint_summary(laps)
-    show(analysis.strategy_figure(stints, order, session))
+    stints = analysis.stint_summary(race.laps)
+    show(analysis.strategy_figure(stints, race.order, race.compound_colors))
     with st.expander("Stint table"):
         st.dataframe(stints, hide_index=True, width="stretch")
 
 
-def fastest_lap_tab(session: Session, laps: pd.DataFrame, order: list[str]) -> None:
+def fastest_lap_tab(race: races.Race) -> None:
     st.subheader("How do two drivers compare on their fastest lap?")
     left, right = st.columns(2)
-    first = left.selectbox("Driver A", order, index=0)
-    second = right.selectbox("Driver B", order, index=min(1, len(order) - 1))
+    first = left.selectbox("Driver A", race.order, index=0)
+    second = right.selectbox("Driver B", race.order, index=min(1, len(race.order) - 1))
 
-    candidates = {
-        driver: analysis.fastest_lap(laps, driver) for driver in dict.fromkeys([first, second])
-    }
-    missing = [driver for driver, lap in candidates.items() if lap is None]
-    if missing:
+    drivers = list(dict.fromkeys([first, second]))
+    laps = {driver: analysis.fastest_lap(race.laps, driver) for driver in drivers}
+    timed = {driver: lap for driver, lap in laps.items() if lap is not None}
+    if missing := [driver for driver in drivers if driver not in timed]:
         st.warning(f"No timed lap for {', '.join(missing)}.")
-    selected = {driver: lap for driver, lap in candidates.items() if lap is not None}
-    if not selected:
+    if not timed:
         return
 
     summary = pd.DataFrame(
@@ -112,7 +139,7 @@ def fastest_lap_tab(session: Session, laps: pd.DataFrame, order: list[str]) -> N
                 "Compound": lap["Compound"],
                 "Tyre age": int(lap["TyreLife"]) if pd.notna(lap["TyreLife"]) else None,
             }
-            for driver, lap in selected.items()
+            for driver, lap in timed.items()
         ]
     )
     st.dataframe(summary, hide_index=True, width="stretch")
@@ -121,15 +148,15 @@ def fastest_lap_tab(session: Session, laps: pd.DataFrame, order: list[str]) -> N
             "These laps were set at different points in the race, so fuel load and tyre age differ."
         )
 
-    try:
-        fig = analysis.speed_trace_figure(selected, session)
-    except Exception as exc:
-        st.warning(f"Telemetry isn't available for these laps: {exc}")
+    traces = {driver: race.trace(driver) for driver in timed}
+    traces = {driver: trace for driver, trace in traces.items() if not trace.empty}
+    if not traces:
+        st.warning("Telemetry isn't available for these laps.")
         return
-    show(fig)
+    show(analysis.speed_trace_figure(traces, race.driver_styles, race.corners))
 
 
-def degradation_tab(session: Session, clean: pd.DataFrame) -> None:
+def degradation_tab(race: races.Race, clean: pd.DataFrame) -> None:
     st.subheader("How fast did the tyres degrade?")
     left, right = st.columns(2)
     min_laps = left.slider("Minimum laps per stint", 3, 20, 8)
@@ -138,7 +165,7 @@ def degradation_tab(session: Session, clean: pd.DataFrame) -> None:
     )
 
     data = clean.copy()
-    data["FuelCorrected"] = analysis.fuel_corrected(data, session.total_laps, fuel_effect)
+    data["FuelCorrected"] = analysis.fuel_corrected(data, race.total_laps, fuel_effect)
     deg = analysis.degradation(data, "FuelCorrected", min_laps)
     if deg.empty:
         st.info("No stints long enough to fit.")
@@ -168,26 +195,28 @@ def main() -> None:
 
     with st.spinner("Loading timing data. The first load of a race takes about a minute."):
         try:
-            session = race(year, event)
+            race = load(year, event)
+        except races.RaceDataUnavailable as exc:
+            st.error(str(exc))
+            st.button("Try again")
+            st.stop()
         except Exception as exc:
             st.error(f"Couldn't load this race: {exc}")
+            st.button("Try again")
             st.stop()
 
-    laps = analysis.with_seconds(session.laps)
-    clean = analysis.representative_laps(laps)
-    order = analysis.finishing_order(session)
-
+    clean = analysis.representative_laps(race.laps)
     pace, strategy, fastest, deg = st.tabs(
         ["Race pace", "Tyre strategy", "Fastest lap", "Degradation"]
     )
     with pace:
-        pace_tab(session, laps, clean, order)
+        pace_tab(race, clean)
     with strategy:
-        strategy_tab(session, laps, order)
+        strategy_tab(race)
     with fastest:
-        fastest_lap_tab(session, laps, order)
+        fastest_lap_tab(race)
     with deg:
-        degradation_tab(session, clean)
+        degradation_tab(race, clean)
 
 
 main()

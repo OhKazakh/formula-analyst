@@ -25,6 +25,54 @@ def laps() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def lap(**overrides) -> dict:
+    defaults = {
+        "Driver": "AAA",
+        "LapNumber": 1.0,
+        "LapTime": pd.Timedelta(milliseconds=90000),
+        "PitInTime": pd.NaT,
+        "PitOutTime": pd.NaT,
+        "TrackStatus": "1",
+        "IsAccurate": True,
+        "IsPersonalBest": True,
+    }
+    return defaults | overrides
+
+
+def test_representative_laps_drops_pit_flagged_and_inaccurate_laps():
+    laps = pd.DataFrame(
+        [
+            lap(LapNumber=1.0),
+            lap(LapNumber=2.0, PitInTime=pd.Timedelta(minutes=30)),
+            lap(LapNumber=3.0, PitOutTime=pd.Timedelta(minutes=31)),
+            lap(LapNumber=4.0, TrackStatus="4"),
+            lap(LapNumber=5.0, IsAccurate=False),
+        ]
+    )
+
+    assert analysis.representative_laps(laps)["LapNumber"].tolist() == [1.0]
+
+
+def test_fastest_lap_ignores_laps_not_marked_personal_best():
+    laps = pd.DataFrame(
+        [
+            lap(LapNumber=1.0, LapTime=pd.Timedelta(milliseconds=91000)),
+            lap(LapNumber=2.0, LapTime=pd.Timedelta(milliseconds=89000), IsPersonalBest=False),
+            lap(LapNumber=3.0, LapTime=pd.Timedelta(milliseconds=90000)),
+        ]
+    )
+
+    assert analysis.fastest_lap(laps, "AAA")["LapNumber"] == 3.0
+
+
+def test_fastest_lap_is_none_without_timed_laps():
+    laps = pd.DataFrame([lap(IsPersonalBest=False), lap(Driver="BBB", LapTime=pd.NaT)])
+
+    assert analysis.fastest_lap(laps, "AAA") is None
+    assert analysis.fastest_lap(laps, "BBB") is None
+    assert analysis.fastest_lap(laps, "CCC") is None
+
+
 def test_stint_summary_one_row_per_stint(laps):
     stints = analysis.stint_summary(laps)
 
