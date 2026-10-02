@@ -1,15 +1,18 @@
 # Formula Analyst
 
-Race analysis dashboard built on [FastF1](https://github.com/theOehrly/Fast-F1) timing data. Pick a Grand Prix and see how the race played out: lap-by-lap pace, tyre strategies, fastest-lap telemetry and tyre degradation.
+Race analysis dashboard built on [FastF1](https://github.com/theOehrly/Fast-F1) timing data. Pick a Grand Prix and see how the race played out: lap-by-lap pace, a replay of the race on a circuit map, tyre strategies, fastest-lap telemetry and tyre degradation.
 
 ![Race pace](docs/pace.png)
 
 ## Features
 
 - **Race pace.** Lap times for any set of drivers. Optionally limited to representative laps (no pit in/out laps, no laps under safety car or flags, no laps FastF1 marks as inaccurate) and fuel-corrected.
+- **Race replay.** Every car on a map of the circuit through the whole race, with the running order alongside. Play it or drag the slider lap by lap.
 - **Tyre strategy.** Every driver's stints, coloured by compound and ordered by finishing position.
 - **Fastest lap.** Speed against distance for two drivers' fastest laps, with corner markers.
 - **Degradation.** Per-stint degradation rate from a linear fit of fuel-corrected lap time against tyre age, summarised by compound.
+
+![Race replay](docs/replay.png)
 
 | Tyre strategy | Fastest lap |
 | --- | --- |
@@ -28,7 +31,7 @@ streamlit run app.py
 
 ## Race data
 
-Every race from 2018 to the latest 2026 round ships with the app in `data/` (about 18 MB), as compact Parquet files with the lap table and each driver's fastest-lap speed trace. The one exception is the 2018 Italian Grand Prix, whose tyre data FastF1 can't process. The live timing service rejects requests from many hosting providers, Streamlit Community Cloud included, so the deployed app reads only this bundle.
+Every race from 2018 to the latest 2026 round ships with the app in `data/` (about 24 MB), as compact Parquet files with the lap table, each driver's fastest-lap speed trace and the track outline. The one exception is the 2018 Italian Grand Prix, whose tyre data FastF1 can't process. The live timing service rejects requests from many hosting providers, Streamlit Community Cloud included, so the deployed app reads only this bundle.
 
 When the live timing service is reachable, as it usually is on a home connection, the app also downloads races that aren't bundled. The first download of a race takes about a minute and is cached in `cache/`.
 
@@ -66,6 +69,7 @@ tests/             unit tests
 - **Fuel correction** subtracts `fuel_effect × laps remaining` from each lap time, normalising every lap to an empty tank. The default is 0.055 s per lap of fuel and can be changed in the app.
 - **Degradation** is the slope of a least-squares line through fuel-corrected lap time against tyre age, fitted per stint. Stints shorter than the configurable minimum (8 laps by default) are skipped.
 - A straight line is a simplification: tyre warm-up at the start of a stint and the drop-off at the end are averaged into one number.
+- **Race replay** positions come from each lap's start and end times. Within a lap, cars follow the speed profile of the winner's fastest lap, so they slow down in corners rather than moving at constant speed. The order shown is the order on track, before any penalties. Track outlines come from the MultiViewer circuit data that FastF1 uses; the 2020 Sakhir and 2026 Spanish Grand Prix have none.
 
 ## Data and license
 
