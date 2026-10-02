@@ -119,3 +119,16 @@ def test_live_timing_unavailable_when_forced_offline(monkeypatch):
     monkeypatch.setenv(races.OFFLINE_ENV, "1")
 
     assert races.live_timing_available() is False
+
+
+def test_clean_compounds_turns_placeholders_into_missing_values():
+    cleaned = races.clean_compounds(pd.Series(["SOFT", "nan", "None", "", "UNKNOWN"]))
+
+    assert cleaned.isna().tolist() == [False, True, True, True, False]
+
+
+def test_drivers_excludes_entrants_without_laps():
+    race = make_race()
+    race.order.append("CCC")
+
+    assert race.drivers == ["AAA", "BBB"]

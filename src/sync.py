@@ -4,6 +4,7 @@ import argparse
 import gc
 
 import fastf1
+from fastf1.exceptions import RateLimitExceededError
 
 from src import races
 
@@ -48,6 +49,9 @@ def main(argv: list[str] | None = None) -> int:
             failures += 1
             print(f"failed {args.year} {event}: {exc}")
             continue
+        except RateLimitExceededError as exc:
+            print(f"stopped: {exc}. Run the same command again later to continue.")
+            return 1
         print(f"saved  {path.relative_to(races.ROOT)}", flush=True)
         gc.collect()
     return 1 if failures else 0

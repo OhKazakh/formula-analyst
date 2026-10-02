@@ -156,3 +156,16 @@ def test_speed_trace_distinguishes_teammates_by_line_style():
 
     assert (first.get_linestyle(), second.get_linestyle()) == ("-", "--")
     assert first.get_marker() == second.get_marker() == "None"
+
+
+def test_stint_compound_ignores_missing_values_and_uses_majority():
+    assert analysis.stint_compound(pd.Series([None, "SOFT", "MEDIUM", "SOFT"])) == "SOFT"
+    assert analysis.stint_compound(pd.Series([None, None])) == analysis.UNKNOWN_COMPOUND
+
+
+def test_stint_summary_labels_stint_with_known_compound(laps):
+    laps.loc[laps["LapNumber"] == 1.0, "Compound"] = None
+
+    stints = analysis.stint_summary(laps)
+
+    assert stints["Compound"].tolist() == ["MEDIUM", "HARD", "HARD"]

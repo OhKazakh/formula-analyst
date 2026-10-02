@@ -41,6 +41,7 @@ LAP_COLUMNS = [
 TELEMETRY_COLUMNS = ["Driver", "Distance", "Speed"]
 CORNER_COLUMNS = ["Number", "Letter", "Distance"]
 SAVED_COLUMNS = ["Year", "Round", "EventName", "Path"]
+COMPOUND_PLACEHOLDERS = ["nan", "None", ""]
 
 
 class RaceDataUnavailable(RuntimeError):
@@ -60,8 +61,17 @@ class Race:
     driver_styles: Styles
     compound_colors: dict[str, str]
 
+    @property
+    def drivers(self) -> list[str]:
+        raced = set(self.laps["Driver"])
+        return [driver for driver in self.order if driver in raced]
+
     def trace(self, driver: str) -> pd.DataFrame:
         return self.telemetry[self.telemetry["Driver"] == driver]
+
+
+def clean_compounds(compounds: pd.Series) -> pd.Series:
+    return compounds.mask(compounds.isin(COMPOUND_PLACEHOLDERS))
 
 
 def enable_cache(cache_dir: Path = CACHE_DIR) -> None:
@@ -103,7 +113,7 @@ def load_live_race(year: int, event: str) -> Race:
         laps = session.laps
     except DataNotLoadedError as exc:
         raise RaceDataUnavailable(
-            f"Lap timing data for the {year} {event} couldn't be downloaded."
+            f"Lap timing data for the {year} {event} isn't available."
         ) from exc
     if laps.empty:
         raise RaceDataUnavailable(f"No laps were recorded for the {year} {event}.")
@@ -138,6 +148,7 @@ def _finishing_order(session: Session, laps: pd.DataFrame) -> list[str]:
 def _lap_table(session: Session) -> pd.DataFrame:
     laps = pd.DataFrame(session.laps, copy=True)
     laps["LapTimeSeconds"] = laps["LapTime"].dt.total_seconds()
+    laps["Compound"] = clean_compounds(laps["Compound"])
     laps["IsAccurate"] = laps["IsAccurate"].astype(bool)
     laps["IsPersonalBest"] = laps["IsPersonalBest"].astype(bool)
     return laps[LAP_COLUMNS]

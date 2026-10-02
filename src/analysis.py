@@ -11,6 +11,7 @@ from matplotlib.patches import Patch
 GREEN_FLAG = "1"
 DEFAULT_FUEL_EFFECT = 0.055
 FALLBACK_COLOR = "#888888"
+UNKNOWN_COMPOUND = "UNKNOWN"
 TEAMMATE_MARKERS = {"solid": "o", "dashed": "s", "dashdot": "^", "dotted": "D"}
 
 Styles = dict[str, dict[str, str]]
@@ -32,12 +33,17 @@ def fuel_corrected(
     return laps["LapTimeSeconds"] - fuel_effect * laps_remaining
 
 
+def stint_compound(compounds: pd.Series) -> str:
+    known = compounds.dropna()
+    return str(known.mode().iat[0]) if not known.empty else UNKNOWN_COMPOUND
+
+
 def stint_summary(laps: pd.DataFrame) -> pd.DataFrame:
     return (
         laps.dropna(subset=["Stint"])
         .groupby(["Driver", "Stint"], as_index=False)
         .agg(
-            Compound=("Compound", "first"),
+            Compound=("Compound", stint_compound),
             StartLap=("LapNumber", "min"),
             EndLap=("LapNumber", "max"),
             Laps=("LapNumber", "count"),
@@ -71,7 +77,7 @@ def degradation(
             {
                 "Driver": driver,
                 "Stint": int(stint),
-                "Compound": stint_laps["Compound"].iloc[0],
+                "Compound": stint_compound(stint_laps["Compound"]),
                 "Laps": len(stint_laps),
                 "DegPerLap": fit.slope,
             }
@@ -154,7 +160,7 @@ def strategy_figure(
     used: dict[str, str] = {}
     for driver in order:
         for _, stint in stints[stints["Driver"] == driver].sort_values("Stint").iterrows():
-            compound = stint["Compound"] if isinstance(stint["Compound"], str) else "UNKNOWN"
+            compound = stint["Compound"]
             used[compound] = compound_colors.get(compound, FALLBACK_COLOR)
             ax.barh(
                 driver,

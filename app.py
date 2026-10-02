@@ -81,26 +81,36 @@ def sidebar() -> tuple[int, str]:
 
 def pace_tab(race: races.Race, clean: pd.DataFrame) -> None:
     st.subheader("How did each driver's pace change over the race?")
-    drivers = st.multiselect("Drivers", race.order, default=race.order[:3])
-    left, right, _ = st.columns([1, 1, 2])
-    representative = left.toggle(
-        "Representative laps only",
-        value=True,
-        help="Excludes pit in/out laps, laps under safety car or flags, "
-        "and laps FastF1 marks as inaccurate.",
-    )
-    fuel = right.toggle(
-        "Fuel-corrected",
-        value=False,
-        help="Normalises every lap to an empty tank so tyre wear isn't hidden "
-        "by the car getting lighter.",
-    )
+    drivers = st.multiselect("Drivers", race.drivers, default=race.drivers[:3])
+    with st.container(horizontal=True):
+        representative = st.toggle(
+            "Representative laps only",
+            value=True,
+            help="Excludes pit in/out laps, laps under safety car or flags, "
+            "and laps FastF1 marks as inaccurate.",
+        )
+        fuel = st.toggle(
+            "Fuel-corrected",
+            value=False,
+            help="Normalises every lap to an empty tank so tyre wear isn't hidden "
+            "by the car getting lighter.",
+        )
 
     if not drivers:
         st.info("Pick at least one driver.")
         return
 
-    data = (clean if representative else race.laps).copy()
+    source = clean if representative else race.laps
+    data = source[source["Driver"].isin(drivers)].copy()
+    if data.empty:
+        st.info(
+            "None of these drivers have representative laps in this race. "
+            "Turn off “Representative laps only” to see every lap."
+            if representative
+            else "No laps to show for these drivers."
+        )
+        return
+
     column = "LapTimeSeconds"
     if fuel:
         data["FuelCorrected"] = analysis.fuel_corrected(data, race.total_laps)
@@ -111,7 +121,7 @@ def pace_tab(race: races.Race, clean: pd.DataFrame) -> None:
 def strategy_tab(race: races.Race) -> None:
     st.subheader("What tyre strategy did everyone run?")
     stints = analysis.stint_summary(race.laps)
-    show(analysis.strategy_figure(stints, race.order, race.compound_colors))
+    show(analysis.strategy_figure(stints, race.drivers, race.compound_colors))
     with st.expander("Stint table"):
         st.dataframe(stints, hide_index=True, width="stretch")
 
@@ -119,8 +129,8 @@ def strategy_tab(race: races.Race) -> None:
 def fastest_lap_tab(race: races.Race) -> None:
     st.subheader("How do two drivers compare on their fastest lap?")
     left, right = st.columns(2)
-    first = left.selectbox("Driver A", race.order, index=0)
-    second = right.selectbox("Driver B", race.order, index=min(1, len(race.order) - 1))
+    first = left.selectbox("Driver A", race.drivers, index=0)
+    second = right.selectbox("Driver B", race.drivers, index=min(1, len(race.drivers) - 1))
 
     drivers = list(dict.fromkeys([first, second]))
     laps = {driver: analysis.fastest_lap(race.laps, driver) for driver in drivers}
@@ -136,7 +146,9 @@ def fastest_lap_tab(race: races.Race) -> None:
                 "Driver": driver,
                 "Lap": int(lap["LapNumber"]),
                 "Time": analysis.format_lap_time(lap["LapTime"]),
-                "Compound": lap["Compound"],
+                "Compound": (
+                    lap["Compound"] if pd.notna(lap["Compound"]) else analysis.UNKNOWN_COMPOUND
+                ),
                 "Tyre age": int(lap["TyreLife"]) if pd.notna(lap["TyreLife"]) else None,
             }
             for driver, lap in timed.items()
