@@ -28,6 +28,7 @@
     "HAM"
   ],
   "corners": [],
+  "map_corners": [],
   "driver_styles": {
     "ANT": {
       "color": "#27f4d2",

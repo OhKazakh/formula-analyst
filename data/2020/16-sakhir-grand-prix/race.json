@@ -26,6 +26,7 @@
     "LEC"
   ],
   "corners": [],
+  "map_corners": [],
   "driver_styles": {
     "PER": {
       "color": "#ff87bc",
