@@ -5,15 +5,17 @@ import json
 import os
 import re
 import unicodedata
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import fastf1
 import fastf1.plotting
+import numpy as np
 import pandas as pd
 import requests
 from fastf1.core import Session
 from fastf1.exceptions import DataNotLoadedError
+from fastf1.mvapi.api import get_circuit
 
 from src.analysis import Styles, fastest_lap
 
@@ -38,11 +40,16 @@ LAP_COLUMNS = [
     "TrackStatus",
     "IsAccurate",
     "IsPersonalBest",
+    "LapStartTime",
+    "Time",
 ]
 TELEMETRY_COLUMNS = ["Driver", "Distance", "Speed"]
 CORNER_COLUMNS = ["Number", "Letter", "Distance"]
+TRACK_COLUMNS = ["X", "Y"]
+MAP_CORNER_COLUMNS = ["Label", "X", "Y"]
 SAVED_COLUMNS = ["Year", "Round", "EventName", "Path"]
 COMPOUND_PLACEHOLDERS = ["nan", "None", ""]
+CORNER_LABEL_OFFSET = 50.0
 
 
 class RaceDataUnavailable(RuntimeError):
@@ -61,6 +68,10 @@ class Race:
     corners: pd.DataFrame
     driver_styles: Styles
     compound_colors: dict[str, str]
+    track: pd.DataFrame = field(default_factory=lambda: pd.DataFrame(columns=TRACK_COLUMNS))
+    map_corners: pd.DataFrame = field(
+        default_factory=lambda: pd.DataFrame(columns=MAP_CORNER_COLUMNS)
+    )
 
     @property
     def drivers(self) -> list[str]:
@@ -124,6 +135,8 @@ def load_live_race(year: int, event: str) -> Race:
 def race_from_session(session: Session) -> Race:
     laps = _lap_table(session)
     order = _finishing_order(session, laps)
+    corners = _corners(session)
+    track, map_corners = _track_map(session, corners)
     return Race(
         year=int(session.event.year),
         round_number=int(session.event["RoundNumber"]),
@@ -132,9 +145,11 @@ def race_from_session(session: Session) -> Race:
         order=order,
         laps=laps,
         telemetry=_fastest_lap_telemetry(session, laps),
-        corners=_corners(session),
+        corners=corners,
         driver_styles=_driver_styles(session, order),
         compound_colors=dict(fastf1.plotting.get_compound_mapping(session)),
+        track=track,
+        map_corners=map_corners,
     )
 
 
@@ -187,6 +202,57 @@ def _corners(session: Session) -> pd.DataFrame:
     return corners[CORNER_COLUMNS].reset_index(drop=True)
 
 
+def _track_map(session: Session, corners: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    try:
+        circuit_key = session.session_info["Meeting"]["Circuit"]["Key"]
+        circuit = get_circuit(year=int(session.event.year), circuit_key=circuit_key)
+        if circuit and circuit.get("x"):
+            return track_map(circuit, corners)
+    except Exception:
+        pass
+    return pd.DataFrame(columns=TRACK_COLUMNS), pd.DataFrame(columns=MAP_CORNER_COLUMNS)
+
+
+def _rotation(degrees: float) -> np.ndarray:
+    angle = np.deg2rad(degrees)
+    return np.array([[np.cos(angle), np.sin(angle)], [-np.sin(angle), np.cos(angle)]])
+
+
+def track_map(circuit: dict, corners: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    rotation = _rotation(float(circuit.get("rotation", 0.0)))
+    outline = np.column_stack([circuit["x"], circuit["y"]]).astype(float) / 10
+    if np.allclose(outline[0], outline[-1]):
+        outline = outline[:-1]
+
+    segments = np.hypot(*(np.roll(outline, -1, axis=0) - outline).T)
+    starts = np.concatenate([[0.0], np.cumsum(segments)[:-1]])
+    outline_lengths = {
+        f"{c['number']}{c.get('letter', '')}": c["length"] / 10 for c in circuit.get("corners", [])
+    }
+    offsets = [
+        outline_lengths[label] - distance
+        for label, distance in zip(
+            corners["Number"].astype(int).astype(str) + corners["Letter"].fillna(""),
+            corners["Distance"],
+            strict=True,
+        )
+        if label in outline_lengths
+    ]
+    if offsets:
+        timing_line = float(np.median(offsets)) % segments.sum()
+        outline = np.roll(outline, -int(np.searchsorted(starts, timing_line)), axis=0)
+
+    track = pd.DataFrame(np.vstack([outline, outline[:1]]) @ rotation, columns=TRACK_COLUMNS)
+
+    labels = []
+    for corner in circuit.get("corners", []):
+        position = np.array([corner["trackPosition"]["x"], corner["trackPosition"]["y"]]) / 10
+        direction = np.array([1.0, 0.0]) @ _rotation(float(corner.get("angle", 0.0)))
+        x, y = (position + CORNER_LABEL_OFFSET * direction) @ rotation
+        labels.append((f"{corner['number']}{corner.get('letter', '')}", x, y))
+    return track, pd.DataFrame(labels, columns=MAP_CORNER_COLUMNS)
+
+
 def _driver_styles(session: Session, drivers: list[str]) -> Styles:
     styles = {}
     for driver in drivers:
@@ -209,6 +275,7 @@ def save_race(race: Race, root: Path = DATA_DIR) -> Path:
     path.mkdir(parents=True, exist_ok=True)
     race.laps.to_parquet(path / "laps.parquet", index=False)
     race.telemetry.to_parquet(path / "telemetry.parquet", index=False)
+    race.track.astype("float32").to_parquet(path / "track.parquet", index=False)
     meta = {
         "year": race.year,
         "round": race.round_number,
@@ -216,6 +283,7 @@ def save_race(race: Race, root: Path = DATA_DIR) -> Path:
         "total_laps": race.total_laps,
         "order": race.order,
         "corners": race.corners.to_dict(orient="records"),
+        "map_corners": race.map_corners.round(1).to_dict(orient="records"),
         "driver_styles": race.driver_styles,
         "compound_colors": race.compound_colors,
     }
@@ -225,6 +293,10 @@ def save_race(race: Race, root: Path = DATA_DIR) -> Path:
 
 def read_race(path: Path) -> Race:
     meta = json.loads((path / "race.json").read_text())
+    track_path = path / "track.parquet"
+    track = (
+        pd.read_parquet(track_path) if track_path.exists() else pd.DataFrame(columns=TRACK_COLUMNS)
+    )
     return Race(
         year=meta["year"],
         round_number=meta["round"],
@@ -236,6 +308,8 @@ def read_race(path: Path) -> Race:
         corners=pd.DataFrame(meta["corners"], columns=CORNER_COLUMNS),
         driver_styles=meta["driver_styles"],
         compound_colors=meta["compound_colors"],
+        track=track,
+        map_corners=pd.DataFrame(meta.get("map_corners", []), columns=MAP_CORNER_COLUMNS),
     )
 
 

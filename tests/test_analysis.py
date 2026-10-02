@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -169,3 +170,71 @@ def test_stint_summary_labels_stint_with_known_compound(laps):
     stints = analysis.stint_summary(laps)
 
     assert stints["Compound"].tolist() == ["MEDIUM", "HARD", "HARD"]
+
+
+def replay_laps() -> pd.DataFrame:
+    laps = pd.DataFrame(
+        {
+            "Driver": ["AAA", "AAA", "BBB", "BBB"],
+            "LapNumber": [1.0, 2.0, 1.0, 2.0],
+            "LapStartTime": pd.to_timedelta([0, 100, 0, 120], unit="s"),
+            "Time": pd.to_timedelta([100, 200, 120, 240], unit="s"),
+        }
+    )
+    return laps
+
+
+SQUARE = pd.DataFrame({"X": [0.0, 100.0, 100.0, 0.0, 0.0], "Y": [0.0, 0.0, 100.0, 100.0, 0.0]})
+
+
+def test_lap_profile_is_linear_at_constant_speed():
+    trace = pd.DataFrame({"Distance": np.arange(0.0, 1001.0, 100.0), "Speed": 200.0})
+
+    time_fraction, distance_fraction = analysis.lap_profile(trace)
+
+    np.testing.assert_allclose(time_fraction, distance_fraction, atol=1e-9)
+
+
+def test_lap_profile_spends_longer_in_slow_sections():
+    trace = pd.DataFrame(
+        {"Distance": np.arange(0.0, 1001.0, 100.0), "Speed": [100.0] * 6 + [300.0] * 5}
+    )
+
+    assert np.interp(0.5, *analysis.lap_profile(trace)) < 0.4
+
+
+def test_replay_times_span_the_race():
+    times = analysis.replay_times(replay_laps(), total_laps=2)
+
+    assert (times[0], times[-1], len(times)) == (0.0, 240.0, 2 * analysis.REPLAY_FRAMES_PER_LAP)
+
+
+def test_race_positions_interpolate_within_laps():
+    positions = analysis.race_positions(replay_laps(), np.array([50.0, 150.0, 210.0]))
+    progress = positions.pivot(index="Frame", columns="Driver", values="Progress")
+    running = positions.pivot(index="Frame", columns="Driver", values="Running")
+
+    np.testing.assert_allclose(progress["AAA"], [0.5, 1.5, 2.0])
+    np.testing.assert_allclose(progress["BBB"], [50 / 120, 1.25, 1.75])
+    assert running["AAA"].tolist() == [True, True, False]
+    assert running["BBB"].tolist() == [True, True, True]
+
+
+def test_track_points_follow_the_outline():
+    x, y = analysis.track_points(SQUARE, np.array([0.0, 0.25, 0.5, 1.125]))
+
+    np.testing.assert_allclose(x, [0.0, 100.0, 100.0, 50.0])
+    np.testing.assert_allclose(y, [0.0, 0.0, 100.0, 0.0])
+
+
+def test_replay_figure_frames_slider_and_finish_order():
+    times = np.array([50.0, 150.0, 250.0])
+    positions = analysis.race_positions(replay_laps(), times)
+    corners = pd.DataFrame({"Label": ["1"], "X": [100.0], "Y": [0.0]})
+
+    figure = analysis.replay_figure(SQUARE, corners, positions, ["AAA", "BBB"], {}, total_laps=2)
+
+    assert [step.label for step in figure.layout.sliders[0].steps] == ["1", "2"]
+    last = figure.frames[-1]
+    assert np.isnan(last.data[0].x).all()
+    assert last.data[1].text[0].endswith(" 1  AAA<br> 2  BBB")

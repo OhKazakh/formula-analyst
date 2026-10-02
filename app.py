@@ -1,6 +1,7 @@
 from datetime import date
 
 import pandas as pd
+import plotly.graph_objects as go
 import streamlit as st
 from matplotlib.figure import Figure
 
@@ -32,6 +33,18 @@ def calendar(year: int) -> pd.DataFrame:
 @st.cache_data(show_spinner=False, max_entries=16)
 def load(year: int, event: str, bundle_version: str) -> races.Race:
     return races.load_race(year, event)
+
+
+@st.cache_data(show_spinner=False, max_entries=8)
+def replay_chart(year: int, event: str, bundle_version: str, _race: races.Race) -> go.Figure:
+    race = _race
+    traces = (race.trace(driver) for driver in race.drivers)
+    reference = next((trace for trace in traces if not trace.empty), race.telemetry)
+    times = analysis.replay_times(race.laps, race.total_laps)
+    positions = analysis.race_positions(race.laps, times, analysis.lap_profile(reference))
+    return analysis.replay_figure(
+        race.track, race.map_corners, positions, race.drivers, race.driver_styles, race.total_laps
+    )
 
 
 def show(fig: Figure) -> None:
@@ -116,6 +129,20 @@ def pace_tab(race: races.Race, clean: pd.DataFrame) -> None:
         data["FuelCorrected"] = analysis.fuel_corrected(data, race.total_laps)
         column = "FuelCorrected"
     show(analysis.pace_figure(data, drivers, race.driver_styles, column))
+
+
+def replay_tab(race: races.Race, bundle_version: str) -> None:
+    st.subheader("How did the race unfold on track?")
+    if race.track.empty or not {"LapStartTime", "Time"} <= set(race.laps.columns):
+        st.info("A track map isn't available for this race.")
+        return
+    figure = replay_chart(race.year, race.event, bundle_version, race)
+    st.plotly_chart(figure, config={"displayModeBar": False})
+    st.caption(
+        "Press Play or drag the slider. Positions within a lap are estimated from lap times "
+        "and the winner's fastest-lap speed profile, and the order is the order on track, "
+        "before any penalties."
+    )
 
 
 def strategy_tab(race: races.Race) -> None:
@@ -219,11 +246,13 @@ def main() -> None:
             st.stop()
 
     clean = analysis.representative_laps(race.laps)
-    pace, strategy, fastest, deg = st.tabs(
-        ["Race pace", "Tyre strategy", "Fastest lap", "Degradation"]
+    pace, replay, strategy, fastest, deg = st.tabs(
+        ["Race pace", "Race replay", "Tyre strategy", "Fastest lap", "Degradation"]
     )
     with pace:
         pace_tab(race, clean)
+    with replay:
+        replay_tab(race, bundle_version)
     with strategy:
         strategy_tab(race)
     with fastest:
