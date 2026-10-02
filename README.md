@@ -1,6 +1,6 @@
 # Formula Analyst
 
-Race analysis dashboard built on [FastF1](https://github.com/theOehrly/Fast-F1) timing data. Pick any Grand Prix since 2018 and see how the race played out: lap-by-lap pace, tyre strategies, fastest-lap telemetry and tyre degradation.
+Race analysis dashboard built on [FastF1](https://github.com/theOehrly/Fast-F1) timing data. Pick a Grand Prix and see how the race played out: lap-by-lap pace, tyre strategies, fastest-lap telemetry and tyre degradation.
 
 ![Race pace](docs/pace.png)
 
@@ -26,7 +26,20 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-The first time a race is opened, its timing data is downloaded (about a minute) and cached in `cache/`. Later loads read from the cache.
+## Race data
+
+Every race of the 2024 season ships with the app in `data/`, as compact Parquet files with the lap table and each driver's fastest-lap speed trace. The live timing service rejects requests from many hosting providers, Streamlit Community Cloud included, so the deployed app reads only this bundle.
+
+When the live timing service is reachable, as it usually is on a home connection, the app also lists every race since 2018 and downloads the ones that aren't bundled. The first download of a race takes about a minute and is cached in `cache/`.
+
+To bundle more races:
+
+```bash
+python -m src.sync 2025
+python -m src.sync 2023 --event Monza --event Silverstone
+```
+
+Saved races are skipped unless `--force` is passed. Set `FORMULA_ANALYST_OFFLINE=1` to run the app the way it runs when deployed, with bundled races only.
 
 ## Development
 
@@ -39,11 +52,14 @@ ruff format --check .
 
 ```
 app.py             Streamlit UI
-src/analysis.py    loading, lap filtering, stint and degradation analysis, charts
-tests/             unit tests for the analysis functions
+src/analysis.py    lap filtering, stint and degradation analysis, charts
+src/races.py       loading races from FastF1 or the bundle, saving bundles
+src/sync.py        command line tool that bundles races
+data/              bundled races
+tests/             unit tests
 ```
 
-`src/analysis.py` has no Streamlit dependency, so the analysis can be reused from scripts or notebooks.
+`src/analysis.py` works on plain pandas DataFrames and has no FastF1 or Streamlit dependency.
 
 ## Methodology
 
@@ -53,6 +69,6 @@ tests/             unit tests for the analysis functions
 
 ## Data and license
 
-Timing data is provided by FastF1. This is an unofficial, non-commercial project and is not affiliated with any racing series or its rights holders.
+Timing data is provided by FastF1, and the bundled data is derived from it. This is an unofficial, non-commercial project and is not affiliated with any racing series or its rights holders.
 
 Released under the [MIT License](LICENSE).
