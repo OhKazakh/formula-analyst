@@ -11,6 +11,7 @@ from matplotlib.patches import Patch
 GREEN_FLAG = "1"
 DEFAULT_FUEL_EFFECT = 0.055
 FALLBACK_COLOR = "#888888"
+TEAMMATE_MARKERS = {"solid": "o", "dashed": "s", "dashdot": "^", "dotted": "D"}
 
 Styles = dict[str, dict[str, str]]
 
@@ -103,6 +104,22 @@ def _new_axes(width: float, height: float) -> tuple[Figure, Axes]:
     return fig, ax
 
 
+def _line_style(styles: Styles, driver: str) -> dict[str, str]:
+    style = styles.get(driver, {})
+    return {key: style[key] for key in ("color", "linestyle") if key in style}
+
+
+def _marker_style(styles: Styles, driver: str) -> dict[str, str | float]:
+    linestyle = styles.get(driver, {}).get("linestyle", "solid")
+    style: dict[str, str | float] = {
+        "marker": TEAMMATE_MARKERS.get(linestyle, "o"),
+        "markersize": 4,
+    }
+    if linestyle != "solid":
+        style["markerfacecolor"] = "white"
+    return style
+
+
 def pace_figure(
     laps: pd.DataFrame,
     drivers: list[str],
@@ -117,10 +134,9 @@ def pace_figure(
         ax.plot(
             driver_laps["LapNumber"],
             driver_laps[time_column],
-            marker="o",
-            markersize=3,
             label=driver,
-            **styles.get(driver, {}),
+            **_line_style(styles, driver),
+            **_marker_style(styles, driver),
         )
     ax.set_xlabel("Lap")
     ax.set_ylabel("Lap time (s)")
@@ -161,7 +177,7 @@ def speed_trace_figure(
 ) -> Figure:
     fig, ax = _new_axes(14, 5)
     for driver, trace in traces.items():
-        ax.plot(trace["Distance"], trace["Speed"], label=driver, **styles.get(driver, {}))
+        ax.plot(trace["Distance"], trace["Speed"], label=driver, **_line_style(styles, driver))
 
     if ax.has_data():
         lowest = min(trace["Speed"].min() for trace in traces.values())

@@ -119,3 +119,40 @@ def test_fuel_correction_removes_linear_fuel_gain():
 )
 def test_format_lap_time(value, expected):
     assert analysis.format_lap_time(value) == expected
+
+
+TEAMMATES = {
+    "AAA": {"color": "#ff8000", "linestyle": "solid"},
+    "BBB": {"color": "#ff8000", "linestyle": "dashed"},
+}
+
+
+def test_pace_figure_distinguishes_teammates():
+    laps = pd.DataFrame(
+        {
+            "Driver": ["AAA", "AAA", "BBB", "BBB"],
+            "LapNumber": [1.0, 2.0, 1.0, 2.0],
+            "LapTimeSeconds": [90.0, 89.0, 90.5, 89.5],
+        }
+    )
+
+    first, second = analysis.pace_figure(laps, ["AAA", "BBB"], TEAMMATES).axes[0].get_lines()
+
+    assert first.get_color() == second.get_color() == "#ff8000"
+    assert (first.get_linestyle(), first.get_marker()) == ("-", "o")
+    assert (second.get_linestyle(), second.get_marker(), second.get_markerfacecolor()) == (
+        "--",
+        "s",
+        "white",
+    )
+
+
+def test_speed_trace_distinguishes_teammates_by_line_style():
+    trace = pd.DataFrame({"Distance": [0.0, 10.0], "Speed": [300.0, 305.0]})
+    corners = pd.DataFrame(columns=["Number", "Letter", "Distance"])
+
+    fig = analysis.speed_trace_figure({"AAA": trace, "BBB": trace}, TEAMMATES, corners)
+    first, second = fig.axes[0].get_lines()
+
+    assert (first.get_linestyle(), second.get_linestyle()) == ("-", "--")
+    assert first.get_marker() == second.get_marker() == "None"
