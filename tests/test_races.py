@@ -132,3 +132,15 @@ def test_drivers_excludes_entrants_without_laps():
     race.order.append("CCC")
 
     assert race.drivers == ["AAA", "BBB"]
+
+
+def test_bundle_version_changes_when_a_race_is_added_or_rewritten(tmp_path):
+    empty = races.bundle_version(tmp_path)
+    races.save_race(make_race(), tmp_path)
+    saved = races.bundle_version(tmp_path)
+
+    race = make_race()
+    race.laps.loc[0, "Compound"] = None
+    races.save_race(race, tmp_path)
+
+    assert len({empty, saved, races.bundle_version(tmp_path)}) == 3

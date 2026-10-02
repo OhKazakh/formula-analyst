@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
@@ -236,6 +237,14 @@ def read_race(path: Path) -> Race:
         driver_styles=meta["driver_styles"],
         compound_colors=meta["compound_colors"],
     )
+
+
+def bundle_version(root: Path = DATA_DIR) -> str:
+    digest = hashlib.sha256()
+    for path in sorted(root.glob("*/*/*")):
+        stat = path.stat()
+        digest.update(f"{path.relative_to(root)}:{stat.st_size}:{stat.st_mtime_ns}\n".encode())
+    return digest.hexdigest()
 
 
 def saved_races(root: Path = DATA_DIR) -> pd.DataFrame:

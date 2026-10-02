@@ -20,7 +20,7 @@ def live_timing() -> bool:
 
 
 @st.cache_data(show_spinner=False)
-def bundled_races() -> pd.DataFrame:
+def bundled_races(bundle_version: str) -> pd.DataFrame:
     return races.saved_races()
 
 
@@ -30,7 +30,7 @@ def calendar(year: int) -> pd.DataFrame:
 
 
 @st.cache_data(show_spinner=False, max_entries=16)
-def load(year: int, event: str) -> races.Race:
+def load(year: int, event: str, bundle_version: str) -> races.Race:
     return races.load_race(year, event)
 
 
@@ -48,9 +48,9 @@ def season_events(year: int, bundled: pd.DataFrame, online: bool) -> list[str]:
         return offline_events
 
 
-def sidebar() -> tuple[int, str]:
+def sidebar(bundle_version: str) -> tuple[int, str]:
     st.sidebar.header("Race")
-    bundled = bundled_races()
+    bundled = bundled_races(bundle_version)
     online = live_timing()
 
     seasons = set(bundled["Year"])
@@ -202,12 +202,13 @@ def degradation_tab(race: races.Race, clean: pd.DataFrame) -> None:
 
 
 def main() -> None:
-    year, event = sidebar()
+    bundle_version = races.bundle_version()
+    year, event = sidebar(bundle_version)
     st.title(f"{year} {event}")
 
     with st.spinner("Loading timing data. The first load of a race takes about a minute."):
         try:
-            race = load(year, event)
+            race = load(year, event, bundle_version)
         except races.RaceDataUnavailable as exc:
             st.error(str(exc))
             st.button("Try again")
