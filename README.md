@@ -28,18 +28,18 @@ streamlit run app.py
 
 ## Race data
 
-Every race of the 2024 season ships with the app in `data/`, as compact Parquet files with the lap table and each driver's fastest-lap speed trace. The live timing service rejects requests from many hosting providers, Streamlit Community Cloud included, so the deployed app reads only this bundle.
+Every race from 2018 to the latest 2026 round ships with the app in `data/` (about 18 MB), as compact Parquet files with the lap table and each driver's fastest-lap speed trace. The one exception is the 2018 Italian Grand Prix, whose tyre data FastF1 can't process. The live timing service rejects requests from many hosting providers, Streamlit Community Cloud included, so the deployed app reads only this bundle.
 
-When the live timing service is reachable, as it usually is on a home connection, the app also lists every race since 2018 and downloads the ones that aren't bundled. The first download of a race takes about a minute and is cached in `cache/`.
+When the live timing service is reachable, as it usually is on a home connection, the app also downloads races that aren't bundled. The first download of a race takes about a minute and is cached in `cache/`.
 
-To bundle more races:
+To add new races, for example after a race weekend:
 
 ```bash
-python -m src.sync 2025
-python -m src.sync 2023 --event Monza --event Silverstone
+python -m src.sync 2026
+python -m src.sync 2023 --event Monza --event Silverstone --force
 ```
 
-Saved races are skipped unless `--force` is passed. Set `FORMULA_ANALYST_OFFLINE=1` to run the app the way it runs when deployed, with bundled races only.
+Saved races are skipped unless `--force` is passed. FastF1 allows 500 requests an hour, roughly 20 races; when the limit is reached the command stops and can be run again later to continue. Set `FORMULA_ANALYST_OFFLINE=1` to run the app the way it runs when deployed, with bundled races only.
 
 ## Development
 
