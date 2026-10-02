@@ -1,0 +1,171 @@
+{
+  "year": 2019,
+  "round": 9,
+  "event": "Austrian Grand Prix",
+  "total_laps": 71,
+  "order": [
+    "VER",
+    "LEC",
+    "BOT",
+    "VET",
+    "HAM",
+    "NOR",
+    "GAS",
+    "SAI",
+    "RAI",
+    "GIO",
+    "PER",
+    "RIC",
+    "HUL",
+    "STR",
+    "ALB",
+    "GRO",
+    "KVY",
+    "RUS",
+    "MAG",
+    "KUB"
+  ],
+  "corners": [
+    {
+      "Number": 1,
+      "Letter": "",
+      "Distance": 458.8449370729564
+    },
+    {
+      "Number": 2,
+      "Letter": "",
+      "Distance": 1116.5301142688625
+    },
+    {
+      "Number": 3,
+      "Letter": "",
+      "Distance": 1382.8833143856227
+    },
+    {
+      "Number": 4,
+      "Letter": "",
+      "Distance": 2204.484949701656
+    },
+    {
+      "Number": 5,
+      "Letter": "",
+      "Distance": 2383.1475798499932
+    },
+    {
+      "Number": 6,
+      "Letter": "",
+      "Distance": 2727.8009843754053
+    },
+    {
+      "Number": 7,
+      "Letter": "",
+      "Distance": 3049.1640172251646
+    },
+    {
+      "Number": 8,
+      "Letter": "",
+      "Distance": 3269.5175773236588
+    },
+    {
+      "Number": 9,
+      "Letter": "",
+      "Distance": 3811.5137160765753
+    },
+    {
+      "Number": 10,
+      "Letter": "",
+      "Distance": 3975.6057368430224
+    }
+  ],
+  "driver_styles": {
+    "VER": {
+      "color": "#1e41ff",
+      "linestyle": "dashed"
+    },
+    "LEC": {
+      "color": "#da291c",
+      "linestyle": "solid"
+    },
+    "BOT": {
+      "color": "#00d2be",
+      "linestyle": "dashed"
+    },
+    "VET": {
+      "color": "#da291c",
+      "linestyle": "dashed"
+    },
+    "HAM": {
+      "color": "#00d2be",
+      "linestyle": "solid"
+    },
+    "NOR": {
+      "color": "#ff8000",
+      "linestyle": "solid"
+    },
+    "GAS": {
+      "color": "#1e41ff",
+      "linestyle": "solid"
+    },
+    "SAI": {
+      "color": "#ff8000",
+      "linestyle": "dashed"
+    },
+    "RAI": {
+      "color": "#900000",
+      "linestyle": "solid"
+    },
+    "GIO": {
+      "color": "#900000",
+      "linestyle": "dashed"
+    },
+    "PER": {
+      "color": "#ff87bc",
+      "linestyle": "solid"
+    },
+    "RIC": {
+      "color": "#fff500",
+      "linestyle": "dashed"
+    },
+    "HUL": {
+      "color": "#fff500",
+      "linestyle": "solid"
+    },
+    "STR": {
+      "color": "#ff87bc",
+      "linestyle": "dashed"
+    },
+    "ALB": {
+      "color": "#2b4562",
+      "linestyle": "solid"
+    },
+    "GRO": {
+      "color": "#bd9e57",
+      "linestyle": "dashed"
+    },
+    "KVY": {
+      "color": "#2b4562",
+      "linestyle": "dashed"
+    },
+    "RUS": {
+      "color": "#00a0dd",
+      "linestyle": "solid"
+    },
+    "MAG": {
+      "color": "#bd9e57",
+      "linestyle": "solid"
+    },
+    "KUB": {
+      "color": "#00a0dd",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

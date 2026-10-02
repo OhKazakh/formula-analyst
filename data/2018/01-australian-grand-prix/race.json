@@ -1,0 +1,124 @@
+{
+  "year": 2018,
+  "round": 1,
+  "event": "Australian Grand Prix",
+  "total_laps": 58,
+  "order": [
+    "VET",
+    "HAM",
+    "RAI",
+    "RIC",
+    "ALO",
+    "VER",
+    "HUL",
+    "BOT",
+    "VAN",
+    "SAI",
+    "PER",
+    "OCO",
+    "LEC",
+    "STR",
+    "HAR",
+    "GRO",
+    "MAG",
+    "GAS",
+    "ERI",
+    "SIR"
+  ],
+  "corners": [],
+  "driver_styles": {
+    "VET": {
+      "color": "#dc0000",
+      "linestyle": "solid"
+    },
+    "HAM": {
+      "color": "#00f5d0",
+      "linestyle": "solid"
+    },
+    "RAI": {
+      "color": "#dc0000",
+      "linestyle": "dashed"
+    },
+    "RIC": {
+      "color": "#1e41ff",
+      "linestyle": "solid"
+    },
+    "ALO": {
+      "color": "#ff8000",
+      "linestyle": "solid"
+    },
+    "VER": {
+      "color": "#1e41ff",
+      "linestyle": "dashed"
+    },
+    "HUL": {
+      "color": "#fff500",
+      "linestyle": "solid"
+    },
+    "BOT": {
+      "color": "#00f5d0",
+      "linestyle": "dashed"
+    },
+    "VAN": {
+      "color": "#ff8000",
+      "linestyle": "dashed"
+    },
+    "SAI": {
+      "color": "#fff500",
+      "linestyle": "dashed"
+    },
+    "PER": {
+      "color": "#ff87bc",
+      "linestyle": "solid"
+    },
+    "OCO": {
+      "color": "#ff87bc",
+      "linestyle": "dashed"
+    },
+    "LEC": {
+      "color": "#900000",
+      "linestyle": "solid"
+    },
+    "STR": {
+      "color": "#00a0dd",
+      "linestyle": "solid"
+    },
+    "HAR": {
+      "color": "#2b4562",
+      "linestyle": "dashed"
+    },
+    "GRO": {
+      "color": "#b6babd",
+      "linestyle": "dashed"
+    },
+    "MAG": {
+      "color": "#b6babd",
+      "linestyle": "solid"
+    },
+    "GAS": {
+      "color": "#2b4562",
+      "linestyle": "solid"
+    },
+    "ERI": {
+      "color": "#900000",
+      "linestyle": "dashed"
+    },
+    "SIR": {
+      "color": "#00a0dd",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "HYPERSOFT": "#feb1c1",
+    "ULTRASOFT": "#b24ba7",
+    "SUPERSOFT": "#fc2b2a",
+    "SOFT": "#ffd318",
+    "MEDIUM": "#f0f0f0",
+    "HARD": "#00a2f5",
+    "SUPERHARD": "#fd7d3c",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

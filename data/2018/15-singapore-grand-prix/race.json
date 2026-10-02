@@ -1,0 +1,240 @@
+{
+  "year": 2018,
+  "round": 15,
+  "event": "Singapore Grand Prix",
+  "total_laps": 61,
+  "order": [
+    "HAM",
+    "VER",
+    "VET",
+    "BOT",
+    "RAI",
+    "RIC",
+    "ALO",
+    "SAI",
+    "LEC",
+    "HUL",
+    "ERI",
+    "VAN",
+    "GAS",
+    "STR",
+    "GRO",
+    "PER",
+    "HAR",
+    "MAG",
+    "SIR",
+    "OCO"
+  ],
+  "corners": [
+    {
+      "Number": 1,
+      "Letter": "",
+      "Distance": 434.2654681356521
+    },
+    {
+      "Number": 2,
+      "Letter": "",
+      "Distance": 511.4816048959565
+    },
+    {
+      "Number": 3,
+      "Letter": "",
+      "Distance": 580.9576609432919
+    },
+    {
+      "Number": 4,
+      "Letter": "",
+      "Distance": 734.3439885350716
+    },
+    {
+      "Number": 5,
+      "Letter": "",
+      "Distance": 1003.8360871307675
+    },
+    {
+      "Number": 6,
+      "Letter": "",
+      "Distance": 1457.023367594314
+    },
+    {
+      "Number": 7,
+      "Letter": "",
+      "Distance": 1816.394970925167
+    },
+    {
+      "Number": 8,
+      "Letter": "",
+      "Distance": 2008.3634726577757
+    },
+    {
+      "Number": 9,
+      "Letter": "",
+      "Distance": 2209.847676097864
+    },
+    {
+      "Number": 10,
+      "Letter": "",
+      "Distance": 2645.843744049462
+    },
+    {
+      "Number": 11,
+      "Letter": "",
+      "Distance": 2787.7751565030426
+    },
+    {
+      "Number": 12,
+      "Letter": "",
+      "Distance": 2911.6263516940935
+    },
+    {
+      "Number": 13,
+      "Letter": "",
+      "Distance": 3039.7462209951987
+    },
+    {
+      "Number": 14,
+      "Letter": "",
+      "Distance": 3567.803717697974
+    },
+    {
+      "Number": 15,
+      "Letter": "",
+      "Distance": 3850.4028846890596
+    },
+    {
+      "Number": 16,
+      "Letter": "",
+      "Distance": 3926.141285008156
+    },
+    {
+      "Number": 17,
+      "Letter": "",
+      "Distance": 4031.154898432054
+    },
+    {
+      "Number": 18,
+      "Letter": "",
+      "Distance": 4226.706191497315
+    },
+    {
+      "Number": 19,
+      "Letter": "",
+      "Distance": 4334.198124966032
+    },
+    {
+      "Number": 20,
+      "Letter": "",
+      "Distance": 4450.124439287054
+    },
+    {
+      "Number": 21,
+      "Letter": "",
+      "Distance": 4527.248165296801
+    },
+    {
+      "Number": 22,
+      "Letter": "",
+      "Distance": 4809.386489355525
+    },
+    {
+      "Number": 23,
+      "Letter": "",
+      "Distance": 4958.913797038079
+    }
+  ],
+  "driver_styles": {
+    "HAM": {
+      "color": "#00f5d0",
+      "linestyle": "solid"
+    },
+    "VER": {
+      "color": "#1e41ff",
+      "linestyle": "dashed"
+    },
+    "VET": {
+      "color": "#dc0000",
+      "linestyle": "solid"
+    },
+    "BOT": {
+      "color": "#00f5d0",
+      "linestyle": "dashed"
+    },
+    "RAI": {
+      "color": "#dc0000",
+      "linestyle": "dashed"
+    },
+    "RIC": {
+      "color": "#1e41ff",
+      "linestyle": "solid"
+    },
+    "ALO": {
+      "color": "#ff8000",
+      "linestyle": "solid"
+    },
+    "SAI": {
+      "color": "#fff500",
+      "linestyle": "dashed"
+    },
+    "LEC": {
+      "color": "#900000",
+      "linestyle": "solid"
+    },
+    "HUL": {
+      "color": "#fff500",
+      "linestyle": "solid"
+    },
+    "ERI": {
+      "color": "#900000",
+      "linestyle": "dashed"
+    },
+    "VAN": {
+      "color": "#ff8000",
+      "linestyle": "dashed"
+    },
+    "GAS": {
+      "color": "#2b4562",
+      "linestyle": "solid"
+    },
+    "STR": {
+      "color": "#00a0dd",
+      "linestyle": "solid"
+    },
+    "GRO": {
+      "color": "#b6babd",
+      "linestyle": "dashed"
+    },
+    "PER": {
+      "color": "#ff87bc",
+      "linestyle": "solid"
+    },
+    "HAR": {
+      "color": "#2b4562",
+      "linestyle": "dashed"
+    },
+    "MAG": {
+      "color": "#b6babd",
+      "linestyle": "solid"
+    },
+    "SIR": {
+      "color": "#00a0dd",
+      "linestyle": "dashed"
+    },
+    "OCO": {
+      "color": "#ff87bc",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "HYPERSOFT": "#feb1c1",
+    "ULTRASOFT": "#b24ba7",
+    "SUPERSOFT": "#fc2b2a",
+    "SOFT": "#ffd318",
+    "MEDIUM": "#f0f0f0",
+    "HARD": "#00a2f5",
+    "SUPERHARD": "#fd7d3c",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

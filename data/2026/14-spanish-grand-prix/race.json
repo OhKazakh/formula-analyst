@@ -1,0 +1,130 @@
+{
+  "year": 2026,
+  "round": 14,
+  "event": "Spanish Grand Prix",
+  "total_laps": 57,
+  "order": [
+    "ANT",
+    "VER",
+    "NOR",
+    "LEC",
+    "RUS",
+    "LAW",
+    "COL",
+    "PIA",
+    "LIN",
+    "HUL",
+    "OCO",
+    "GAS",
+    "BOR",
+    "TSU",
+    "ALB",
+    "BEA",
+    "ALO",
+    "BOT",
+    "SAI",
+    "PER",
+    "STR",
+    "HAM"
+  ],
+  "corners": [],
+  "driver_styles": {
+    "ANT": {
+      "color": "#27f4d2",
+      "linestyle": "solid"
+    },
+    "VER": {
+      "color": "#0600ef",
+      "linestyle": "solid"
+    },
+    "NOR": {
+      "color": "#ff8000",
+      "linestyle": "solid"
+    },
+    "LEC": {
+      "color": "#e80020",
+      "linestyle": "solid"
+    },
+    "RUS": {
+      "color": "#27f4d2",
+      "linestyle": "dashed"
+    },
+    "LAW": {
+      "color": "#0600ef",
+      "linestyle": "dashed"
+    },
+    "COL": {
+      "color": "#ff87bc",
+      "linestyle": "dashed"
+    },
+    "PIA": {
+      "color": "#ff8000",
+      "linestyle": "dashed"
+    },
+    "LIN": {
+      "color": "#fcd700",
+      "linestyle": "dashed"
+    },
+    "HUL": {
+      "color": "#ff2d00",
+      "linestyle": "solid"
+    },
+    "OCO": {
+      "color": "#b6babd",
+      "linestyle": "solid"
+    },
+    "GAS": {
+      "color": "#ff87bc",
+      "linestyle": "solid"
+    },
+    "BOR": {
+      "color": "#ff2d00",
+      "linestyle": "dashed"
+    },
+    "TSU": {
+      "color": "#fcd700",
+      "linestyle": "solid"
+    },
+    "ALB": {
+      "color": "#00a0dd",
+      "linestyle": "solid"
+    },
+    "BEA": {
+      "color": "#b6babd",
+      "linestyle": "dashed"
+    },
+    "ALO": {
+      "color": "#00665f",
+      "linestyle": "solid"
+    },
+    "BOT": {
+      "color": "#444444",
+      "linestyle": "dashed"
+    },
+    "SAI": {
+      "color": "#00a0dd",
+      "linestyle": "dashed"
+    },
+    "PER": {
+      "color": "#444444",
+      "linestyle": "solid"
+    },
+    "STR": {
+      "color": "#00665f",
+      "linestyle": "dashed"
+    },
+    "HAM": {
+      "color": "#e80020",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

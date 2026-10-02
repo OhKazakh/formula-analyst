@@ -1,0 +1,171 @@
+{
+  "year": 2022,
+  "round": 11,
+  "event": "Austrian Grand Prix",
+  "total_laps": 71,
+  "order": [
+    "LEC",
+    "VER",
+    "HAM",
+    "RUS",
+    "OCO",
+    "MSC",
+    "NOR",
+    "MAG",
+    "RIC",
+    "ALO",
+    "BOT",
+    "ALB",
+    "STR",
+    "ZHO",
+    "GAS",
+    "TSU",
+    "VET",
+    "SAI",
+    "LAT",
+    "PER"
+  ],
+  "corners": [
+    {
+      "Number": 1,
+      "Letter": "",
+      "Distance": 437.2892562953961
+    },
+    {
+      "Number": 2,
+      "Letter": "",
+      "Distance": 1064.0483102888845
+    },
+    {
+      "Number": 3,
+      "Letter": "",
+      "Distance": 1364.1697709553687
+    },
+    {
+      "Number": 4,
+      "Letter": "",
+      "Distance": 2177.7091516551236
+    },
+    {
+      "Number": 5,
+      "Letter": "",
+      "Distance": 2343.7447679161696
+    },
+    {
+      "Number": 6,
+      "Letter": "",
+      "Distance": 2689.3165902633227
+    },
+    {
+      "Number": 7,
+      "Letter": "",
+      "Distance": 3014.276620424432
+    },
+    {
+      "Number": 8,
+      "Letter": "",
+      "Distance": 3216.829808603348
+    },
+    {
+      "Number": 9,
+      "Letter": "",
+      "Distance": 3748.395391735126
+    },
+    {
+      "Number": 10,
+      "Letter": "",
+      "Distance": 3929.514398712775
+    }
+  ],
+  "driver_styles": {
+    "LEC": {
+      "color": "#da291c",
+      "linestyle": "solid"
+    },
+    "VER": {
+      "color": "#0600ef",
+      "linestyle": "solid"
+    },
+    "HAM": {
+      "color": "#00f5d0",
+      "linestyle": "solid"
+    },
+    "RUS": {
+      "color": "#00f5d0",
+      "linestyle": "dashed"
+    },
+    "OCO": {
+      "color": "#fe86bc",
+      "linestyle": "dashed"
+    },
+    "MSC": {
+      "color": "#b6babd",
+      "linestyle": "dashed"
+    },
+    "NOR": {
+      "color": "#ff8000",
+      "linestyle": "dashed"
+    },
+    "MAG": {
+      "color": "#b6babd",
+      "linestyle": "solid"
+    },
+    "RIC": {
+      "color": "#ff8000",
+      "linestyle": "solid"
+    },
+    "ALO": {
+      "color": "#fe86bc",
+      "linestyle": "solid"
+    },
+    "BOT": {
+      "color": "#900000",
+      "linestyle": "dashed"
+    },
+    "ALB": {
+      "color": "#00a0dd",
+      "linestyle": "solid"
+    },
+    "STR": {
+      "color": "#00665e",
+      "linestyle": "solid"
+    },
+    "ZHO": {
+      "color": "#900000",
+      "linestyle": "solid"
+    },
+    "GAS": {
+      "color": "#2b4562",
+      "linestyle": "solid"
+    },
+    "TSU": {
+      "color": "#2b4562",
+      "linestyle": "dashed"
+    },
+    "VET": {
+      "color": "#00665e",
+      "linestyle": "dashed"
+    },
+    "SAI": {
+      "color": "#da291c",
+      "linestyle": "dashed"
+    },
+    "LAT": {
+      "color": "#00a0dd",
+      "linestyle": "dashed"
+    },
+    "PER": {
+      "color": "#0600ef",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

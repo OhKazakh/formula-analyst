@@ -1,0 +1,226 @@
+{
+  "year": 2026,
+  "round": 10,
+  "event": "Belgian Grand Prix",
+  "total_laps": 44,
+  "order": [
+    "ANT",
+    "LEC",
+    "VER",
+    "HAM",
+    "PIA",
+    "HAD",
+    "NOR",
+    "BOR",
+    "LIN",
+    "COL",
+    "GAS",
+    "LAW",
+    "HUL",
+    "BEA",
+    "ALB",
+    "SAI",
+    "OCO",
+    "BOT",
+    "ALO",
+    "STR",
+    "PER",
+    "RUS"
+  ],
+  "corners": [
+    {
+      "Number": 1,
+      "Letter": "",
+      "Distance": 366.22131082720455
+    },
+    {
+      "Number": 2,
+      "Letter": "",
+      "Distance": 1043.984514119567
+    },
+    {
+      "Number": 3,
+      "Letter": "",
+      "Distance": 1156.9701868108518
+    },
+    {
+      "Number": 4,
+      "Letter": "",
+      "Distance": 1245.8937726877468
+    },
+    {
+      "Number": 5,
+      "Letter": "",
+      "Distance": 2379.3801990296047
+    },
+    {
+      "Number": 6,
+      "Letter": "",
+      "Distance": 2435.794311468421
+    },
+    {
+      "Number": 7,
+      "Letter": "",
+      "Distance": 2616.514487486519
+    },
+    {
+      "Number": 8,
+      "Letter": "",
+      "Distance": 3011.5429666384275
+    },
+    {
+      "Number": 9,
+      "Letter": "",
+      "Distance": 3240.5472442628015
+    },
+    {
+      "Number": 10,
+      "Letter": "",
+      "Distance": 3762.8532026667444
+    },
+    {
+      "Number": 11,
+      "Letter": "",
+      "Distance": 4009.118827517895
+    },
+    {
+      "Number": 12,
+      "Letter": "",
+      "Distance": 4432.792409167332
+    },
+    {
+      "Number": 13,
+      "Letter": "",
+      "Distance": 4583.0854398853835
+    },
+    {
+      "Number": 14,
+      "Letter": "",
+      "Distance": 4872.039952418905
+    },
+    {
+      "Number": 15,
+      "Letter": "",
+      "Distance": 5127.667354062104
+    },
+    {
+      "Number": 16,
+      "Letter": "",
+      "Distance": 5843.861970704565
+    },
+    {
+      "Number": 17,
+      "Letter": "",
+      "Distance": 6111.990799815392
+    },
+    {
+      "Number": 18,
+      "Letter": "",
+      "Distance": 6650.484616276595
+    },
+    {
+      "Number": 19,
+      "Letter": "",
+      "Distance": 6715.53221151828
+    }
+  ],
+  "driver_styles": {
+    "ANT": {
+      "color": "#27f4d2",
+      "linestyle": "solid"
+    },
+    "LEC": {
+      "color": "#e80020",
+      "linestyle": "solid"
+    },
+    "VER": {
+      "color": "#0600ef",
+      "linestyle": "solid"
+    },
+    "HAM": {
+      "color": "#e80020",
+      "linestyle": "dashed"
+    },
+    "PIA": {
+      "color": "#ff8000",
+      "linestyle": "dashed"
+    },
+    "HAD": {
+      "color": "#0600ef",
+      "linestyle": "dashed"
+    },
+    "NOR": {
+      "color": "#ff8000",
+      "linestyle": "solid"
+    },
+    "BOR": {
+      "color": "#ff2d00",
+      "linestyle": "dashed"
+    },
+    "LIN": {
+      "color": "#fcd700",
+      "linestyle": "dashed"
+    },
+    "COL": {
+      "color": "#ff87bc",
+      "linestyle": "dashed"
+    },
+    "GAS": {
+      "color": "#ff87bc",
+      "linestyle": "solid"
+    },
+    "LAW": {
+      "color": "#fcd700",
+      "linestyle": "solid"
+    },
+    "HUL": {
+      "color": "#ff2d00",
+      "linestyle": "solid"
+    },
+    "BEA": {
+      "color": "#b6babd",
+      "linestyle": "dashed"
+    },
+    "ALB": {
+      "color": "#00a0dd",
+      "linestyle": "solid"
+    },
+    "SAI": {
+      "color": "#00a0dd",
+      "linestyle": "dashed"
+    },
+    "OCO": {
+      "color": "#b6babd",
+      "linestyle": "solid"
+    },
+    "BOT": {
+      "color": "#444444",
+      "linestyle": "dashed"
+    },
+    "ALO": {
+      "color": "#00665f",
+      "linestyle": "solid"
+    },
+    "STR": {
+      "color": "#00665f",
+      "linestyle": "dashed"
+    },
+    "PER": {
+      "color": "#444444",
+      "linestyle": "solid"
+    },
+    "RUS": {
+      "color": "#27f4d2",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

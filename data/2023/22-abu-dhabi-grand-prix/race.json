@@ -1,0 +1,201 @@
+{
+  "year": 2023,
+  "round": 22,
+  "event": "Abu Dhabi Grand Prix",
+  "total_laps": 58,
+  "order": [
+    "VER",
+    "LEC",
+    "RUS",
+    "PER",
+    "NOR",
+    "PIA",
+    "ALO",
+    "TSU",
+    "HAM",
+    "STR",
+    "RIC",
+    "OCO",
+    "GAS",
+    "ALB",
+    "HUL",
+    "SAR",
+    "ZHO",
+    "SAI",
+    "BOT",
+    "MAG"
+  ],
+  "corners": [
+    {
+      "Number": 1,
+      "Letter": "",
+      "Distance": 375.8840017581313
+    },
+    {
+      "Number": 2,
+      "Letter": "",
+      "Distance": 628.375237395771
+    },
+    {
+      "Number": 3,
+      "Letter": "",
+      "Distance": 835.384599413774
+    },
+    {
+      "Number": 4,
+      "Letter": "",
+      "Distance": 1039.2948837825006
+    },
+    {
+      "Number": 5,
+      "Letter": "",
+      "Distance": 1415.5062101626927
+    },
+    {
+      "Number": 6,
+      "Letter": "",
+      "Distance": 2621.831090530228
+    },
+    {
+      "Number": 7,
+      "Letter": "",
+      "Distance": 2685.531518927278
+    },
+    {
+      "Number": 8,
+      "Letter": "",
+      "Distance": 2892.1845871491714
+    },
+    {
+      "Number": 9,
+      "Letter": "",
+      "Distance": 3691.5836274048797
+    },
+    {
+      "Number": 10,
+      "Letter": "",
+      "Distance": 4020.6150322150907
+    },
+    {
+      "Number": 11,
+      "Letter": "",
+      "Distance": 4186.039495205532
+    },
+    {
+      "Number": 12,
+      "Letter": "",
+      "Distance": 4310.851380706121
+    },
+    {
+      "Number": 13,
+      "Letter": "",
+      "Distance": 4423.273318938589
+    },
+    {
+      "Number": 14,
+      "Letter": "",
+      "Distance": 4555.932939072238
+    },
+    {
+      "Number": 15,
+      "Letter": "",
+      "Distance": 4818.597748578403
+    },
+    {
+      "Number": 16,
+      "Letter": "",
+      "Distance": 5049.1877867014355
+    }
+  ],
+  "driver_styles": {
+    "VER": {
+      "color": "#0600ef",
+      "linestyle": "solid"
+    },
+    "LEC": {
+      "color": "#da291c",
+      "linestyle": "solid"
+    },
+    "RUS": {
+      "color": "#00f5d0",
+      "linestyle": "dashed"
+    },
+    "PER": {
+      "color": "#0600ef",
+      "linestyle": "dashed"
+    },
+    "NOR": {
+      "color": "#ff8000",
+      "linestyle": "solid"
+    },
+    "PIA": {
+      "color": "#ff8000",
+      "linestyle": "dashed"
+    },
+    "ALO": {
+      "color": "#00665e",
+      "linestyle": "solid"
+    },
+    "TSU": {
+      "color": "#2b4562",
+      "linestyle": "solid"
+    },
+    "HAM": {
+      "color": "#00f5d0",
+      "linestyle": "solid"
+    },
+    "STR": {
+      "color": "#00665e",
+      "linestyle": "dashed"
+    },
+    "RIC": {
+      "color": "#2b4562",
+      "linestyle": "dashed"
+    },
+    "OCO": {
+      "color": "#fe86bc",
+      "linestyle": "dashed"
+    },
+    "GAS": {
+      "color": "#fe86bc",
+      "linestyle": "solid"
+    },
+    "ALB": {
+      "color": "#00a0dd",
+      "linestyle": "dashed"
+    },
+    "HUL": {
+      "color": "#b6babd",
+      "linestyle": "dashed"
+    },
+    "SAR": {
+      "color": "#00a0dd",
+      "linestyle": "solid"
+    },
+    "ZHO": {
+      "color": "#900000",
+      "linestyle": "solid"
+    },
+    "SAI": {
+      "color": "#da291c",
+      "linestyle": "dashed"
+    },
+    "BOT": {
+      "color": "#900000",
+      "linestyle": "dashed"
+    },
+    "MAG": {
+      "color": "#b6babd",
+      "linestyle": "solid"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

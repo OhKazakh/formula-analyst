@@ -1,0 +1,216 @@
+{
+  "year": 2022,
+  "round": 4,
+  "event": "Emilia Romagna Grand Prix",
+  "total_laps": 63,
+  "order": [
+    "VER",
+    "PER",
+    "NOR",
+    "RUS",
+    "BOT",
+    "LEC",
+    "TSU",
+    "VET",
+    "MAG",
+    "STR",
+    "ALB",
+    "GAS",
+    "HAM",
+    "OCO",
+    "ZHO",
+    "LAT",
+    "MSC",
+    "RIC",
+    "ALO",
+    "SAI"
+  ],
+  "corners": [
+    {
+      "Number": 1,
+      "Letter": "",
+      "Distance": 245.06696692542346
+    },
+    {
+      "Number": 2,
+      "Letter": "",
+      "Distance": 880.9964413761966
+    },
+    {
+      "Number": 3,
+      "Letter": "",
+      "Distance": 937.4268562433255
+    },
+    {
+      "Number": 4,
+      "Letter": "",
+      "Distance": 1071.4367511186488
+    },
+    {
+      "Number": 5,
+      "Letter": "",
+      "Distance": 1518.7247478087656
+    },
+    {
+      "Number": 6,
+      "Letter": "",
+      "Distance": 1608.1548972337973
+    },
+    {
+      "Number": 7,
+      "Letter": "",
+      "Distance": 1884.2782195117866
+    },
+    {
+      "Number": 8,
+      "Letter": "",
+      "Distance": 2281.665402857361
+    },
+    {
+      "Number": 9,
+      "Letter": "",
+      "Distance": 2537.0443772964254
+    },
+    {
+      "Number": 10,
+      "Letter": "",
+      "Distance": 2666.2507890274055
+    },
+    {
+      "Number": 11,
+      "Letter": "",
+      "Distance": 2916.831399307268
+    },
+    {
+      "Number": 12,
+      "Letter": "",
+      "Distance": 3021.9575380231995
+    },
+    {
+      "Number": 13,
+      "Letter": "",
+      "Distance": 3105.199601436561
+    },
+    {
+      "Number": 14,
+      "Letter": "",
+      "Distance": 3514.8367230291574
+    },
+    {
+      "Number": 15,
+      "Letter": "",
+      "Distance": 3571.36032793234
+    },
+    {
+      "Number": 16,
+      "Letter": "",
+      "Distance": 4125.754663569781
+    },
+    {
+      "Number": 17,
+      "Letter": "",
+      "Distance": 4309.077374137253
+    },
+    {
+      "Number": 18,
+      "Letter": "",
+      "Distance": 4449.307825711384
+    },
+    {
+      "Number": 19,
+      "Letter": "",
+      "Distance": 4763.316327514536
+    }
+  ],
+  "driver_styles": {
+    "VER": {
+      "color": "#0600ef",
+      "linestyle": "solid"
+    },
+    "PER": {
+      "color": "#0600ef",
+      "linestyle": "dashed"
+    },
+    "NOR": {
+      "color": "#ff8000",
+      "linestyle": "dashed"
+    },
+    "RUS": {
+      "color": "#00f5d0",
+      "linestyle": "dashed"
+    },
+    "BOT": {
+      "color": "#900000",
+      "linestyle": "dashed"
+    },
+    "LEC": {
+      "color": "#da291c",
+      "linestyle": "solid"
+    },
+    "TSU": {
+      "color": "#2b4562",
+      "linestyle": "dashed"
+    },
+    "VET": {
+      "color": "#00665e",
+      "linestyle": "dashed"
+    },
+    "MAG": {
+      "color": "#b6babd",
+      "linestyle": "solid"
+    },
+    "STR": {
+      "color": "#00665e",
+      "linestyle": "solid"
+    },
+    "ALB": {
+      "color": "#00a0dd",
+      "linestyle": "solid"
+    },
+    "GAS": {
+      "color": "#2b4562",
+      "linestyle": "solid"
+    },
+    "HAM": {
+      "color": "#00f5d0",
+      "linestyle": "solid"
+    },
+    "OCO": {
+      "color": "#fe86bc",
+      "linestyle": "dashed"
+    },
+    "ZHO": {
+      "color": "#900000",
+      "linestyle": "solid"
+    },
+    "LAT": {
+      "color": "#00a0dd",
+      "linestyle": "dashed"
+    },
+    "MSC": {
+      "color": "#b6babd",
+      "linestyle": "dashed"
+    },
+    "RIC": {
+      "color": "#ff8000",
+      "linestyle": "solid"
+    },
+    "ALO": {
+      "color": "#fe86bc",
+      "linestyle": "solid"
+    },
+    "SAI": {
+      "color": "#da291c",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

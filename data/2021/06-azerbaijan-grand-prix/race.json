@@ -1,0 +1,221 @@
+{
+  "year": 2021,
+  "round": 6,
+  "event": "Azerbaijan Grand Prix",
+  "total_laps": 51,
+  "order": [
+    "PER",
+    "VET",
+    "GAS",
+    "LEC",
+    "NOR",
+    "ALO",
+    "TSU",
+    "SAI",
+    "RIC",
+    "RAI",
+    "GIO",
+    "BOT",
+    "MSC",
+    "MAZ",
+    "HAM",
+    "LAT",
+    "RUS",
+    "VER",
+    "STR",
+    "OCO"
+  ],
+  "corners": [
+    {
+      "Number": 1,
+      "Letter": "",
+      "Distance": 305.74933260375497
+    },
+    {
+      "Number": 2,
+      "Letter": "",
+      "Distance": 641.8541310281304
+    },
+    {
+      "Number": 3,
+      "Letter": "",
+      "Distance": 1509.3006787094
+    },
+    {
+      "Number": 4,
+      "Letter": "",
+      "Distance": 1735.5155595814233
+    },
+    {
+      "Number": 5,
+      "Letter": "",
+      "Distance": 2072.5883333333327
+    },
+    {
+      "Number": 6,
+      "Letter": "",
+      "Distance": 2132.6028838751354
+    },
+    {
+      "Number": 7,
+      "Letter": "",
+      "Distance": 2520.06189493791
+    },
+    {
+      "Number": 8,
+      "Letter": "",
+      "Distance": 2708.8153534487765
+    },
+    {
+      "Number": 9,
+      "Letter": "",
+      "Distance": 2735.767207702235
+    },
+    {
+      "Number": 10,
+      "Letter": "",
+      "Distance": 2768.5526649019375
+    },
+    {
+      "Number": 11,
+      "Letter": "",
+      "Distance": 2809.908570469817
+    },
+    {
+      "Number": 12,
+      "Letter": "",
+      "Distance": 2867.577460156276
+    },
+    {
+      "Number": 13,
+      "Letter": "",
+      "Distance": 3268.7443987598454
+    },
+    {
+      "Number": 14,
+      "Letter": "",
+      "Distance": 3489.507755003482
+    },
+    {
+      "Number": 15,
+      "Letter": "",
+      "Distance": 3716.6446269465064
+    },
+    {
+      "Number": 16,
+      "Letter": "",
+      "Distance": 4073.0149629374478
+    },
+    {
+      "Number": 17,
+      "Letter": "",
+      "Distance": 4274.086203101865
+    },
+    {
+      "Number": 18,
+      "Letter": "",
+      "Distance": 4505.006427911793
+    },
+    {
+      "Number": 19,
+      "Letter": "",
+      "Distance": 4664.228993539405
+    },
+    {
+      "Number": 20,
+      "Letter": "",
+      "Distance": 4974.591706713708
+    }
+  ],
+  "driver_styles": {
+    "PER": {
+      "color": "#0600ef",
+      "linestyle": "solid"
+    },
+    "VET": {
+      "color": "#00665e",
+      "linestyle": "dashed"
+    },
+    "GAS": {
+      "color": "#2b4562",
+      "linestyle": "solid"
+    },
+    "LEC": {
+      "color": "#dc0004",
+      "linestyle": "solid"
+    },
+    "NOR": {
+      "color": "#ff8000",
+      "linestyle": "dashed"
+    },
+    "ALO": {
+      "color": "#0755ab",
+      "linestyle": "solid"
+    },
+    "TSU": {
+      "color": "#2b4562",
+      "linestyle": "dashed"
+    },
+    "SAI": {
+      "color": "#dc0004",
+      "linestyle": "dashed"
+    },
+    "RIC": {
+      "color": "#ff8000",
+      "linestyle": "solid"
+    },
+    "RAI": {
+      "color": "#900000",
+      "linestyle": "solid"
+    },
+    "GIO": {
+      "color": "#900000",
+      "linestyle": "dashed"
+    },
+    "BOT": {
+      "color": "#00f5d0",
+      "linestyle": "dashed"
+    },
+    "MSC": {
+      "color": "#b6babd",
+      "linestyle": "solid"
+    },
+    "MAZ": {
+      "color": "#b6babd",
+      "linestyle": "dashed"
+    },
+    "HAM": {
+      "color": "#00f5d0",
+      "linestyle": "solid"
+    },
+    "LAT": {
+      "color": "#00a0dd",
+      "linestyle": "solid"
+    },
+    "RUS": {
+      "color": "#00a0dd",
+      "linestyle": "dashed"
+    },
+    "VER": {
+      "color": "#0600ef",
+      "linestyle": "dashed"
+    },
+    "STR": {
+      "color": "#00665e",
+      "linestyle": "solid"
+    },
+    "OCO": {
+      "color": "#0755ab",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

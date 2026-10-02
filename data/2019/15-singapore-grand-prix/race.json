@@ -1,0 +1,236 @@
+{
+  "year": 2019,
+  "round": 15,
+  "event": "Singapore Grand Prix",
+  "total_laps": 61,
+  "order": [
+    "VET",
+    "LEC",
+    "VER",
+    "HAM",
+    "BOT",
+    "ALB",
+    "NOR",
+    "GAS",
+    "HUL",
+    "GIO",
+    "GRO",
+    "SAI",
+    "STR",
+    "RIC",
+    "KVY",
+    "KUB",
+    "MAG",
+    "RAI",
+    "PER",
+    "RUS"
+  ],
+  "corners": [
+    {
+      "Number": 1,
+      "Letter": "",
+      "Distance": 416.86363426586416
+    },
+    {
+      "Number": 2,
+      "Letter": "",
+      "Distance": 490.37094008169726
+    },
+    {
+      "Number": 3,
+      "Letter": "",
+      "Distance": 563.3598304577462
+    },
+    {
+      "Number": 4,
+      "Letter": "",
+      "Distance": 712.2524578047688
+    },
+    {
+      "Number": 5,
+      "Letter": "",
+      "Distance": 994.9492430680486
+    },
+    {
+      "Number": 6,
+      "Letter": "",
+      "Distance": 1464.638817996431
+    },
+    {
+      "Number": 7,
+      "Letter": "",
+      "Distance": 1804.0744914290472
+    },
+    {
+      "Number": 8,
+      "Letter": "",
+      "Distance": 1992.6058902843909
+    },
+    {
+      "Number": 9,
+      "Letter": "",
+      "Distance": 2205.341849579876
+    },
+    {
+      "Number": 10,
+      "Letter": "",
+      "Distance": 2630.2000437980732
+    },
+    {
+      "Number": 11,
+      "Letter": "",
+      "Distance": 2770.8539850536818
+    },
+    {
+      "Number": 12,
+      "Letter": "",
+      "Distance": 2902.0916331511426
+    },
+    {
+      "Number": 13,
+      "Letter": "",
+      "Distance": 3032.037528673746
+    },
+    {
+      "Number": 14,
+      "Letter": "",
+      "Distance": 3555.920062442369
+    },
+    {
+      "Number": 15,
+      "Letter": "",
+      "Distance": 3854.8488210161076
+    },
+    {
+      "Number": 16,
+      "Letter": "",
+      "Distance": 3919.5811215530916
+    },
+    {
+      "Number": 17,
+      "Letter": "",
+      "Distance": 4035.9652609132822
+    },
+    {
+      "Number": 18,
+      "Letter": "",
+      "Distance": 4217.83009734172
+    },
+    {
+      "Number": 19,
+      "Letter": "",
+      "Distance": 4340.332383858491
+    },
+    {
+      "Number": 20,
+      "Letter": "",
+      "Distance": 4444.809975927542
+    },
+    {
+      "Number": 21,
+      "Letter": "",
+      "Distance": 4538.241077704682
+    },
+    {
+      "Number": 22,
+      "Letter": "",
+      "Distance": 4814.7324575635585
+    },
+    {
+      "Number": 23,
+      "Letter": "",
+      "Distance": 4959.623757514045
+    }
+  ],
+  "driver_styles": {
+    "VET": {
+      "color": "#da291c",
+      "linestyle": "dashed"
+    },
+    "LEC": {
+      "color": "#da291c",
+      "linestyle": "solid"
+    },
+    "VER": {
+      "color": "#1e41ff",
+      "linestyle": "dashed"
+    },
+    "HAM": {
+      "color": "#00d2be",
+      "linestyle": "solid"
+    },
+    "BOT": {
+      "color": "#00d2be",
+      "linestyle": "dashed"
+    },
+    "ALB": {
+      "color": "#1e41ff",
+      "linestyle": "solid"
+    },
+    "NOR": {
+      "color": "#ff8000",
+      "linestyle": "solid"
+    },
+    "GAS": {
+      "color": "#2b4562",
+      "linestyle": "solid"
+    },
+    "HUL": {
+      "color": "#fff500",
+      "linestyle": "solid"
+    },
+    "GIO": {
+      "color": "#900000",
+      "linestyle": "dashed"
+    },
+    "GRO": {
+      "color": "#bd9e57",
+      "linestyle": "dashed"
+    },
+    "SAI": {
+      "color": "#ff8000",
+      "linestyle": "dashed"
+    },
+    "STR": {
+      "color": "#ff87bc",
+      "linestyle": "dashed"
+    },
+    "RIC": {
+      "color": "#fff500",
+      "linestyle": "dashed"
+    },
+    "KVY": {
+      "color": "#2b4562",
+      "linestyle": "dashed"
+    },
+    "KUB": {
+      "color": "#00a0dd",
+      "linestyle": "dashed"
+    },
+    "MAG": {
+      "color": "#bd9e57",
+      "linestyle": "solid"
+    },
+    "RAI": {
+      "color": "#900000",
+      "linestyle": "solid"
+    },
+    "PER": {
+      "color": "#ff87bc",
+      "linestyle": "solid"
+    },
+    "RUS": {
+      "color": "#00a0dd",
+      "linestyle": "solid"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

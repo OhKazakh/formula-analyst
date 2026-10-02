@@ -1,0 +1,230 @@
+{
+  "year": 2018,
+  "round": 21,
+  "event": "Abu Dhabi Grand Prix",
+  "total_laps": 55,
+  "order": [
+    "HAM",
+    "VET",
+    "VER",
+    "RIC",
+    "BOT",
+    "SAI",
+    "LEC",
+    "PER",
+    "GRO",
+    "MAG",
+    "ALO",
+    "HAR",
+    "STR",
+    "VAN",
+    "SIR",
+    "GAS",
+    "OCO",
+    "ERI",
+    "RAI",
+    "HUL"
+  ],
+  "corners": [
+    {
+      "Number": 1,
+      "Letter": "",
+      "Distance": 425.45666399522065
+    },
+    {
+      "Number": 2,
+      "Letter": "",
+      "Distance": 658.0347533066144
+    },
+    {
+      "Number": 3,
+      "Letter": "",
+      "Distance": 878.1311783648265
+    },
+    {
+      "Number": 4,
+      "Letter": "",
+      "Distance": 1060.167278725542
+    },
+    {
+      "Number": 5,
+      "Letter": "",
+      "Distance": 1312.5432416805047
+    },
+    {
+      "Number": 6,
+      "Letter": "",
+      "Distance": 1384.190963071792
+    },
+    {
+      "Number": 7,
+      "Letter": "",
+      "Distance": 1513.0257813140006
+    },
+    {
+      "Number": 8,
+      "Letter": "",
+      "Distance": 2734.8602083938463
+    },
+    {
+      "Number": 9,
+      "Letter": "",
+      "Distance": 2815.395151989233
+    },
+    {
+      "Number": 10,
+      "Letter": "",
+      "Distance": 3126.462784901701
+    },
+    {
+      "Number": 11,
+      "Letter": "",
+      "Distance": 3764.160571956952
+    },
+    {
+      "Number": 12,
+      "Letter": "",
+      "Distance": 3845.6721428716837
+    },
+    {
+      "Number": 13,
+      "Letter": "",
+      "Distance": 3906.095726802101
+    },
+    {
+      "Number": 14,
+      "Letter": "",
+      "Distance": 4021.222836448761
+    },
+    {
+      "Number": 15,
+      "Letter": "",
+      "Distance": 4320.9573247601475
+    },
+    {
+      "Number": 16,
+      "Letter": "",
+      "Distance": 4497.180965404023
+    },
+    {
+      "Number": 17,
+      "Letter": "",
+      "Distance": 4582.342187870288
+    },
+    {
+      "Number": 18,
+      "Letter": "",
+      "Distance": 4705.09409748036
+    },
+    {
+      "Number": 19,
+      "Letter": "",
+      "Distance": 4824.05291785582
+    },
+    {
+      "Number": 20,
+      "Letter": "",
+      "Distance": 5153.332672354287
+    },
+    {
+      "Number": 21,
+      "Letter": "",
+      "Distance": 5344.167614532876
+    }
+  ],
+  "driver_styles": {
+    "HAM": {
+      "color": "#00f5d0",
+      "linestyle": "solid"
+    },
+    "VET": {
+      "color": "#dc0000",
+      "linestyle": "solid"
+    },
+    "VER": {
+      "color": "#1e41ff",
+      "linestyle": "dashed"
+    },
+    "RIC": {
+      "color": "#1e41ff",
+      "linestyle": "solid"
+    },
+    "BOT": {
+      "color": "#00f5d0",
+      "linestyle": "dashed"
+    },
+    "SAI": {
+      "color": "#fff500",
+      "linestyle": "dashed"
+    },
+    "LEC": {
+      "color": "#900000",
+      "linestyle": "solid"
+    },
+    "PER": {
+      "color": "#ff87bc",
+      "linestyle": "solid"
+    },
+    "GRO": {
+      "color": "#b6babd",
+      "linestyle": "dashed"
+    },
+    "MAG": {
+      "color": "#b6babd",
+      "linestyle": "solid"
+    },
+    "ALO": {
+      "color": "#ff8000",
+      "linestyle": "solid"
+    },
+    "HAR": {
+      "color": "#2b4562",
+      "linestyle": "dashed"
+    },
+    "STR": {
+      "color": "#00a0dd",
+      "linestyle": "solid"
+    },
+    "VAN": {
+      "color": "#ff8000",
+      "linestyle": "dashed"
+    },
+    "SIR": {
+      "color": "#00a0dd",
+      "linestyle": "dashed"
+    },
+    "GAS": {
+      "color": "#2b4562",
+      "linestyle": "solid"
+    },
+    "OCO": {
+      "color": "#ff87bc",
+      "linestyle": "dashed"
+    },
+    "ERI": {
+      "color": "#900000",
+      "linestyle": "dashed"
+    },
+    "RAI": {
+      "color": "#dc0000",
+      "linestyle": "dashed"
+    },
+    "HUL": {
+      "color": "#fff500",
+      "linestyle": "solid"
+    }
+  },
+  "compound_colors": {
+    "HYPERSOFT": "#feb1c1",
+    "ULTRASOFT": "#b24ba7",
+    "SUPERSOFT": "#fc2b2a",
+    "SOFT": "#ffd318",
+    "MEDIUM": "#f0f0f0",
+    "HARD": "#00a2f5",
+    "SUPERHARD": "#fd7d3c",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

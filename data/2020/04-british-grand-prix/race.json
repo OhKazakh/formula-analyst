@@ -1,0 +1,211 @@
+{
+  "year": 2020,
+  "round": 4,
+  "event": "British Grand Prix",
+  "total_laps": 52,
+  "order": [
+    "HAM",
+    "VER",
+    "LEC",
+    "RIC",
+    "NOR",
+    "OCO",
+    "GAS",
+    "ALB",
+    "STR",
+    "VET",
+    "BOT",
+    "RUS",
+    "SAI",
+    "GIO",
+    "LAT",
+    "GRO",
+    "RAI",
+    "KVY",
+    "MAG",
+    "HUL"
+  ],
+  "corners": [
+    {
+      "Number": 1,
+      "Letter": "",
+      "Distance": 453.3795596959234
+    },
+    {
+      "Number": 2,
+      "Letter": "",
+      "Distance": 598.0659395824432
+    },
+    {
+      "Number": 3,
+      "Letter": "",
+      "Distance": 868.1997909227134
+    },
+    {
+      "Number": 4,
+      "Letter": "",
+      "Distance": 1037.2544200671489
+    },
+    {
+      "Number": 5,
+      "Letter": "",
+      "Distance": 1223.397473255818
+    },
+    {
+      "Number": 6,
+      "Letter": "",
+      "Distance": 1959.3247470855924
+    },
+    {
+      "Number": 7,
+      "Letter": "",
+      "Distance": 2179.2615529485724
+    },
+    {
+      "Number": 8,
+      "Letter": "",
+      "Distance": 2526.9432935158356
+    },
+    {
+      "Number": 9,
+      "Letter": "",
+      "Distance": 3050.598698116355
+    },
+    {
+      "Number": 10,
+      "Letter": "",
+      "Distance": 3596.260836771657
+    },
+    {
+      "Number": 11,
+      "Letter": "",
+      "Distance": 3688.721161477319
+    },
+    {
+      "Number": 12,
+      "Letter": "",
+      "Distance": 3845.949910563995
+    },
+    {
+      "Number": 13,
+      "Letter": "",
+      "Distance": 3979.4554176026204
+    },
+    {
+      "Number": 14,
+      "Letter": "",
+      "Distance": 4122.695426178648
+    },
+    {
+      "Number": 15,
+      "Letter": "",
+      "Distance": 4992.282110803048
+    },
+    {
+      "Number": 16,
+      "Letter": "",
+      "Distance": 5441.69914649729
+    },
+    {
+      "Number": 17,
+      "Letter": "",
+      "Distance": 5535.303123709915
+    },
+    {
+      "Number": 18,
+      "Letter": "",
+      "Distance": 5679.22163055145
+    }
+  ],
+  "driver_styles": {
+    "HAM": {
+      "color": "#00d2be",
+      "linestyle": "solid"
+    },
+    "VER": {
+      "color": "#1e41ff",
+      "linestyle": "dashed"
+    },
+    "LEC": {
+      "color": "#dc0000",
+      "linestyle": "solid"
+    },
+    "RIC": {
+      "color": "#fff500",
+      "linestyle": "solid"
+    },
+    "NOR": {
+      "color": "#ff8000",
+      "linestyle": "solid"
+    },
+    "OCO": {
+      "color": "#fff500",
+      "linestyle": "dashed"
+    },
+    "GAS": {
+      "color": "#2b4562",
+      "linestyle": "solid"
+    },
+    "ALB": {
+      "color": "#1e41ff",
+      "linestyle": "solid"
+    },
+    "STR": {
+      "color": "#ff87bc",
+      "linestyle": "solid"
+    },
+    "VET": {
+      "color": "#dc0000",
+      "linestyle": "dashed"
+    },
+    "BOT": {
+      "color": "#00d2be",
+      "linestyle": "dashed"
+    },
+    "RUS": {
+      "color": "#00a0dd",
+      "linestyle": "dashed"
+    },
+    "SAI": {
+      "color": "#ff8000",
+      "linestyle": "dashed"
+    },
+    "GIO": {
+      "color": "#900000",
+      "linestyle": "dashed"
+    },
+    "LAT": {
+      "color": "#00a0dd",
+      "linestyle": "solid"
+    },
+    "GRO": {
+      "color": "#b6babd",
+      "linestyle": "dashed"
+    },
+    "RAI": {
+      "color": "#900000",
+      "linestyle": "solid"
+    },
+    "KVY": {
+      "color": "#2b4562",
+      "linestyle": "dashed"
+    },
+    "MAG": {
+      "color": "#b6babd",
+      "linestyle": "solid"
+    },
+    "HUL": {
+      "color": "#ff87bc",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

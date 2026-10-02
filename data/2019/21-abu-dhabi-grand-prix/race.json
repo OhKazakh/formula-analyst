@@ -1,0 +1,226 @@
+{
+  "year": 2019,
+  "round": 21,
+  "event": "Abu Dhabi Grand Prix",
+  "total_laps": 55,
+  "order": [
+    "HAM",
+    "VER",
+    "LEC",
+    "BOT",
+    "VET",
+    "ALB",
+    "PER",
+    "NOR",
+    "KVY",
+    "SAI",
+    "RIC",
+    "HUL",
+    "RAI",
+    "MAG",
+    "GRO",
+    "GIO",
+    "RUS",
+    "GAS",
+    "KUB",
+    "STR"
+  ],
+  "corners": [
+    {
+      "Number": 1,
+      "Letter": "",
+      "Distance": 415.38498008000045
+    },
+    {
+      "Number": 2,
+      "Letter": "",
+      "Distance": 658.7191313319557
+    },
+    {
+      "Number": 3,
+      "Letter": "",
+      "Distance": 873.3902678283375
+    },
+    {
+      "Number": 4,
+      "Letter": "",
+      "Distance": 1057.5937101426077
+    },
+    {
+      "Number": 5,
+      "Letter": "",
+      "Distance": 1309.0566275400897
+    },
+    {
+      "Number": 6,
+      "Letter": "",
+      "Distance": 1385.8858867217361
+    },
+    {
+      "Number": 7,
+      "Letter": "",
+      "Distance": 1508.7509942792701
+    },
+    {
+      "Number": 8,
+      "Letter": "",
+      "Distance": 2735.1847142314477
+    },
+    {
+      "Number": 9,
+      "Letter": "",
+      "Distance": 2829.7790384168575
+    },
+    {
+      "Number": 10,
+      "Letter": "",
+      "Distance": 3104.6380191555495
+    },
+    {
+      "Number": 11,
+      "Letter": "",
+      "Distance": 3758.9455673595294
+    },
+    {
+      "Number": 12,
+      "Letter": "",
+      "Distance": 3831.7119505150163
+    },
+    {
+      "Number": 13,
+      "Letter": "",
+      "Distance": 3908.9767918832817
+    },
+    {
+      "Number": 14,
+      "Letter": "",
+      "Distance": 4005.6090620165046
+    },
+    {
+      "Number": 15,
+      "Letter": "",
+      "Distance": 4293.474784086745
+    },
+    {
+      "Number": 16,
+      "Letter": "",
+      "Distance": 4472.197493226671
+    },
+    {
+      "Number": 17,
+      "Letter": "",
+      "Distance": 4577.266506560277
+    },
+    {
+      "Number": 18,
+      "Letter": "",
+      "Distance": 4711.092683940591
+    },
+    {
+      "Number": 19,
+      "Letter": "",
+      "Distance": 4815.997073658477
+    },
+    {
+      "Number": 20,
+      "Letter": "",
+      "Distance": 5143.991414637477
+    },
+    {
+      "Number": 21,
+      "Letter": "",
+      "Distance": 5337.664749240198
+    }
+  ],
+  "driver_styles": {
+    "HAM": {
+      "color": "#00d2be",
+      "linestyle": "solid"
+    },
+    "VER": {
+      "color": "#1e41ff",
+      "linestyle": "dashed"
+    },
+    "LEC": {
+      "color": "#da291c",
+      "linestyle": "solid"
+    },
+    "BOT": {
+      "color": "#00d2be",
+      "linestyle": "dashed"
+    },
+    "VET": {
+      "color": "#da291c",
+      "linestyle": "dashed"
+    },
+    "ALB": {
+      "color": "#1e41ff",
+      "linestyle": "solid"
+    },
+    "PER": {
+      "color": "#ff87bc",
+      "linestyle": "solid"
+    },
+    "NOR": {
+      "color": "#ff8000",
+      "linestyle": "solid"
+    },
+    "KVY": {
+      "color": "#2b4562",
+      "linestyle": "dashed"
+    },
+    "SAI": {
+      "color": "#ff8000",
+      "linestyle": "dashed"
+    },
+    "RIC": {
+      "color": "#fff500",
+      "linestyle": "dashed"
+    },
+    "HUL": {
+      "color": "#fff500",
+      "linestyle": "solid"
+    },
+    "RAI": {
+      "color": "#900000",
+      "linestyle": "solid"
+    },
+    "MAG": {
+      "color": "#bd9e57",
+      "linestyle": "solid"
+    },
+    "GRO": {
+      "color": "#bd9e57",
+      "linestyle": "dashed"
+    },
+    "GIO": {
+      "color": "#900000",
+      "linestyle": "dashed"
+    },
+    "RUS": {
+      "color": "#00a0dd",
+      "linestyle": "solid"
+    },
+    "GAS": {
+      "color": "#2b4562",
+      "linestyle": "solid"
+    },
+    "KUB": {
+      "color": "#00a0dd",
+      "linestyle": "dashed"
+    },
+    "STR": {
+      "color": "#ff87bc",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

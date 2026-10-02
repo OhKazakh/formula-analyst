@@ -1,0 +1,216 @@
+{
+  "year": 2025,
+  "round": 7,
+  "event": "Emilia Romagna Grand Prix",
+  "total_laps": 63,
+  "order": [
+    "VER",
+    "NOR",
+    "PIA",
+    "HAM",
+    "ALB",
+    "LEC",
+    "RUS",
+    "SAI",
+    "HAD",
+    "TSU",
+    "ALO",
+    "HUL",
+    "GAS",
+    "LAW",
+    "STR",
+    "COL",
+    "BEA",
+    "BOR",
+    "ANT",
+    "OCO"
+  ],
+  "corners": [
+    {
+      "Number": 1,
+      "Letter": "",
+      "Distance": 258.6155227381268
+    },
+    {
+      "Number": 2,
+      "Letter": "",
+      "Distance": 874.7563222493422
+    },
+    {
+      "Number": 3,
+      "Letter": "",
+      "Distance": 943.4033271179383
+    },
+    {
+      "Number": 4,
+      "Letter": "",
+      "Distance": 1079.4889520480656
+    },
+    {
+      "Number": 5,
+      "Letter": "",
+      "Distance": 1500.6845023317123
+    },
+    {
+      "Number": 6,
+      "Letter": "",
+      "Distance": 1612.6496885651613
+    },
+    {
+      "Number": 7,
+      "Letter": "",
+      "Distance": 1895.3988622819213
+    },
+    {
+      "Number": 8,
+      "Letter": "",
+      "Distance": 2284.407354668393
+    },
+    {
+      "Number": 9,
+      "Letter": "",
+      "Distance": 2538.1076138076996
+    },
+    {
+      "Number": 10,
+      "Letter": "",
+      "Distance": 2676.417717322029
+    },
+    {
+      "Number": 11,
+      "Letter": "",
+      "Distance": 2930.712254294549
+    },
+    {
+      "Number": 12,
+      "Letter": "",
+      "Distance": 3023.9534022745306
+    },
+    {
+      "Number": 13,
+      "Letter": "",
+      "Distance": 3087.6095977408504
+    },
+    {
+      "Number": 14,
+      "Letter": "",
+      "Distance": 3530.5951555263327
+    },
+    {
+      "Number": 15,
+      "Letter": "",
+      "Distance": 3578.8512403758436
+    },
+    {
+      "Number": 16,
+      "Letter": "",
+      "Distance": 4122.38153472012
+    },
+    {
+      "Number": 17,
+      "Letter": "",
+      "Distance": 4316.325086694913
+    },
+    {
+      "Number": 18,
+      "Letter": "",
+      "Distance": 4456.096574205472
+    },
+    {
+      "Number": 19,
+      "Letter": "",
+      "Distance": 4763.199941149015
+    }
+  ],
+  "driver_styles": {
+    "VER": {
+      "color": "#0600ef",
+      "linestyle": "solid"
+    },
+    "NOR": {
+      "color": "#ff8000",
+      "linestyle": "solid"
+    },
+    "PIA": {
+      "color": "#ff8000",
+      "linestyle": "dashed"
+    },
+    "HAM": {
+      "color": "#e80020",
+      "linestyle": "dashed"
+    },
+    "ALB": {
+      "color": "#00a0dd",
+      "linestyle": "solid"
+    },
+    "LEC": {
+      "color": "#e80020",
+      "linestyle": "solid"
+    },
+    "RUS": {
+      "color": "#27f4d2",
+      "linestyle": "dashed"
+    },
+    "SAI": {
+      "color": "#00a0dd",
+      "linestyle": "dashed"
+    },
+    "HAD": {
+      "color": "#fcd700",
+      "linestyle": "dashed"
+    },
+    "TSU": {
+      "color": "#0600ef",
+      "linestyle": "dashed"
+    },
+    "ALO": {
+      "color": "#00665f",
+      "linestyle": "solid"
+    },
+    "HUL": {
+      "color": "#00e700",
+      "linestyle": "solid"
+    },
+    "GAS": {
+      "color": "#ff87bc",
+      "linestyle": "solid"
+    },
+    "LAW": {
+      "color": "#fcd700",
+      "linestyle": "solid"
+    },
+    "STR": {
+      "color": "#00665f",
+      "linestyle": "dashed"
+    },
+    "COL": {
+      "color": "#ff87bc",
+      "linestyle": "dashed"
+    },
+    "BEA": {
+      "color": "#b6babd",
+      "linestyle": "dashed"
+    },
+    "BOR": {
+      "color": "#00e700",
+      "linestyle": "dashed"
+    },
+    "ANT": {
+      "color": "#27f4d2",
+      "linestyle": "solid"
+    },
+    "OCO": {
+      "color": "#b6babd",
+      "linestyle": "solid"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

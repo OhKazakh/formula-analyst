@@ -1,0 +1,196 @@
+{
+  "year": 2020,
+  "round": 11,
+  "event": "Eifel Grand Prix",
+  "total_laps": 60,
+  "order": [
+    "HAM",
+    "VER",
+    "RIC",
+    "PER",
+    "SAI",
+    "GAS",
+    "LEC",
+    "HUL",
+    "GRO",
+    "GIO",
+    "VET",
+    "RAI",
+    "MAG",
+    "LAT",
+    "KVY",
+    "NOR",
+    "ALB",
+    "OCO",
+    "BOT",
+    "RUS"
+  ],
+  "corners": [
+    {
+      "Number": 1,
+      "Letter": "",
+      "Distance": 628.4532710884513
+    },
+    {
+      "Number": 2,
+      "Letter": "",
+      "Distance": 831.6739215209775
+    },
+    {
+      "Number": 3,
+      "Letter": "",
+      "Distance": 1086.3788893631609
+    },
+    {
+      "Number": 4,
+      "Letter": "",
+      "Distance": 1180.5026889223936
+    },
+    {
+      "Number": 5,
+      "Letter": "",
+      "Distance": 1685.6413688326606
+    },
+    {
+      "Number": 6,
+      "Letter": "",
+      "Distance": 1839.591519658498
+    },
+    {
+      "Number": 7,
+      "Letter": "",
+      "Distance": 2451.1557057803675
+    },
+    {
+      "Number": 8,
+      "Letter": "",
+      "Distance": 2852.2135766982346
+    },
+    {
+      "Number": 9,
+      "Letter": "",
+      "Distance": 2967.2598462940878
+    },
+    {
+      "Number": 10,
+      "Letter": "",
+      "Distance": 3394.295300786807
+    },
+    {
+      "Number": 11,
+      "Letter": "",
+      "Distance": 3599.0081627884515
+    },
+    {
+      "Number": 12,
+      "Letter": "",
+      "Distance": 4028.539149558185
+    },
+    {
+      "Number": 13,
+      "Letter": "",
+      "Distance": 4493.19500091696
+    },
+    {
+      "Number": 14,
+      "Letter": "",
+      "Distance": 4529.06368521026
+    },
+    {
+      "Number": 15,
+      "Letter": "",
+      "Distance": 4825.992295015977
+    }
+  ],
+  "driver_styles": {
+    "HAM": {
+      "color": "#00d2be",
+      "linestyle": "solid"
+    },
+    "VER": {
+      "color": "#1e41ff",
+      "linestyle": "dashed"
+    },
+    "RIC": {
+      "color": "#fff500",
+      "linestyle": "solid"
+    },
+    "PER": {
+      "color": "#ff87bc",
+      "linestyle": "solid"
+    },
+    "SAI": {
+      "color": "#ff8000",
+      "linestyle": "dashed"
+    },
+    "GAS": {
+      "color": "#2b4562",
+      "linestyle": "solid"
+    },
+    "LEC": {
+      "color": "#dc0000",
+      "linestyle": "solid"
+    },
+    "HUL": {
+      "color": "#ff87bc",
+      "linestyle": "dashed"
+    },
+    "GRO": {
+      "color": "#b6babd",
+      "linestyle": "dashed"
+    },
+    "GIO": {
+      "color": "#900000",
+      "linestyle": "dashed"
+    },
+    "VET": {
+      "color": "#dc0000",
+      "linestyle": "dashed"
+    },
+    "RAI": {
+      "color": "#900000",
+      "linestyle": "solid"
+    },
+    "MAG": {
+      "color": "#b6babd",
+      "linestyle": "solid"
+    },
+    "LAT": {
+      "color": "#00a0dd",
+      "linestyle": "solid"
+    },
+    "KVY": {
+      "color": "#2b4562",
+      "linestyle": "dashed"
+    },
+    "NOR": {
+      "color": "#ff8000",
+      "linestyle": "solid"
+    },
+    "ALB": {
+      "color": "#1e41ff",
+      "linestyle": "solid"
+    },
+    "OCO": {
+      "color": "#fff500",
+      "linestyle": "dashed"
+    },
+    "BOT": {
+      "color": "#00d2be",
+      "linestyle": "dashed"
+    },
+    "RUS": {
+      "color": "#00a0dd",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

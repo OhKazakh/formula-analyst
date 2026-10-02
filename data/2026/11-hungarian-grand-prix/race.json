@@ -1,0 +1,211 @@
+{
+  "year": 2026,
+  "round": 11,
+  "event": "Hungarian Grand Prix",
+  "total_laps": 70,
+  "order": [
+    "NOR",
+    "VER",
+    "ANT",
+    "LEC",
+    "HAM",
+    "HAD",
+    "RUS",
+    "LAW",
+    "HUL",
+    "LIN",
+    "BOR",
+    "GAS",
+    "STR",
+    "ALO",
+    "COL",
+    "OCO",
+    "ALB",
+    "SAI",
+    "BEA",
+    "PIA",
+    "PER",
+    "BOT"
+  ],
+  "corners": [
+    {
+      "Number": 1,
+      "Letter": "",
+      "Distance": 661.2148516200239
+    },
+    {
+      "Number": 1,
+      "Letter": "A",
+      "Distance": 661.2148516200239
+    },
+    {
+      "Number": 2,
+      "Letter": "",
+      "Distance": 882.7785088452185
+    },
+    {
+      "Number": 3,
+      "Letter": "",
+      "Distance": 1069.83289790772
+    },
+    {
+      "Number": 4,
+      "Letter": "",
+      "Distance": 1321.7439902168553
+    },
+    {
+      "Number": 5,
+      "Letter": "",
+      "Distance": 1636.711409843681
+    },
+    {
+      "Number": 6,
+      "Letter": "",
+      "Distance": 1814.6069603594933
+    },
+    {
+      "Number": 7,
+      "Letter": "",
+      "Distance": 2121.080375433359
+    },
+    {
+      "Number": 8,
+      "Letter": "",
+      "Distance": 2121.080375433359
+    },
+    {
+      "Number": 9,
+      "Letter": "",
+      "Distance": 2419.1994277691656
+    },
+    {
+      "Number": 10,
+      "Letter": "",
+      "Distance": 2654.5723771725507
+    },
+    {
+      "Number": 11,
+      "Letter": "",
+      "Distance": 2835.1327508696736
+    },
+    {
+      "Number": 12,
+      "Letter": "",
+      "Distance": 3769.0216969897774
+    },
+    {
+      "Number": 12,
+      "Letter": "A",
+      "Distance": 3463.214612045335
+    },
+    {
+      "Number": 13,
+      "Letter": "",
+      "Distance": 3463.214612045335
+    },
+    {
+      "Number": 14,
+      "Letter": "",
+      "Distance": 3973.404818878466
+    }
+  ],
+  "driver_styles": {
+    "NOR": {
+      "color": "#ff8000",
+      "linestyle": "solid"
+    },
+    "VER": {
+      "color": "#0600ef",
+      "linestyle": "solid"
+    },
+    "ANT": {
+      "color": "#27f4d2",
+      "linestyle": "solid"
+    },
+    "LEC": {
+      "color": "#e80020",
+      "linestyle": "solid"
+    },
+    "HAM": {
+      "color": "#e80020",
+      "linestyle": "dashed"
+    },
+    "HAD": {
+      "color": "#0600ef",
+      "linestyle": "dashed"
+    },
+    "RUS": {
+      "color": "#27f4d2",
+      "linestyle": "dashed"
+    },
+    "LAW": {
+      "color": "#fcd700",
+      "linestyle": "solid"
+    },
+    "HUL": {
+      "color": "#ff2d00",
+      "linestyle": "solid"
+    },
+    "LIN": {
+      "color": "#fcd700",
+      "linestyle": "dashed"
+    },
+    "BOR": {
+      "color": "#ff2d00",
+      "linestyle": "dashed"
+    },
+    "GAS": {
+      "color": "#ff87bc",
+      "linestyle": "solid"
+    },
+    "STR": {
+      "color": "#00665f",
+      "linestyle": "dashed"
+    },
+    "ALO": {
+      "color": "#00665f",
+      "linestyle": "solid"
+    },
+    "COL": {
+      "color": "#ff87bc",
+      "linestyle": "dashed"
+    },
+    "OCO": {
+      "color": "#b6babd",
+      "linestyle": "solid"
+    },
+    "ALB": {
+      "color": "#00a0dd",
+      "linestyle": "solid"
+    },
+    "SAI": {
+      "color": "#00a0dd",
+      "linestyle": "dashed"
+    },
+    "BEA": {
+      "color": "#b6babd",
+      "linestyle": "dashed"
+    },
+    "PIA": {
+      "color": "#ff8000",
+      "linestyle": "dashed"
+    },
+    "PER": {
+      "color": "#444444",
+      "linestyle": "solid"
+    },
+    "BOT": {
+      "color": "#444444",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

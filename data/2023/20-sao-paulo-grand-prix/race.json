@@ -1,0 +1,196 @@
+{
+  "year": 2023,
+  "round": 20,
+  "event": "S\u00e3o Paulo Grand Prix",
+  "total_laps": 71,
+  "order": [
+    "VER",
+    "NOR",
+    "ALO",
+    "PER",
+    "STR",
+    "SAI",
+    "GAS",
+    "HAM",
+    "TSU",
+    "OCO",
+    "SAR",
+    "HUL",
+    "RIC",
+    "PIA",
+    "RUS",
+    "BOT",
+    "ZHO",
+    "MAG",
+    "ALB",
+    "LEC"
+  ],
+  "corners": [
+    {
+      "Number": 1,
+      "Letter": "",
+      "Distance": 364.0017654593164
+    },
+    {
+      "Number": 2,
+      "Letter": "",
+      "Distance": 456.37183257236507
+    },
+    {
+      "Number": 3,
+      "Letter": "",
+      "Distance": 650.2608742348133
+    },
+    {
+      "Number": 4,
+      "Letter": "",
+      "Distance": 1404.7583310491307
+    },
+    {
+      "Number": 5,
+      "Letter": "",
+      "Distance": 1570.367079350275
+    },
+    {
+      "Number": 6,
+      "Letter": "",
+      "Distance": 2013.026750716104
+    },
+    {
+      "Number": 7,
+      "Letter": "",
+      "Distance": 2151.038043686928
+    },
+    {
+      "Number": 8,
+      "Letter": "",
+      "Distance": 2302.633866122319
+    },
+    {
+      "Number": 9,
+      "Letter": "",
+      "Distance": 2420.6617912669335
+    },
+    {
+      "Number": 10,
+      "Letter": "",
+      "Distance": 2722.5081545270095
+    },
+    {
+      "Number": 11,
+      "Letter": "",
+      "Distance": 2938.397865791606
+    },
+    {
+      "Number": 12,
+      "Letter": "",
+      "Distance": 3235.7932976202173
+    },
+    {
+      "Number": 13,
+      "Letter": "",
+      "Distance": 3348.9939841035684
+    },
+    {
+      "Number": 14,
+      "Letter": "",
+      "Distance": 3615.4894288067817
+    },
+    {
+      "Number": 15,
+      "Letter": "",
+      "Distance": 4008.2271541312525
+    }
+  ],
+  "driver_styles": {
+    "VER": {
+      "color": "#0600ef",
+      "linestyle": "solid"
+    },
+    "NOR": {
+      "color": "#ff8000",
+      "linestyle": "solid"
+    },
+    "ALO": {
+      "color": "#00665e",
+      "linestyle": "solid"
+    },
+    "PER": {
+      "color": "#0600ef",
+      "linestyle": "dashed"
+    },
+    "STR": {
+      "color": "#00665e",
+      "linestyle": "dashed"
+    },
+    "SAI": {
+      "color": "#da291c",
+      "linestyle": "dashed"
+    },
+    "GAS": {
+      "color": "#fe86bc",
+      "linestyle": "solid"
+    },
+    "HAM": {
+      "color": "#00f5d0",
+      "linestyle": "solid"
+    },
+    "TSU": {
+      "color": "#2b4562",
+      "linestyle": "solid"
+    },
+    "OCO": {
+      "color": "#fe86bc",
+      "linestyle": "dashed"
+    },
+    "SAR": {
+      "color": "#00a0dd",
+      "linestyle": "solid"
+    },
+    "HUL": {
+      "color": "#b6babd",
+      "linestyle": "dashed"
+    },
+    "RIC": {
+      "color": "#2b4562",
+      "linestyle": "dashed"
+    },
+    "PIA": {
+      "color": "#ff8000",
+      "linestyle": "dashed"
+    },
+    "RUS": {
+      "color": "#00f5d0",
+      "linestyle": "dashed"
+    },
+    "BOT": {
+      "color": "#900000",
+      "linestyle": "dashed"
+    },
+    "ZHO": {
+      "color": "#900000",
+      "linestyle": "solid"
+    },
+    "MAG": {
+      "color": "#b6babd",
+      "linestyle": "solid"
+    },
+    "ALB": {
+      "color": "#00a0dd",
+      "linestyle": "dashed"
+    },
+    "LEC": {
+      "color": "#da291c",
+      "linestyle": "solid"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}
