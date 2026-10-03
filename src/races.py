@@ -315,7 +315,7 @@ def read_race(path: Path) -> Race:
 
 def bundle_version(root: Path = DATA_DIR) -> str:
     digest = hashlib.sha256()
-    for path in sorted(root.glob("*/*/*")):
+    for path in sorted(p for p in root.rglob("*") if p.is_file()):
         stat = path.stat()
         digest.update(f"{path.relative_to(root)}:{stat.st_size}:{stat.st_mtime_ns}\n".encode())
     return digest.hexdigest()
