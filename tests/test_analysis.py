@@ -238,3 +238,96 @@ def test_replay_figure_frames_slider_and_finish_order():
     last = figure.frames[-1]
     assert np.isnan(last.data[0].x).all()
     assert last.data[1].text[0].endswith(" 1  AAA<br> 2  BBB")
+
+
+def test_lap_positions_rank_drivers_by_crossing_time():
+    laps = pd.DataFrame(
+        {
+            "Driver": ["AAA", "BBB", "CCC", "AAA", "BBB"],
+            "LapNumber": [1.0, 1.0, 1.0, 2.0, 2.0],
+            "Time": pd.to_timedelta([100, 101, 105, 199, 198], unit="s"),
+        }
+    )
+
+    positions = analysis.lap_positions(laps).set_index(["Driver", "LapNumber"])["Position"]
+
+    assert positions.to_dict() == {
+        ("AAA", 1.0): 1,
+        ("AAA", 2.0): 2,
+        ("BBB", 1.0): 2,
+        ("BBB", 2.0): 1,
+        ("CCC", 1.0): 3,
+    }
+
+
+def test_position_figure_mutes_drivers_not_highlighted():
+    positions = pd.DataFrame(
+        {
+            "Driver": ["AAA", "AAA", "BBB", "BBB"],
+            "LapNumber": [1, 2, 1, 2],
+            "Position": [1, 2, 2, 1],
+        }
+    )
+
+    figure = analysis.position_figure(positions, ["AAA", "BBB"], TEAMMATES, highlight=["AAA"])
+    first, second = figure.axes[0].get_lines()
+
+    assert first.get_color() == "#ff8000"
+    assert second.get_color() == analysis.MUTED_COLOR
+
+
+def racing_laps(times: dict[str, list[float]], teams: dict[str, str]) -> pd.DataFrame:
+    rows = [
+        lap(Driver=driver, LapNumber=float(n), LapTimeSeconds=seconds, Team=teams[driver])
+        for driver, laps in times.items()
+        for n, seconds in enumerate(laps, start=1)
+    ]
+    return pd.DataFrame(rows)
+
+
+def test_quick_laps_drop_laps_slower_than_threshold():
+    laps = racing_laps({"AAA": [90.0, 95.0, 100.0]}, {"AAA": "Alpha"})
+
+    assert analysis.quick_laps(laps)["LapTimeSeconds"].tolist() == [90.0, 95.0]
+
+
+def test_team_pace_orders_teams_by_median():
+    laps = racing_laps(
+        {"AAA": [91.0, 92.0], "BBB": [90.0, 90.5], "CCC": [93.0, 93.5]},
+        {"AAA": "Alpha", "BBB": "Beta", "CCC": "Alpha"},
+    )
+
+    pace = analysis.team_pace(laps)
+
+    assert pace["Team"].tolist() == ["Beta", "Alpha"]
+    assert pace["Gap"].tolist() == pytest.approx([0.0, 2.25])
+
+
+def test_mini_sector_times_add_up_to_the_lap():
+    trace = pd.DataFrame({"Distance": np.linspace(0.0, 1000.0, 101), "Speed": 180.0})
+
+    times = analysis.mini_sector_times(trace, sectors=4)
+
+    assert times.sum() == pytest.approx(1000.0 / 50.0, rel=1e-2)
+    np.testing.assert_allclose(times, times[0], rtol=1e-2)
+
+
+def test_faster_by_sector_picks_the_quicker_driver():
+    distance = np.linspace(0.0, 1000.0, 101)
+    early = pd.DataFrame({"Distance": distance, "Speed": np.where(distance < 500, 300.0, 100.0)})
+    late = pd.DataFrame({"Distance": distance, "Speed": np.where(distance < 500, 100.0, 300.0)})
+
+    winners = analysis.faster_by_sector({"AAA": early, "BBB": late}, sectors=4)
+
+    assert winners.tolist() == ["AAA", "AAA", "BBB", "BBB"]
+
+
+def test_distinct_colors_shade_the_second_teammate():
+    colors = analysis.distinct_colors(["AAA", "BBB"], TEAMMATES)
+
+    assert colors["AAA"] == "#ff8000"
+    assert colors["BBB"] != colors["AAA"]
+
+
+def test_format_seconds():
+    assert analysis.format_seconds(83.226) == "1:23.226"

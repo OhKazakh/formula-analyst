@@ -6,6 +6,8 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from matplotlib.axes import Axes
+from matplotlib.collections import LineCollection
+from matplotlib.colors import to_hex, to_rgb
 from matplotlib.figure import Figure
 from matplotlib.patches import Patch
 
@@ -19,6 +21,10 @@ REPLAY_FRAMES_PER_LAP = 20
 REPLAY_MAX_FRAMES = 1500
 REPLAY_FRAME_MS = 60
 LINEAR_PROFILE = (np.array([0.0, 1.0]), np.array([0.0, 1.0]))
+QUICK_LAP_THRESHOLD = 1.07
+MINI_SECTORS = 25
+TRACK_BACKGROUND = "#d0d4da"
+MUTED_COLOR = "#d6d9de"
 
 Styles = dict[str, dict[str, str]]
 
@@ -102,11 +108,15 @@ def fastest_lap(laps: pd.DataFrame, driver: str) -> pd.Series | None:
     return candidates.loc[candidates["LapTime"].idxmin()]
 
 
-def format_lap_time(value: pd.Timedelta) -> str:
+def format_seconds(value: float) -> str:
     if pd.isna(value):
         return ""
-    minutes, seconds = divmod(value.total_seconds(), 60)
+    minutes, seconds = divmod(value, 60)
     return f"{int(minutes)}:{seconds:06.3f}"
+
+
+def format_lap_time(value: pd.Timedelta) -> str:
+    return "" if pd.isna(value) else format_seconds(value.total_seconds())
 
 
 def _new_axes(width: float, height: float) -> tuple[Figure, Axes]:
@@ -220,12 +230,17 @@ def stint_fit_figure(stint_laps: pd.DataFrame, time_column: str = "LapTimeSecond
     return fig
 
 
+def _elapsed(trace: pd.DataFrame) -> np.ndarray:
+    distance = trace["Distance"].to_numpy(dtype=float)
+    speed = np.maximum(trace["Speed"].to_numpy(dtype=float) / 3.6, 1.0)
+    return np.cumsum(np.diff(distance, prepend=distance[0]) / speed)
+
+
 def lap_profile(trace: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
     distance = trace["Distance"].to_numpy(dtype=float)
     if len(distance) < 2 or distance[-1] <= distance[0]:
         return LINEAR_PROFILE
-    speed = np.maximum(trace["Speed"].to_numpy(dtype=float) / 3.6, 1.0)
-    elapsed = np.cumsum(np.diff(distance, prepend=distance[0]) / speed)
+    elapsed = _elapsed(trace)
     return elapsed / elapsed[-1], (distance - distance[0]) / (distance[-1] - distance[0])
 
 
@@ -436,3 +451,228 @@ def replay_figure(
         ],
     )
     return figure
+
+
+def lap_positions(laps: pd.DataFrame) -> pd.DataFrame:
+    timed = laps.dropna(subset=["Time"])[["Driver", "LapNumber", "Time"]]
+    ranks = timed.groupby("LapNumber")["Time"].rank(method="first").astype(int)
+    return (
+        timed.assign(Position=ranks)[["Driver", "LapNumber", "Position"]]
+        .sort_values(["Driver", "LapNumber"])
+        .reset_index(drop=True)
+    )
+
+
+def position_figure(
+    positions: pd.DataFrame,
+    drivers: list[str],
+    styles: Styles,
+    highlight: list[str] | None = None,
+) -> Figure:
+    fig, ax = _new_axes(12, 7)
+    highlighted = set(highlight or [])
+    for driver in drivers:
+        driver_positions = positions[positions["Driver"] == driver]
+        if driver_positions.empty:
+            continue
+        style = _line_style(styles, driver)
+        emphasis = not highlighted or driver in highlighted
+        if not emphasis:
+            style["color"] = MUTED_COLOR
+        ax.plot(
+            driver_positions["LapNumber"],
+            driver_positions["Position"],
+            label=driver,
+            linewidth=2.2 if highlighted and emphasis else 1.5,
+            zorder=3 if emphasis else 2,
+            **style,
+        )
+    places = int(positions["Position"].max()) if not positions.empty else 1
+    ax.set_ylim(places + 0.5, 0.5)
+    ax.set_yticks(range(1, places + 1))
+    ax.set_xlabel("Lap")
+    ax.set_ylabel("Position")
+    if ax.has_data():
+        ax.legend(loc="upper left", bbox_to_anchor=(1.01, 1), fontsize=8)
+    fig.tight_layout()
+    return fig
+
+
+def quick_laps(laps: pd.DataFrame, threshold: float = QUICK_LAP_THRESHOLD) -> pd.DataFrame:
+    representative = representative_laps(laps)
+    fastest = representative["LapTimeSeconds"].min()
+    return representative[representative["LapTimeSeconds"] <= threshold * fastest]
+
+
+def team_colors(laps: pd.DataFrame, styles: Styles) -> dict[str, str]:
+    first_driver = laps.drop_duplicates("Team").set_index("Team")["Driver"]
+    return {
+        team: styles.get(driver, {}).get("color", FALLBACK_COLOR)
+        for team, driver in first_driver.items()
+    }
+
+
+def team_pace(laps: pd.DataFrame) -> pd.DataFrame:
+    median = quick_laps(laps).groupby("Team")["LapTimeSeconds"].median().sort_values()
+    return pd.DataFrame(
+        {"Team": median.index, "Median": median.to_numpy(), "Gap": median.to_numpy() - median.min()}
+    )
+
+
+def team_pace_figure(laps: pd.DataFrame, styles: Styles) -> Figure:
+    quick = quick_laps(laps)
+    order = team_pace(laps)["Team"].tolist()
+    colors = team_colors(quick, styles)
+    fig, ax = _new_axes(12, 5)
+    ax.grid(axis="x", visible=False)
+    boxes = ax.boxplot(
+        [quick.loc[quick["Team"] == team, "LapTimeSeconds"] for team in order],
+        tick_labels=order,
+        patch_artist=True,
+        showfliers=False,
+        widths=0.6,
+        medianprops={"color": "black"},
+    )
+    for box, team in zip(boxes["boxes"], order, strict=True):
+        box.set_facecolor(colors[team])
+        box.set_edgecolor("black")
+    for label in ax.get_xticklabels():
+        label.set_rotation(30)
+        label.set_horizontalalignment("right")
+    ax.set_ylabel("Lap time (s)")
+    fig.tight_layout()
+    return fig
+
+
+def lap_distribution_figure(
+    laps: pd.DataFrame,
+    drivers: list[str],
+    styles: Styles,
+    compound_colors: dict[str, str],
+) -> Figure:
+    quick = quick_laps(laps)
+    groups = [(driver, quick[quick["Driver"] == driver]) for driver in drivers]
+    groups = [(driver, rows) for driver, rows in groups if rows["LapTimeSeconds"].nunique() > 1]
+    fig, ax = _new_axes(12, 5)
+    ax.grid(axis="x", visible=False)
+    if not groups:
+        return fig
+
+    positions = np.arange(len(groups))
+    violins = ax.violinplot(
+        [driver_laps["LapTimeSeconds"] for _, driver_laps in groups],
+        positions=positions,
+        widths=0.8,
+        showextrema=False,
+    )
+    rng = np.random.default_rng(0)
+    used: dict[str, str] = {}
+    for position, body, (driver, driver_laps) in zip(
+        positions, violins["bodies"], groups, strict=True
+    ):
+        body.set_facecolor(styles.get(driver, {}).get("color", FALLBACK_COLOR))
+        body.set_edgecolor("black")
+        body.set_alpha(0.3)
+        compounds = driver_laps["Compound"].fillna(UNKNOWN_COMPOUND)
+        colors = [compound_colors.get(compound, FALLBACK_COLOR) for compound in compounds]
+        used.update(zip(compounds, colors, strict=True))
+        ax.scatter(
+            position + rng.uniform(-0.15, 0.15, len(driver_laps)),
+            driver_laps["LapTimeSeconds"],
+            c=colors,
+            s=14,
+            edgecolors="black",
+            linewidths=0.3,
+            zorder=3,
+        )
+    ax.set_xticks(positions, [driver for driver, _ in groups])
+    ax.set_ylabel("Lap time (s)")
+    handles = [Patch(facecolor=c, edgecolor="black", label=name) for name, c in used.items()]
+    ax.legend(handles=handles, title="Compound", loc="upper left", bbox_to_anchor=(1.01, 1))
+    fig.tight_layout()
+    return fig
+
+
+def _track_segments(track: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
+    xy = track[["X", "Y"]].to_numpy(dtype=float)
+    cumulative = np.concatenate([[0.0], np.cumsum(np.hypot(*np.diff(xy, axis=0).T))])
+    midpoints = (cumulative[:-1] + cumulative[1:]) / 2 / cumulative[-1]
+    return np.stack([xy[:-1], xy[1:]], axis=1), midpoints
+
+
+def _map_axes(track: pd.DataFrame, map_corners: pd.DataFrame) -> tuple[Figure, Axes]:
+    fig = Figure(figsize=(9, 6))
+    ax = fig.subplots()
+    ax.set_aspect("equal")
+    ax.axis("off")
+    ax.plot(track["X"], track["Y"], color=TRACK_BACKGROUND, linewidth=11, zorder=1)
+    for corner in map_corners.itertuples():
+        ax.text(corner.X, corner.Y, corner.Label, fontsize=7, color="#7a7f88", ha="center")
+    return fig, ax
+
+
+def speed_map_figure(track: pd.DataFrame, map_corners: pd.DataFrame, trace: pd.DataFrame) -> Figure:
+    segments, midpoints = _track_segments(track)
+    distance = trace["Distance"].to_numpy(dtype=float)
+    speed = np.interp(midpoints * distance[-1], distance, trace["Speed"].to_numpy(dtype=float))
+    fig, ax = _map_axes(track, map_corners)
+    collection = LineCollection(segments, cmap="plasma", linewidths=5, capstyle="round", zorder=2)
+    collection.set_array(speed)
+    ax.add_collection(collection)
+    fig.colorbar(collection, ax=ax, label="Speed (km/h)", shrink=0.7)
+    fig.tight_layout()
+    return fig
+
+
+def mini_sector_times(trace: pd.DataFrame, sectors: int = MINI_SECTORS) -> np.ndarray:
+    distance = trace["Distance"].to_numpy(dtype=float)
+    boundaries = np.linspace(0.0, 1.0, sectors + 1) * distance[-1]
+    return np.diff(np.interp(boundaries, distance, _elapsed(trace)))
+
+
+def faster_by_sector(traces: dict[str, pd.DataFrame], sectors: int = MINI_SECTORS) -> np.ndarray:
+    drivers = list(traces)
+    times = np.vstack([mini_sector_times(traces[driver], sectors) for driver in drivers])
+    return np.array(drivers)[times.argmin(axis=0)]
+
+
+def _shade(color: str, factor: float) -> str:
+    return to_hex(tuple(channel * factor for channel in to_rgb(color)))
+
+
+def distinct_colors(drivers: list[str], styles: Styles) -> dict[str, str]:
+    colors: dict[str, str] = {}
+    for driver in drivers:
+        color = styles.get(driver, {}).get("color", FALLBACK_COLOR)
+        colors[driver] = _shade(color, 0.55) if color in colors.values() else color
+    return colors
+
+
+def dominance_map_figure(
+    track: pd.DataFrame,
+    map_corners: pd.DataFrame,
+    traces: dict[str, pd.DataFrame],
+    styles: Styles,
+    sectors: int = MINI_SECTORS,
+) -> Figure:
+    segments, midpoints = _track_segments(track)
+    winners = faster_by_sector(traces, sectors)
+    colors = distinct_colors(list(traces), styles)
+    sector = np.minimum((midpoints * sectors).astype(int), sectors - 1)
+    fig, ax = _map_axes(track, map_corners)
+    ax.add_collection(
+        LineCollection(
+            segments,
+            colors=[colors[winners[s]] for s in sector],
+            linewidths=5,
+            capstyle="round",
+            zorder=2,
+        )
+    )
+    handles = [
+        Patch(color=colors[driver], label=f"{driver} ({(winners == driver).sum()} of {sectors})")
+        for driver in traces
+    ]
+    ax.legend(handles=handles, title="Faster in", loc="upper left", bbox_to_anchor=(1.0, 1))
+    fig.tight_layout()
+    return fig
