@@ -3,6 +3,7 @@ import streamlit as st
 
 from src import championship, races, seasons
 from views import data
+from views.links import requested_int
 
 PROGRESSION_DRIVERS = 6
 
@@ -46,7 +47,13 @@ def render() -> None:
     if not years:
         st.info("No championship data is bundled.")
         return
-    year = st.sidebar.selectbox("Season", years, key="championship_season")
+    requested_year = requested_int("season")
+    year = st.sidebar.selectbox(
+        "Season",
+        years,
+        index=years.index(requested_year) if requested_year in years else 0,
+        key="championship_season",
+    )
     season: seasons.Season = data.season(year, bundle_version)
     rounds = season.completed_rounds
     st.title(f"{year} Drivers' Championship")
@@ -54,16 +61,19 @@ def render() -> None:
         st.info("No races have been run this season yet.")
         return
 
+    requested_round = requested_int("round") if requested_year == year else None
     after = (
         st.select_slider(
             "Standings after",
             options=rounds,
-            value=rounds[-1],
+            value=requested_round if requested_round in rounds else rounds[-1],
             format_func=lambda r: f"Round {r} · {season.event_name(r)}",
+            key=f"standings_after-{year}",
         )
         if len(rounds) > 1
         else rounds[0]
     )
+    st.query_params.from_dict({"season": str(year), "round": str(after)})
     table = championship.standings(season.results, after)
     remaining = championship.remaining_points(season.schedule, year, after)
     contenders = championship.title_contenders(table, remaining)

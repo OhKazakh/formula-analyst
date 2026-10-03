@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import gc
+from datetime import date
 
 import fastf1
 from fastf1.exceptions import ErgastError, RateLimitExceededError
@@ -14,7 +15,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         prog="python -m src.sync",
         description="Download races and championship results and save them to the bundle.",
     )
-    parser.add_argument("year", type=int)
+    parser.add_argument(
+        "year", type=int, nargs="?", default=date.today().year, help="Defaults to this season."
+    )
     parser.add_argument(
         "--event",
         action="append",

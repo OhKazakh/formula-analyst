@@ -1,3 +1,6 @@
+[global]
+disableWidgetStateDuplicationWarning = true
+
 [server]
 headless = true
 

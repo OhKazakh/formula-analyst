@@ -7,11 +7,14 @@ import streamlit as st
 from src import analysis, races, seasons
 from views import data, theme
 from views.data import show
+from views.links import requested, requested_int
 
 FIRST_SEASON = 2018
 DEFAULT_YEAR = 2024
 DEFAULT_EVENT = "Italian Grand Prix"
 FASTER_WHERE = "Who's faster where"
+TABS = ["Overview", "Replay", "Pace", "Strategy", "Telemetry"]
+WIDGET_PREFIX = "race:"
 HEADER_STYLE = f"""<style>
 .race-podium {{ display: flex; flex-wrap: wrap; gap: 12px; }}
 .race-place {{
@@ -73,7 +76,12 @@ def flag(country: str | None) -> str:
 
 
 def race_key(race: races.Race, name: str) -> str:
-    return f"{name}-{race.year}-{race.round_number}"
+    return f"{WIDGET_PREFIX}{name}:{race.year}:{race.round_number}"
+
+
+def keep_widget_state() -> None:
+    for key in [key for key in st.session_state if str(key).startswith(WIDGET_PREFIX)]:
+        st.session_state[key] = st.session_state[key]
 
 
 def season_events(year: int, bundled: pd.DataFrame, online: bool) -> list[str]:
@@ -116,7 +124,11 @@ def sidebar(bundle_version: str) -> tuple[int, str]:
         st.sidebar.error("No race data is available.")
         st.stop()
     years = sorted(years_available, reverse=True)
-    default_year = years.index(DEFAULT_YEAR) if DEFAULT_YEAR in years else 0
+    requested_year = requested_int("season")
+    if requested_year in years:
+        default_year = years.index(requested_year)
+    else:
+        default_year = years.index(DEFAULT_YEAR) if DEFAULT_YEAR in years else 0
     year = st.sidebar.selectbox("Season", years, index=default_year, key="race_season")
 
     events = season_events(year, bundled, online)
@@ -124,7 +136,9 @@ def sidebar(bundle_version: str) -> tuple[int, str]:
         st.sidebar.warning("No completed races for this season yet.")
         st.stop()
     countries = event_countries(year, bundle_version, online)
-    default = events.index(DEFAULT_EVENT) if DEFAULT_EVENT in events else len(events) - 1
+    requested_event = {races.slugify(name): name for name in events}.get(requested("race"))
+    fallback = DEFAULT_EVENT if DEFAULT_EVENT in events else events[-1]
+    default = events.index(requested_event or fallback)
     event = st.sidebar.selectbox(
         "Grand Prix",
         events,
@@ -253,12 +267,14 @@ def driver_pace(race: races.Race, clean: pd.DataFrame) -> None:
         representative = st.toggle(
             "Representative laps only",
             value=True,
+            key=race_key(race, "representative"),
             help="Excludes pit in/out laps, laps under safety car or flags, "
             "and laps FastF1 marks as inaccurate.",
         )
         fuel = st.toggle(
             "Fuel-corrected",
             value=False,
+            key=race_key(race, "fuel_corrected"),
             help="Normalises every lap to an empty tank so tyre wear isn't hidden "
             "by the car getting lighter.",
         )
@@ -357,12 +373,17 @@ def tyre_strategy(race: races.Race) -> None:
         )
 
 
-def degradation(race: races.Race, clean: pd.DataFrame) -> None:
+def wear_rates(race: races.Race, clean: pd.DataFrame) -> None:
     st.subheader("How fast did the tyres degrade?")
     left, right = st.columns(2)
-    min_laps = left.slider("Minimum laps per stint", 3, 20, 8)
+    min_laps = left.slider("Minimum laps per stint", 3, 20, 8, key=race_key(race, "min_laps"))
     fuel_effect = right.slider(
-        "Fuel effect (s per lap of fuel)", 0.0, 0.1, analysis.DEFAULT_FUEL_EFFECT, 0.005
+        "Fuel effect (s per lap of fuel)",
+        0.0,
+        0.1,
+        analysis.DEFAULT_FUEL_EFFECT,
+        0.005,
+        key=race_key(race, "fuel_effect"),
     )
 
     laps = clean.copy()
@@ -412,14 +433,19 @@ def degradation(race: races.Race, clean: pd.DataFrame) -> None:
 def strategy_tab(race: races.Race, clean: pd.DataFrame) -> None:
     tyre_strategy(race)
     st.divider()
-    degradation(race, clean)
+    wear_rates(race, clean)
 
 
 def telemetry_tab(race: races.Race) -> None:
     st.subheader("How do two drivers compare on their fastest lap?")
     left, right = st.columns(2)
-    first = left.selectbox("Driver A", race.drivers, index=0)
-    second = right.selectbox("Driver B", race.drivers, index=min(1, len(race.drivers) - 1))
+    first = left.selectbox("Driver A", race.drivers, index=0, key=race_key(race, "driver_a"))
+    second = right.selectbox(
+        "Driver B",
+        race.drivers,
+        index=min(1, len(race.drivers) - 1),
+        key=race_key(race, "driver_b"),
+    )
 
     drivers = list(dict.fromkeys([first, second]))
     laps = {driver: analysis.fastest_lap(race.laps, driver) for driver in drivers}
@@ -481,7 +507,12 @@ def telemetry_tab(race: races.Race) -> None:
         show(analysis.speed_map_figure(race.track, race.map_corners, traces[driver]))
 
 
+def requested_tab() -> str | None:
+    return {label.lower(): label for label in TABS}.get(requested("tab"))
+
+
 def render() -> None:
+    keep_widget_state()
     bundle_version = races.bundle_version()
     year, event = sidebar(bundle_version)
 
@@ -504,15 +535,27 @@ def render() -> None:
 
     clean = analysis.representative_laps(race.laps)
     overview, replay, pace, strategy, telemetry = st.tabs(
-        ["Overview", "Replay", "Pace", "Strategy", "Telemetry"]
+        TABS, default=requested_tab(), key="race_tab", on_change="rerun"
     )
-    with overview:
-        overview_tab(race, summary)
-    with replay:
-        replay_tab(race, bundle_version)
-    with pace:
-        pace_tab(race, clean)
-    with strategy:
-        strategy_tab(race, clean)
-    with telemetry:
-        telemetry_tab(race)
+    st.query_params.from_dict(
+        {
+            "season": str(year),
+            "race": races.slugify(event),
+            "tab": st.session_state.get("race_tab", TABS[0]).lower(),
+        }
+    )
+    if overview.open:
+        with overview:
+            overview_tab(race, summary)
+    if replay.open:
+        with replay:
+            replay_tab(race, bundle_version)
+    if pace.open:
+        with pace:
+            pace_tab(race, clean)
+    if strategy.open:
+        with strategy:
+            strategy_tab(race, clean)
+    if telemetry.open:
+        with telemetry:
+            telemetry_tab(race)

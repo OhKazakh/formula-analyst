@@ -266,10 +266,13 @@ def _driver_styles(session: Session, drivers: list[str]) -> Styles:
     return styles
 
 
+def slugify(name: str) -> str:
+    ascii_name = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode()
+    return re.sub(r"[^a-z0-9]+", "-", ascii_name.lower()).strip("-")
+
+
 def race_dir(root: Path, year: int, round_number: int, event: str) -> Path:
-    ascii_name = unicodedata.normalize("NFKD", event).encode("ascii", "ignore").decode()
-    slug = re.sub(r"[^a-z0-9]+", "-", ascii_name.lower()).strip("-")
-    return root / str(year) / f"{round_number:02d}-{slug}"
+    return root / str(year) / f"{round_number:02d}-{slugify(event)}"
 
 
 def save_race(race: Race, root: Path = DATA_DIR) -> Path:
