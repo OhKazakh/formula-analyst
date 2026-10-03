@@ -2,19 +2,19 @@
 
 Race analysis dashboard built on [FastF1](https://github.com/theOehrly/Fast-F1) timing data. Pick a Grand Prix and see how the race played out, or follow a whole championship season. Every race from 2018 to the latest 2026 round is included.
 
-![Race pace](docs/pace.png)
+![Race overview](docs/overview.png)
 
 ## Features
 
 **Race**
 
-- **Race pace.** Lap times for any set of drivers. Optionally limited to representative laps (no pit in/out laps, no laps under safety car or flags, no laps FastF1 marks as inaccurate) and fuel-corrected.
-- **Positions.** Every driver's position lap by lap, with selected drivers highlighted.
-- **Race replay.** Every car on a map of the circuit through the whole race, with the running order alongside. Play it or drag the slider lap by lap.
-- **Pace comparison.** Each team's lap time spread, ordered by median pace, and each driver's lap time distribution coloured by tyre compound.
-- **Tyre strategy.** Every driver's stints, coloured by compound and ordered by finishing position.
-- **Fastest lap.** Speed against distance for two drivers' fastest laps, with corner markers, and the same laps on a track map coloured by speed or by who was quicker in each mini-sector.
-- **Degradation.** Per-stint degradation rate from a linear fit of fuel-corrected lap time against tyre age, summarised by compound.
+Every race opens with a summary: the podium, the fastest lap, the number of pit stops and any safety car, virtual safety car or red flag. The analysis is split into five tabs.
+
+- **Overview.** Every driver's position lap by lap, with selected drivers highlighted, plus who led and for how many laps.
+- **Replay.** Every car on a map of the circuit through the whole race, with the running order alongside. Play it or drag the slider lap by lap.
+- **Pace.** Lap times for any set of drivers, optionally limited to representative laps (no pit in/out laps, no laps under safety car or flags, no laps FastF1 marks as inaccurate) and fuel-corrected. Each team's lap time spread ordered by median pace, and each driver's lap time distribution coloured by tyre compound.
+- **Strategy.** Every driver's stints, coloured by compound and ordered by finishing position, and the degradation rate of each stint from a linear fit of fuel-corrected lap time against tyre age, summarised by compound.
+- **Telemetry.** Speed against distance for two drivers' fastest laps, with corner markers, and the same laps on a track map coloured by speed or by who was quicker in each mini-sector.
 
 **Championship**
 
@@ -24,11 +24,11 @@ Race analysis dashboard built on [FastF1](https://github.com/theOehrly/Fast-F1) 
 
 ![Race replay](docs/replay.png)
 
-| Positions | Pace comparison |
+| Pace | Team pace |
 | --- | --- |
-| ![Positions](docs/positions.png) | ![Pace comparison](docs/comparison.png) |
-| **Tyre strategy** | **Fastest lap** |
-| ![Tyre strategy](docs/strategy.png) | ![Fastest lap](docs/fastest-lap.png) |
+| ![Pace](docs/pace.png) | ![Team pace](docs/team-pace.png) |
+| **Strategy** | **Telemetry** |
+| ![Strategy](docs/strategy.png) | ![Telemetry](docs/telemetry.png) |
 
 ![Championship](docs/championship.png)
 
@@ -86,6 +86,7 @@ Everything in `src/` works on plain pandas DataFrames and has no Streamlit depen
 
 ## Methodology
 
+- **Race summary.** Safety car and virtual safety car periods are counted in the winner's laps that ran under them. Pit stops leave out pit lane entries during a red flag, when every car waits in the pit lane. Laps led and lead changes come from the running order at the end of each lap.
 - **Fuel correction** subtracts `fuel_effect × laps remaining` from each lap time, normalising every lap to an empty tank. The default is 0.055 s per lap of fuel and can be changed in the app.
 - **Degradation** is the slope of a least-squares line through fuel-corrected lap time against tyre age, fitted per stint. Stints shorter than the configurable minimum (8 laps by default) are skipped.
 - A straight line is a simplification: tyre warm-up at the start of a stint and the drop-off at the end are averaged into one number.
