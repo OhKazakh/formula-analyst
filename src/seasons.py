@@ -14,7 +14,7 @@ from src.analysis import Styles
 from src.races import DATA_DIR
 
 RESULT_COLUMNS = ["Round", "Session", "Driver", "Name", "Team", "Position", "Classified", "Points"]
-SCHEDULE_COLUMNS = ["Round", "EventName", "Sprint", "Date"]
+SCHEDULE_COLUMNS = ["Round", "EventName", "Country", "Sprint", "Date"]
 SPRINT_FORMATS = {"sprint", "sprint_shootout", "sprint_qualifying"}
 
 
@@ -81,6 +81,7 @@ def _schedule(year: int) -> pd.DataFrame:
         {
             "Round": schedule["RoundNumber"].astype(int),
             "EventName": schedule["EventName"],
+            "Country": schedule["Country"],
             "Sprint": schedule["EventFormat"].isin(SPRINT_FORMATS),
             "Date": schedule["Session5DateUtc"],
         }
