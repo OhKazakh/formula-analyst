@@ -318,6 +318,7 @@ def read_race(path: Path) -> Race:
     )
 
 
+# Streamlit Cloud reloads code after a push but keeps st.cache_data, so caches key on this.
 def bundle_version(root: Path = DATA_DIR) -> str:
     digest = hashlib.sha256()
     for path in sorted(p for p in root.rglob("*") if p.is_file()):

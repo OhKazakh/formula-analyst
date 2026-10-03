@@ -150,6 +150,7 @@ def contrast(first: str, second: str) -> float:
     return (lighter + 0.05) / (darker + 0.05)
 
 
+# A few official colours (white Williams, yellow Renault) vanish on one of the backgrounds.
 def hard_to_see(color: str) -> bool:
     if not color.startswith("#"):
         return False
@@ -618,6 +619,8 @@ def replay_figure(
         yaxis={"visible": False, "scaleanchor": "x", "scaleratio": 1},
         xaxis2={"visible": False, "domain": [0.84, 1], "range": [0, 1], "fixedrange": True},
         yaxis2={"visible": False, "anchor": "x2", "range": [0, 1], "fixedrange": True},
+        # Plotly hard-codes a light fill for the active and hovered button, so the
+        # buttons stay light in both themes instead of following the text colour.
         updatemenus=[
             {
                 "type": "buttons",

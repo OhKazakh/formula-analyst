@@ -1,6 +1,7 @@
 import streamlit as st
 
 
+# Read once per session: if a widget's default changes between reruns, Streamlit resets it.
 def requested(name: str) -> str:
     key = f"requested:{name}"
     if key not in st.session_state:

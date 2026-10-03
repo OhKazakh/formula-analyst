@@ -108,6 +108,7 @@ def cross_validate(
     table: pd.DataFrame, grid: pd.DataFrame, folds: int = FOLDS
 ) -> tuple[pd.DataFrame, dict[str, float]]:
     curves, errors = [], {"model": [], "baseline": [], "no_wear": []}
+    # Grouped by race so laps from the same race never end up on both sides.
     for train_rows, test_rows in GroupKFold(n_splits=folds).split(table, groups=table["Race"]):
         train, test = table.iloc[train_rows], table.iloc[test_rows]
         model = pipeline().fit(train[FEATURES], train["Loss"])

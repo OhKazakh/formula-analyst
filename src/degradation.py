@@ -9,6 +9,7 @@ from src import analysis
 from src.races import DATA_DIR
 
 DRY_COMPOUNDS = ("SOFT", "MEDIUM", "HARD")
+# 2018 still used the old compound names (hypersoft, ultrasoft, ...).
 FIRST_SEASON = 2019
 MIN_STINT_LAPS = 6
 OPENING_LAPS = 3
