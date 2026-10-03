@@ -13,6 +13,29 @@ DEFAULT_YEAR = 2024
 DEFAULT_EVENT = "Italian Grand Prix"
 FASTER_WHERE = "Who's faster where"
 SURFACE = "#F3F4F6"
+HEADER_STYLE = f"""<style>
+.race-podium {{ display: flex; flex-wrap: wrap; gap: 12px; }}
+.race-place {{
+  flex: 1 1 180px; border-left: 4px solid; border-radius: 0 10px 10px 0;
+  background: {SURFACE}; padding: 8px 14px;
+}}
+.race-place .position {{ font-size: 13px; font-weight: 600; color: {analysis.SECONDARY_INK}; }}
+.race-place .name {{ font-size: 18px; font-weight: 600; color: {analysis.INK}; }}
+.race-place .team {{ font-size: 14px; color: {analysis.SECONDARY_INK}; }}
+.race-facts {{
+  display: flex; flex-wrap: wrap; gap: 4px 24px; margin-top: 12px;
+  font-size: 15px; color: {analysis.INK}; font-variant-numeric: tabular-nums;
+}}
+.race-facts .label {{ color: {analysis.SECONDARY_INK}; }}
+@media (max-width: 640px) {{
+  .race-podium {{ gap: 6px; }}
+  .race-place {{
+    flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: baseline;
+    column-gap: 10px; padding: 6px 12px;
+  }}
+  .race-place .name {{ font-size: 16px; }}
+}}
+</style>"""
 COUNTRY_CODES = {
     "Abu Dhabi": "AE",
     "Australia": "AU",
@@ -136,9 +159,8 @@ def race_facts(summary: analysis.RaceSummary) -> list[str]:
     if summary.fastest is not None:
         fastest = summary.fastest
         facts.append(
-            f'<span style="color:{analysis.SECONDARY_INK}">Fastest lap</span> '
-            f"<b>{html.escape(fastest.driver)}</b> {analysis.format_lap_time(fastest.time)} "
-            f"on lap {fastest.lap}"
+            f'<span class="label">Fastest lap</span> <b>{html.escape(fastest.driver)}</b> '
+            f"{analysis.format_lap_time(fastest.time)} on lap {fastest.lap}"
         )
     facts.append(plural(summary.pit_stops, "pit stop"))
     if summary.red_flag:
@@ -164,22 +186,17 @@ def header(race: races.Race, summary: analysis.RaceSummary, season: seasons.Seas
     st.caption(" · ".join(details))
 
     places = "".join(
-        f'<div style="flex:1 1 180px;border-left:4px solid '
-        f"{race.driver_styles.get(driver, {}).get('color', analysis.FALLBACK_COLOR)};"
-        f'background:{SURFACE};border-radius:0 10px 10px 0;padding:8px 14px">'
-        f'<div style="font-size:13px;font-weight:600;color:{analysis.SECONDARY_INK}">'
-        f"P{position}</div>"
-        f'<div style="font-size:18px;font-weight:600;color:{analysis.INK}">'
-        f"{html.escape(name)}</div>"
-        f'<div style="font-size:14px;color:{analysis.SECONDARY_INK}">{html.escape(team)}</div>'
-        f"</div>"
+        f'<div class="race-place" style="border-left-color:'
+        f'{race.driver_styles.get(driver, {}).get("color", analysis.FALLBACK_COLOR)}">'
+        f'<div class="position">P{position}</div>'
+        f'<div class="name">{html.escape(name)}</div>'
+        f'<div class="team">{html.escape(team)}</div></div>'
         for position, (driver, name, team) in enumerate(podium(race, season), start=1)
     )
     facts = "".join(f"<span>{fact}</span>" for fact in race_facts(summary))
     st.html(
-        f'<div style="display:flex;flex-wrap:wrap;gap:12px">{places}</div>'
-        f'<div style="display:flex;flex-wrap:wrap;gap:4px 24px;margin-top:12px;font-size:15px;'
-        f'color:{analysis.INK};font-variant-numeric:tabular-nums">{facts}</div>'
+        f'{HEADER_STYLE}<div class="race-podium">{places}</div>'
+        f'<div class="race-facts">{facts}</div>'
     )
 
 
