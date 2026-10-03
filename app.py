@@ -1,9 +1,10 @@
 import streamlit as st
 
 from src import races
-from views import championship, race
+from views import championship, race, theme
 
 st.set_page_config(page_title="Formula Analyst", page_icon="🏁", layout="wide")
+st.html(theme.GLOBAL_STYLE)
 races.enable_cache()
 
 page = st.navigation(

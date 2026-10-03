@@ -128,35 +128,70 @@ TEAMMATES = {
 }
 
 
+def pace_laps(drivers: list[str]) -> pd.DataFrame:
+    return pd.DataFrame(
+        [
+            {
+                "Driver": driver,
+                "LapNumber": float(number),
+                "LapTimeSeconds": 90.0 - number,
+                "Compound": "MEDIUM",
+                "TyreLife": float(number),
+            }
+            for driver in drivers
+            for number in (1, 2)
+        ]
+    )
+
+
 def test_pace_figure_distinguishes_teammates():
-    laps = pd.DataFrame(
-        {
-            "Driver": ["AAA", "AAA", "BBB", "BBB"],
-            "LapNumber": [1.0, 2.0, 1.0, 2.0],
-            "LapTimeSeconds": [90.0, 89.0, 90.5, 89.5],
-        }
-    )
+    first, second = analysis.pace_figure(pace_laps(["AAA", "BBB"]), ["AAA", "BBB"], TEAMMATES).data
 
-    first, second = analysis.pace_figure(laps, ["AAA", "BBB"], TEAMMATES).axes[0].get_lines()
+    assert first.line.color == second.line.color == "#ff8000"
+    assert (first.line.dash, first.marker.symbol) == ("solid", "circle")
+    assert (second.line.dash, second.marker.symbol) == ("dash", "square-open")
+    assert first.customdata[0].tolist() == ["1:29.000", "MEDIUM, 1 laps old"]
 
-    assert first.get_color() == second.get_color() == "#ff8000"
-    assert (first.get_linestyle(), first.get_marker()) == ("-", "o")
-    assert (second.get_linestyle(), second.get_marker(), second.get_markerfacecolor()) == (
-        "--",
-        "s",
-        "white",
-    )
+
+def test_pace_figure_outlines_lines_that_vanish_on_white():
+    styles = {"AAA": {"color": "#ffffff", "linestyle": "solid"}}
+
+    halo, line = analysis.pace_figure(pace_laps(["AAA"]), ["AAA"], styles).data
+
+    assert (halo.line.color, halo.hoverinfo, halo.showlegend) == (analysis.OUTLINE, "skip", False)
+    assert (line.name, line.line.color) == ("AAA", "#ffffff")
 
 
 def test_speed_trace_distinguishes_teammates_by_line_style():
     trace = pd.DataFrame({"Distance": [0.0, 10.0], "Speed": [300.0, 305.0]})
-    corners = pd.DataFrame(columns=["Number", "Letter", "Distance"])
+    corners = pd.DataFrame({"Number": [1, 2], "Letter": ["", "A"], "Distance": [2.0, 8.0]})
 
-    fig = analysis.speed_trace_figure({"AAA": trace, "BBB": trace}, TEAMMATES, corners)
-    first, second = fig.axes[0].get_lines()
+    figure = analysis.speed_trace_figure({"AAA": trace, "BBB": trace}, TEAMMATES, corners)
+    first, second = figure.data
 
-    assert (first.get_linestyle(), second.get_linestyle()) == ("-", "--")
-    assert first.get_marker() == second.get_marker() == "None"
+    assert (first.line.dash, second.line.dash) == ("solid", "dash")
+    assert [annotation.text for annotation in figure.layout.annotations] == ["1", "2A"]
+    assert [shape.x0 for shape in figure.layout.shapes] == [2.0, 8.0]
+
+
+def test_strategy_figure_one_bar_trace_per_compound():
+    stints = pd.DataFrame(
+        {
+            "Driver": ["AAA", "AAA", "BBB"],
+            "Stint": [1, 2, 1],
+            "Compound": ["HARD", "SOFT", "HARD"],
+            "StartLap": [1, 11, 1],
+            "EndLap": [10, 20, 20],
+            "Laps": [10, 10, 20],
+        }
+    )
+    colors = {"SOFT": "#da291c", "MEDIUM": "#ffd12e", "HARD": "#f0f0ec"}
+
+    figure = analysis.strategy_figure(stints, ["BBB", "AAA"], colors)
+
+    assert [trace.name for trace in figure.data] == ["SOFT", "HARD"]
+    assert figure.data[1].base.tolist() == [0, 0]
+    assert list(figure.layout.yaxis.categoryarray) == ["BBB", "AAA"]
 
 
 def test_stint_compound_ignores_missing_values_and_uses_majority():
@@ -235,6 +270,7 @@ def test_replay_figure_frames_slider_and_finish_order():
     figure = analysis.replay_figure(SQUARE, corners, positions, ["AAA", "BBB"], {}, total_laps=2)
 
     assert [step.label for step in figure.layout.sliders[0].steps] == ["1", "2"]
+    assert (figure.data[3].xaxis, figure.data[3].yaxis) == ("x2", "y2")
     last = figure.frames[-1]
     assert np.isnan(last.data[0].x).all()
     assert last.data[1].text[0].endswith(" 1  AAA<br> 2  BBB")
@@ -270,10 +306,12 @@ def test_position_figure_mutes_drivers_not_highlighted():
     )
 
     figure = analysis.position_figure(positions, ["AAA", "BBB"], TEAMMATES, highlight=["AAA"])
-    first, second = figure.axes[0].get_lines()
 
-    assert first.get_color() == "#ff8000"
-    assert second.get_color() == analysis.MUTED_COLOR
+    assert {trace.name: trace.line.color for trace in figure.data} == {
+        "AAA": "#ff8000",
+        "BBB": analysis.NEUTRAL,
+    }
+    assert [label.text for label in figure.layout.annotations] == ["BBB", "<b>AAA</b>"]
 
 
 def racing_laps(times: dict[str, list[float]], teams: dict[str, str]) -> pd.DataFrame:
@@ -331,6 +369,54 @@ def test_distinct_colors_shade_the_second_teammate():
 
 def test_format_seconds():
     assert analysis.format_seconds(83.226) == "1:23.226"
+
+
+def test_contrast_matches_wcag_extremes():
+    assert analysis.contrast("#FFFFFF", "#000000") == pytest.approx(21.0)
+    assert analysis.contrast("#E10600", "#FFFFFF") == pytest.approx(4.97, abs=0.01)
+
+
+@pytest.mark.parametrize(
+    ("color", "expected"),
+    [("#ffffff", True), ("#fff500", True), ("#1c1c25", True), ("#ff8000", False)],
+)
+def test_hard_to_see_on_light_or_dark_backgrounds(color, expected):
+    assert analysis.hard_to_see(color) is expected
+
+
+def test_replay_height_follows_the_track_shape():
+    wide = pd.DataFrame({"X": [0.0, 1000.0, 1000.0, 0.0], "Y": [0.0, 0.0, 300.0, 300.0]})
+
+    assert analysis.replay_height(SQUARE) == analysis.REPLAY_HEIGHT_RANGE[1]
+    assert analysis.replay_height(wide) < analysis.replay_height(SQUARE)
+
+
+def test_lap_distribution_groups_points_by_compound():
+    laps = racing_laps({"AAA": [90.0, 90.5, 91.0], "BBB": [90.2, 90.8]}, {"AAA": "A", "BBB": "B"})
+    laps["Compound"] = ["SOFT", "HARD", "HARD", "SOFT", "SOFT"]
+    colors = {"SOFT": "#da291c", "HARD": "#f0f0ec"}
+
+    figure = analysis.lap_distribution_figure(laps, ["AAA", "BBB"], TEAMMATES, colors)
+
+    violins = [trace for trace in figure.data if trace.type == "violin"]
+    points = [trace for trace in figure.data if trace.type == "scatter"]
+    assert [violin.name for violin in violins] == ["AAA", "BBB"]
+    assert [(trace.name, len(trace.y)) for trace in points] == [("SOFT", 3), ("HARD", 2)]
+    assert list(figure.layout.xaxis.ticktext) == ["AAA", "BBB"]
+
+
+def test_dominance_map_lists_each_driver_once_in_the_legend():
+    distance = np.linspace(0.0, 1000.0, 101)
+    early = pd.DataFrame({"Distance": distance, "Speed": np.where(distance < 500, 300.0, 100.0)})
+    late = pd.DataFrame({"Distance": distance, "Speed": np.where(distance < 500, 100.0, 300.0)})
+    corners = pd.DataFrame({"Label": ["1"], "X": [100.0], "Y": [0.0]})
+
+    figure = analysis.dominance_map_figure(
+        SQUARE, corners, {"AAA": early, "BBB": late}, TEAMMATES, sectors=4
+    )
+
+    legend = [trace.name for trace in figure.data if trace.showlegend]
+    assert legend == ["AAA (2 of 4)", "BBB (2 of 4)"]
 
 
 def summary_laps() -> pd.DataFrame:

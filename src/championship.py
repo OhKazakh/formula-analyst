@@ -4,11 +4,10 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-from src.analysis import FALLBACK_COLOR, Styles
+from src.analysis import FALLBACK_COLOR, OUTLINE, PLOTLY_DASHES, Styles
 
 RACE_WIN_POINTS = 25
 FASTEST_LAP_SEASONS = range(2019, 2025)
-PLOTLY_DASHES = {"solid": "solid", "dashed": "dash", "dashdot": "dashdot", "dotted": "dot"}
 
 
 def sprint_win_points(year: int) -> int:
@@ -97,7 +96,6 @@ def points_heatmap(
             texttemplate="%{text}",
             customdata=detail,
             hovertemplate="%{y} · %{x}<br>%{z} points<br>%{customdata}<extra></extra>",
-            colorscale="Blues",
             showscale=False,
             xgap=1,
             ygap=1,
@@ -114,7 +112,6 @@ def points_heatmap(
             text=totals.round(1).to_numpy()[:, None],
             texttemplate="%{text}",
             hovertemplate="%{y}<br>%{z} points<extra></extra>",
-            colorscale="Blues",
             showscale=False,
             xgap=1,
             ygap=1,
@@ -164,7 +161,7 @@ def progression_figure(
                 y=cumulative.loc[driver].to_numpy(),
                 name=driver,
                 mode="lines+markers",
-                marker={"size": 5},
+                marker={"size": 6, "line": {"color": OUTLINE, "width": 1}},
                 line={
                     "color": style.get("color", FALLBACK_COLOR),
                     "dash": PLOTLY_DASHES.get(style.get("linestyle", "solid"), "solid"),

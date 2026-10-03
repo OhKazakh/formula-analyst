@@ -5,28 +5,27 @@ import pandas as pd
 import streamlit as st
 
 from src import analysis, races, seasons
-from views import data
+from views import data, theme
 from views.data import show
 
 FIRST_SEASON = 2018
 DEFAULT_YEAR = 2024
 DEFAULT_EVENT = "Italian Grand Prix"
 FASTER_WHERE = "Who's faster where"
-SURFACE = "#F3F4F6"
 HEADER_STYLE = f"""<style>
 .race-podium {{ display: flex; flex-wrap: wrap; gap: 12px; }}
 .race-place {{
   flex: 1 1 180px; border-left: 4px solid; border-radius: 0 10px 10px 0;
-  background: {SURFACE}; padding: 8px 14px;
+  background: {theme.SURFACE}; padding: 8px 14px;
 }}
-.race-place .position {{ font-size: 13px; font-weight: 600; color: {analysis.SECONDARY_INK}; }}
-.race-place .name {{ font-size: 18px; font-weight: 600; color: {analysis.INK}; }}
-.race-place .team {{ font-size: 14px; color: {analysis.SECONDARY_INK}; }}
+.race-place .position {{ font-size: 13px; font-weight: 600; color: {theme.SECONDARY_TEXT}; }}
+.race-place .name {{ font-size: 18px; font-weight: 600; }}
+.race-place .team {{ font-size: 14px; color: {theme.SECONDARY_TEXT}; }}
 .race-facts {{
   display: flex; flex-wrap: wrap; gap: 4px 24px; margin-top: 12px;
-  font-size: 15px; color: {analysis.INK}; font-variant-numeric: tabular-nums;
+  font-size: 15px; font-variant-numeric: tabular-nums;
 }}
-.race-facts .label {{ color: {analysis.SECONDARY_INK}; }}
+.race-facts .label {{ color: {theme.SECONDARY_TEXT}; }}
 @media (max-width: 640px) {{
   .race-podium {{ gap: 6px; }}
   .race-place {{
@@ -469,21 +468,17 @@ def telemetry_tab(race: races.Race) -> None:
         horizontal=True,
         key=race_key(race, f"track_map_view-{first}-{second}"),
     )
-    chart, _ = st.columns([3, 1])
-    with chart:
-        if view == FASTER_WHERE:
-            show(
-                analysis.dominance_map_figure(
-                    race.track, race.map_corners, traces, race.driver_styles
-                )
-            )
-            st.caption(
-                f"The lap is split into {analysis.MINI_SECTORS} equal mini-sectors, each coloured "
-                "by the driver who was quicker through it."
-            )
-        else:
-            driver = view.removesuffix(" speed")
-            show(analysis.speed_map_figure(race.track, race.map_corners, traces[driver]))
+    if view == FASTER_WHERE:
+        show(
+            analysis.dominance_map_figure(race.track, race.map_corners, traces, race.driver_styles)
+        )
+        st.caption(
+            f"The lap is split into {analysis.MINI_SECTORS} equal mini-sectors, each coloured "
+            "by the driver who was quicker through it."
+        )
+    else:
+        driver = view.removesuffix(" speed")
+        show(analysis.speed_map_figure(race.track, race.map_corners, traces[driver]))
 
 
 def render() -> None:

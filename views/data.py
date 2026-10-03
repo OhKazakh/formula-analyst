@@ -1,7 +1,6 @@
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
-from matplotlib.figure import Figure
 
 from src import analysis, races, seasons
 
@@ -52,5 +51,5 @@ def season(year: int, bundle_version: str) -> seasons.Season:
     return seasons.load_season(year)
 
 
-def show(fig: Figure) -> None:
-    st.pyplot(fig)
+def show(figure: go.Figure) -> None:
+    st.plotly_chart(figure, config={"displayModeBar": False})
