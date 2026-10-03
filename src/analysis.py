@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+import matplotlib
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -25,6 +26,29 @@ QUICK_LAP_THRESHOLD = 1.07
 MINI_SECTORS = 25
 TRACK_BACKGROUND = "#d0d4da"
 MUTED_COLOR = "#d6d9de"
+INK = "#16181D"
+SECONDARY_INK = "#5B606B"
+TIME_LABELS = {"FuelCorrected": "Fuel-corrected lap time (s)"}
+CHART_STYLE = {
+    "font.size": 13,
+    "axes.labelsize": 13,
+    "axes.titlesize": 14,
+    "axes.labelcolor": INK,
+    "axes.edgecolor": "#C9CDD4",
+    "axes.spines.top": False,
+    "axes.spines.right": False,
+    "xtick.labelsize": 12,
+    "ytick.labelsize": 12,
+    "xtick.color": SECONDARY_INK,
+    "ytick.color": SECONDARY_INK,
+    "grid.color": "#E6E8EC",
+    "legend.fontsize": 11,
+    "legend.title_fontsize": 11,
+    "legend.frameon": False,
+    "text.color": INK,
+}
+
+matplotlib.rcParams.update(CHART_STYLE)
 
 Styles = dict[str, dict[str, str]]
 
@@ -122,7 +146,7 @@ def format_lap_time(value: pd.Timedelta) -> str:
 def _new_axes(width: float, height: float) -> tuple[Figure, Axes]:
     fig = Figure(figsize=(width, height))
     ax = fig.subplots()
-    ax.grid(True, alpha=0.3)
+    ax.grid(True)
     return fig, ax
 
 
@@ -161,7 +185,7 @@ def pace_figure(
             **_marker_style(styles, driver),
         )
     ax.set_xlabel("Lap")
-    ax.set_ylabel("Lap time (s)")
+    ax.set_ylabel(TIME_LABELS.get(time_column, "Lap time (s)"))
     if ax.has_data():
         ax.legend(loc="upper left", bbox_to_anchor=(1.01, 1))
     fig.tight_layout()
@@ -197,7 +221,7 @@ def strategy_figure(
 def speed_trace_figure(
     traces: dict[str, pd.DataFrame], styles: Styles, corners: pd.DataFrame
 ) -> Figure:
-    fig, ax = _new_axes(14, 5)
+    fig, ax = _new_axes(12, 5)
     for driver, trace in traces.items():
         ax.plot(trace["Distance"], trace["Speed"], label=driver, **_line_style(styles, driver))
 
@@ -206,7 +230,7 @@ def speed_trace_figure(
         for _, corner in corners.iterrows():
             label = f"{corner['Number']}{corner['Letter']}"
             ax.axvline(corner["Distance"], color="grey", linestyle=":", alpha=0.5)
-            ax.text(corner["Distance"], lowest - 20, label, ha="center", fontsize=8)
+            ax.text(corner["Distance"], lowest - 20, label, ha="center", fontsize=10)
         ax.set_ylim(bottom=lowest - 30)
         ax.legend()
 
@@ -216,15 +240,17 @@ def speed_trace_figure(
     return fig
 
 
-def stint_fit_figure(stint_laps: pd.DataFrame, time_column: str = "LapTimeSeconds") -> Figure:
+def stint_fit_figure(
+    stint_laps: pd.DataFrame, time_column: str = "LapTimeSeconds", color: str = FALLBACK_COLOR
+) -> Figure:
     fig, ax = _new_axes(10, 4.5)
     x, y = stint_laps["TyreLife"], stint_laps[time_column]
-    ax.scatter(x, y, label="Laps")
+    ax.scatter(x, y, s=48, color=color, edgecolor=INK, linewidth=0.6, label="Laps", zorder=3)
     if len(stint_laps) >= 2:
         fit = linear_fit(x, y)
-        ax.plot(x, fit.slope * x + fit.intercept, color="red", label=f"Fit: {fit.slope:+.3f} s/lap")
+        ax.plot(x, fit.slope * x + fit.intercept, color=INK, label=f"Fit: {fit.slope:+.3f} s/lap")
     ax.set_xlabel("Tyre age (laps)")
-    ax.set_ylabel("Lap time (s)")
+    ax.set_ylabel(TIME_LABELS.get(time_column, "Lap time (s)"))
     ax.legend()
     fig.tight_layout()
     return fig
@@ -493,7 +519,7 @@ def position_figure(
     ax.set_xlabel("Lap")
     ax.set_ylabel("Position")
     if ax.has_data():
-        ax.legend(loc="upper left", bbox_to_anchor=(1.01, 1), fontsize=8)
+        ax.legend(loc="upper left", bbox_to_anchor=(1.01, 1))
     fig.tight_layout()
     return fig
 
@@ -523,7 +549,7 @@ def team_pace_figure(laps: pd.DataFrame, styles: Styles) -> Figure:
     quick = quick_laps(laps)
     order = team_pace(laps)["Team"].tolist()
     colors = team_colors(quick, styles)
-    fig, ax = _new_axes(12, 5)
+    fig, ax = _new_axes(8, 4.8)
     ax.grid(axis="x", visible=False)
     boxes = ax.boxplot(
         [quick.loc[quick["Team"] == team, "LapTimeSeconds"] for team in order],
@@ -601,13 +627,13 @@ def _track_segments(track: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
 
 
 def _map_axes(track: pd.DataFrame, map_corners: pd.DataFrame) -> tuple[Figure, Axes]:
-    fig = Figure(figsize=(9, 6))
+    fig = Figure(figsize=(8, 5.5))
     ax = fig.subplots()
     ax.set_aspect("equal")
     ax.axis("off")
     ax.plot(track["X"], track["Y"], color=TRACK_BACKGROUND, linewidth=11, zorder=1)
     for corner in map_corners.itertuples():
-        ax.text(corner.X, corner.Y, corner.Label, fontsize=7, color="#7a7f88", ha="center")
+        ax.text(corner.X, corner.Y, corner.Label, fontsize=10, color=SECONDARY_INK, ha="center")
     return fig, ax
 
 

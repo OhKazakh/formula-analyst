@@ -6,3 +6,11 @@ gatherUsageStats = false
 
 [theme]
 base = "light"
+primaryColor = "#353B48"
+textColor = "#16181D"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F3F4F6"
+borderColor = "#E3E5E9"
+dataframeHeaderBackgroundColor = "#F3F4F6"
+baseRadius = "0.6rem"
+showSidebarBorder = true
