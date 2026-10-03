@@ -175,11 +175,11 @@
       "linestyle": "solid"
     },
     "VET": {
-      "color": "#da291c",
+      "color": "#dc0000",
       "linestyle": "dashed"
     },
     "LEC": {
-      "color": "#da291c",
+      "color": "#dc0000",
       "linestyle": "solid"
     },
     "BOT": {
@@ -203,23 +203,23 @@
       "linestyle": "solid"
     },
     "STR": {
-      "color": "#ff87bc",
+      "color": "#f596c8",
       "linestyle": "dashed"
     },
     "KVY": {
-      "color": "#2b4562",
+      "color": "#469bff",
       "linestyle": "dashed"
     },
     "SAI": {
-      "color": "#ff8000",
+      "color": "#ff8700",
       "linestyle": "dashed"
     },
     "PER": {
-      "color": "#ff87bc",
+      "color": "#f596c8",
       "linestyle": "solid"
     },
     "GIO": {
-      "color": "#900000",
+      "color": "#9b0000",
       "linestyle": "dashed"
     },
     "GRO": {
@@ -227,11 +227,11 @@
       "linestyle": "dashed"
     },
     "RAI": {
-      "color": "#900000",
+      "color": "#9b0000",
       "linestyle": "solid"
     },
     "RUS": {
-      "color": "#00a0dd",
+      "color": "#ffffff",
       "linestyle": "solid"
     },
     "MAG": {
@@ -239,15 +239,15 @@
       "linestyle": "solid"
     },
     "KUB": {
-      "color": "#00a0dd",
+      "color": "#ffffff",
       "linestyle": "dashed"
     },
     "ALB": {
-      "color": "#2b4562",
+      "color": "#469bff",
       "linestyle": "solid"
     },
     "NOR": {
-      "color": "#ff8000",
+      "color": "#ff8700",
       "linestyle": "solid"
     }
   },

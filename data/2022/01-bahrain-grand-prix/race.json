@@ -181,19 +181,19 @@
   ],
   "driver_styles": {
     "LEC": {
-      "color": "#da291c",
+      "color": "#ed1c24",
       "linestyle": "solid"
     },
     "SAI": {
-      "color": "#da291c",
+      "color": "#ed1c24",
       "linestyle": "dashed"
     },
     "HAM": {
-      "color": "#00f5d0",
+      "color": "#6cd3bf",
       "linestyle": "solid"
     },
     "RUS": {
-      "color": "#00f5d0",
+      "color": "#6cd3bf",
       "linestyle": "dashed"
     },
     "MAG": {
@@ -201,23 +201,23 @@
       "linestyle": "solid"
     },
     "BOT": {
-      "color": "#900000",
+      "color": "#b12039",
       "linestyle": "dashed"
     },
     "OCO": {
-      "color": "#fe86bc",
+      "color": "#2293d1",
       "linestyle": "dashed"
     },
     "TSU": {
-      "color": "#2b4562",
+      "color": "#4e7c9b",
       "linestyle": "dashed"
     },
     "ALO": {
-      "color": "#fe86bc",
+      "color": "#2293d1",
       "linestyle": "solid"
     },
     "ZHO": {
-      "color": "#900000",
+      "color": "#b12039",
       "linestyle": "solid"
     },
     "MSC": {
@@ -225,39 +225,39 @@
       "linestyle": "dashed"
     },
     "STR": {
-      "color": "#00665e",
+      "color": "#2d826d",
       "linestyle": "solid"
     },
     "ALB": {
-      "color": "#00a0dd",
+      "color": "#37bedd",
       "linestyle": "solid"
     },
     "RIC": {
-      "color": "#ff8000",
+      "color": "#f58020",
       "linestyle": "solid"
     },
     "NOR": {
-      "color": "#ff8000",
+      "color": "#f58020",
       "linestyle": "dashed"
     },
     "LAT": {
-      "color": "#00a0dd",
+      "color": "#37bedd",
       "linestyle": "dashed"
     },
     "HUL": {
-      "color": "#00665e",
+      "color": "#2d826d",
       "linestyle": "dashed"
     },
     "PER": {
-      "color": "#0600ef",
+      "color": "#1e5bc6",
       "linestyle": "dashed"
     },
     "VER": {
-      "color": "#0600ef",
+      "color": "#1e5bc6",
       "linestyle": "solid"
     },
     "GAS": {
-      "color": "#2b4562",
+      "color": "#4e7c9b",
       "linestyle": "solid"
     }
   },

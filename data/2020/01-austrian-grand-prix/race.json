@@ -139,7 +139,7 @@
       "linestyle": "solid"
     },
     "NOR": {
-      "color": "#ff8000",
+      "color": "#ff8700",
       "linestyle": "solid"
     },
     "HAM": {
@@ -147,15 +147,15 @@
       "linestyle": "solid"
     },
     "SAI": {
-      "color": "#ff8000",
+      "color": "#ff8700",
       "linestyle": "dashed"
     },
     "PER": {
-      "color": "#ff87bc",
+      "color": "#f596c8",
       "linestyle": "solid"
     },
     "GAS": {
-      "color": "#2b4562",
+      "color": "#ffffff",
       "linestyle": "solid"
     },
     "OCO": {
@@ -163,7 +163,7 @@
       "linestyle": "dashed"
     },
     "GIO": {
-      "color": "#900000",
+      "color": "#9b0000",
       "linestyle": "dashed"
     },
     "VET": {
@@ -171,11 +171,11 @@
       "linestyle": "dashed"
     },
     "LAT": {
-      "color": "#00a0dd",
+      "color": "#0082fa",
       "linestyle": "solid"
     },
     "KVY": {
-      "color": "#2b4562",
+      "color": "#ffffff",
       "linestyle": "dashed"
     },
     "ALB": {
@@ -183,23 +183,23 @@
       "linestyle": "solid"
     },
     "RAI": {
-      "color": "#900000",
+      "color": "#9b0000",
       "linestyle": "solid"
     },
     "RUS": {
-      "color": "#00a0dd",
+      "color": "#0082fa",
       "linestyle": "dashed"
     },
     "GRO": {
-      "color": "#b6babd",
+      "color": "#787878",
       "linestyle": "dashed"
     },
     "MAG": {
-      "color": "#b6babd",
+      "color": "#787878",
       "linestyle": "solid"
     },
     "STR": {
-      "color": "#ff87bc",
+      "color": "#f596c8",
       "linestyle": "dashed"
     },
     "RIC": {

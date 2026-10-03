@@ -104,7 +104,7 @@
       "linestyle": "solid"
     },
     "HAM": {
-      "color": "#00f5d0",
+      "color": "#00d2be",
       "linestyle": "solid"
     },
     "RAI": {
@@ -128,7 +128,7 @@
       "linestyle": "solid"
     },
     "BOT": {
-      "color": "#00f5d0",
+      "color": "#00d2be",
       "linestyle": "dashed"
     },
     "VAN": {
@@ -140,43 +140,43 @@
       "linestyle": "dashed"
     },
     "PER": {
-      "color": "#ff87bc",
+      "color": "#f596c8",
       "linestyle": "solid"
     },
     "OCO": {
-      "color": "#ff87bc",
+      "color": "#f596c8",
       "linestyle": "dashed"
     },
     "LEC": {
-      "color": "#900000",
+      "color": "#9b0000",
       "linestyle": "solid"
     },
     "STR": {
-      "color": "#00a0dd",
+      "color": "#ffffff",
       "linestyle": "solid"
     },
     "HAR": {
-      "color": "#2b4562",
+      "color": "#469bff",
       "linestyle": "dashed"
     },
     "GRO": {
-      "color": "#b6babd",
+      "color": "#828282",
       "linestyle": "dashed"
     },
     "MAG": {
-      "color": "#b6babd",
+      "color": "#828282",
       "linestyle": "solid"
     },
     "GAS": {
-      "color": "#2b4562",
+      "color": "#469bff",
       "linestyle": "solid"
     },
     "ERI": {
-      "color": "#900000",
+      "color": "#9b0000",
       "linestyle": "dashed"
     },
     "SIR": {
-      "color": "#00a0dd",
+      "color": "#ffffff",
       "linestyle": "dashed"
     }
   },

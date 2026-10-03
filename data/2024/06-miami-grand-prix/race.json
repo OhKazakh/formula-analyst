@@ -225,7 +225,7 @@
       "linestyle": "solid"
     },
     "VER": {
-      "color": "#0600ef",
+      "color": "#3671c6",
       "linestyle": "solid"
     },
     "LEC": {
@@ -233,7 +233,7 @@
       "linestyle": "solid"
     },
     "PER": {
-      "color": "#0600ef",
+      "color": "#3671c6",
       "linestyle": "dashed"
     },
     "SAI": {
@@ -245,7 +245,7 @@
       "linestyle": "solid"
     },
     "TSU": {
-      "color": "#364aa9",
+      "color": "#6692ff",
       "linestyle": "solid"
     },
     "RUS": {
@@ -253,11 +253,11 @@
       "linestyle": "dashed"
     },
     "ALO": {
-      "color": "#00665f",
+      "color": "#229971",
       "linestyle": "solid"
     },
     "OCO": {
-      "color": "#ff87bc",
+      "color": "#0093cc",
       "linestyle": "dashed"
     },
     "HUL": {
@@ -265,7 +265,7 @@
       "linestyle": "dashed"
     },
     "GAS": {
-      "color": "#ff87bc",
+      "color": "#0093cc",
       "linestyle": "solid"
     },
     "PIA": {
@@ -273,23 +273,23 @@
       "linestyle": "dashed"
     },
     "ZHO": {
-      "color": "#00e700",
+      "color": "#52e252",
       "linestyle": "solid"
     },
     "RIC": {
-      "color": "#364aa9",
+      "color": "#6692ff",
       "linestyle": "dashed"
     },
     "BOT": {
-      "color": "#00e700",
+      "color": "#52e252",
       "linestyle": "dashed"
     },
     "STR": {
-      "color": "#00665f",
+      "color": "#229971",
       "linestyle": "dashed"
     },
     "ALB": {
-      "color": "#00a0dd",
+      "color": "#64c4ff",
       "linestyle": "dashed"
     },
     "MAG": {
@@ -297,7 +297,7 @@
       "linestyle": "solid"
     },
     "SAR": {
-      "color": "#00a0dd",
+      "color": "#64c4ff",
       "linestyle": "solid"
     }
   },

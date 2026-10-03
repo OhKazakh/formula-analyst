@@ -135,7 +135,7 @@
       "linestyle": "dashed"
     },
     "HAD": {
-      "color": "#0600ef",
+      "color": "#3671c6",
       "linestyle": "dashed"
     },
     "PIA": {
@@ -143,19 +143,19 @@
       "linestyle": "dashed"
     },
     "LAW": {
-      "color": "#fcd700",
+      "color": "#6692ff",
       "linestyle": "solid"
     },
     "LIN": {
-      "color": "#fcd700",
+      "color": "#6692ff",
       "linestyle": "dashed"
     },
     "GAS": {
-      "color": "#ff87bc",
+      "color": "#0093cc",
       "linestyle": "solid"
     },
     "ALB": {
-      "color": "#00a0dd",
+      "color": "#64c4ff",
       "linestyle": "solid"
     },
     "OCO": {
@@ -163,7 +163,7 @@
       "linestyle": "solid"
     },
     "ALO": {
-      "color": "#00665f",
+      "color": "#229971",
       "linestyle": "solid"
     },
     "BOR": {
@@ -179,7 +179,7 @@
       "linestyle": "solid"
     },
     "COL": {
-      "color": "#ff87bc",
+      "color": "#0093cc",
       "linestyle": "dashed"
     },
     "PER": {
@@ -187,7 +187,7 @@
       "linestyle": "solid"
     },
     "SAI": {
-      "color": "#00a0dd",
+      "color": "#64c4ff",
       "linestyle": "dashed"
     },
     "LEC": {
@@ -195,7 +195,7 @@
       "linestyle": "solid"
     },
     "STR": {
-      "color": "#00665f",
+      "color": "#229971",
       "linestyle": "dashed"
     },
     "NOR": {
@@ -211,7 +211,7 @@
       "linestyle": "dashed"
     },
     "VER": {
-      "color": "#0600ef",
+      "color": "#3671c6",
       "linestyle": "solid"
     }
   },

@@ -211,7 +211,7 @@
   ],
   "driver_styles": {
     "HAM": {
-      "color": "#00f5d0",
+      "color": "#00d2be",
       "linestyle": "solid"
     },
     "LEC": {
@@ -219,15 +219,15 @@
       "linestyle": "solid"
     },
     "BOT": {
-      "color": "#00f5d0",
+      "color": "#00d2be",
       "linestyle": "dashed"
     },
     "NOR": {
-      "color": "#ff8000",
+      "color": "#ff9800",
       "linestyle": "dashed"
     },
     "RIC": {
-      "color": "#ff8000",
+      "color": "#ff9800",
       "linestyle": "solid"
     },
     "SAI": {
@@ -235,15 +235,15 @@
       "linestyle": "dashed"
     },
     "ALO": {
-      "color": "#0755ab",
+      "color": "#0090ff",
       "linestyle": "solid"
     },
     "STR": {
-      "color": "#00665e",
+      "color": "#006f62",
       "linestyle": "solid"
     },
     "OCO": {
-      "color": "#0755ab",
+      "color": "#0090ff",
       "linestyle": "dashed"
     },
     "TSU": {
@@ -255,7 +255,7 @@
       "linestyle": "solid"
     },
     "RUS": {
-      "color": "#00a0dd",
+      "color": "#005aff",
       "linestyle": "dashed"
     },
     "GIO": {
@@ -263,7 +263,7 @@
       "linestyle": "dashed"
     },
     "LAT": {
-      "color": "#00a0dd",
+      "color": "#005aff",
       "linestyle": "solid"
     },
     "RAI": {
@@ -275,15 +275,15 @@
       "linestyle": "solid"
     },
     "MAZ": {
-      "color": "#b6babd",
+      "color": "#ffffff",
       "linestyle": "dashed"
     },
     "MSC": {
-      "color": "#b6babd",
+      "color": "#ffffff",
       "linestyle": "solid"
     },
     "VET": {
-      "color": "#00665e",
+      "color": "#006f62",
       "linestyle": "dashed"
     },
     "VER": {

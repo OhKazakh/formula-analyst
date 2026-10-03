@@ -141,7 +141,7 @@
   ],
   "driver_styles": {
     "LEC": {
-      "color": "#da291c",
+      "color": "#dc0000",
       "linestyle": "solid"
     },
     "BOT": {
@@ -165,7 +165,7 @@
       "linestyle": "solid"
     },
     "PER": {
-      "color": "#ff87bc",
+      "color": "#f596c8",
       "linestyle": "solid"
     },
     "VER": {
@@ -173,31 +173,31 @@
       "linestyle": "dashed"
     },
     "GIO": {
-      "color": "#900000",
+      "color": "#9b0000",
       "linestyle": "dashed"
     },
     "NOR": {
-      "color": "#ff8000",
+      "color": "#ff8700",
       "linestyle": "solid"
     },
     "GAS": {
-      "color": "#2b4562",
+      "color": "#469bff",
       "linestyle": "solid"
     },
     "STR": {
-      "color": "#ff87bc",
+      "color": "#f596c8",
       "linestyle": "dashed"
     },
     "VET": {
-      "color": "#da291c",
+      "color": "#dc0000",
       "linestyle": "dashed"
     },
     "RUS": {
-      "color": "#00a0dd",
+      "color": "#ffffff",
       "linestyle": "solid"
     },
     "RAI": {
-      "color": "#900000",
+      "color": "#9b0000",
       "linestyle": "solid"
     },
     "GRO": {
@@ -205,7 +205,7 @@
       "linestyle": "dashed"
     },
     "KUB": {
-      "color": "#00a0dd",
+      "color": "#ffffff",
       "linestyle": "dashed"
     },
     "MAG": {
@@ -213,11 +213,11 @@
       "linestyle": "solid"
     },
     "KVY": {
-      "color": "#2b4562",
+      "color": "#469bff",
       "linestyle": "dashed"
     },
     "SAI": {
-      "color": "#ff8000",
+      "color": "#ff8700",
       "linestyle": "dashed"
     }
   },

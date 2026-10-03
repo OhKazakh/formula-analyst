@@ -131,71 +131,71 @@
   ],
   "driver_styles": {
     "VER": {
-      "color": "#0600ef",
+      "color": "#3671c6",
       "linestyle": "solid"
     },
     "LEC": {
-      "color": "#da291c",
+      "color": "#f91536",
       "linestyle": "solid"
     },
     "PER": {
-      "color": "#0600ef",
+      "color": "#3671c6",
       "linestyle": "dashed"
     },
     "NOR": {
-      "color": "#ff8000",
+      "color": "#f58020",
       "linestyle": "solid"
     },
     "ALO": {
-      "color": "#00665e",
+      "color": "#358c75",
       "linestyle": "solid"
     },
     "SAI": {
-      "color": "#da291c",
+      "color": "#f91536",
       "linestyle": "dashed"
     },
     "RUS": {
-      "color": "#00f5d0",
+      "color": "#6cd3bf",
       "linestyle": "dashed"
     },
     "HAM": {
-      "color": "#00f5d0",
+      "color": "#6cd3bf",
       "linestyle": "solid"
     },
     "STR": {
-      "color": "#00665e",
+      "color": "#358c75",
       "linestyle": "dashed"
     },
     "GAS": {
-      "color": "#fe86bc",
+      "color": "#2293d1",
       "linestyle": "solid"
     },
     "ALB": {
-      "color": "#00a0dd",
+      "color": "#37bedd",
       "linestyle": "dashed"
     },
     "ZHO": {
-      "color": "#900000",
+      "color": "#c92d4b",
       "linestyle": "solid"
     },
     "SAR": {
-      "color": "#00a0dd",
+      "color": "#37bedd",
       "linestyle": "solid"
     },
     "OCO": {
-      "color": "#fe86bc",
+      "color": "#2293d1",
       "linestyle": "dashed"
     },
     "BOT": {
-      "color": "#900000",
+      "color": "#c92d4b",
       "linestyle": "dashed"
     },
     "PIA": {
-      "color": "#ff8000",
+      "color": "#f58020",
       "linestyle": "dashed"
     },
     "DEV": {
-      "color": "#2b4562",
+      "color": "#5e8faa",
       "linestyle": "solid"
     },
     "MAG": {
@@ -203,7 +203,7 @@
       "linestyle": "solid"
     },
     "TSU": {
-      "color": "#2b4562",
+      "color": "#5e8faa",
       "linestyle": "dashed"
     },
     "HUL": {

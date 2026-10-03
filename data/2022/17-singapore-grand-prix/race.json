@@ -221,47 +221,47 @@
   ],
   "driver_styles": {
     "PER": {
-      "color": "#0600ef",
+      "color": "#1e5bc6",
       "linestyle": "dashed"
     },
     "LEC": {
-      "color": "#da291c",
+      "color": "#ed1c24",
       "linestyle": "solid"
     },
     "SAI": {
-      "color": "#da291c",
+      "color": "#ed1c24",
       "linestyle": "dashed"
     },
     "NOR": {
-      "color": "#ff8000",
+      "color": "#f58020",
       "linestyle": "dashed"
     },
     "RIC": {
-      "color": "#ff8000",
+      "color": "#f58020",
       "linestyle": "solid"
     },
     "STR": {
-      "color": "#00665e",
+      "color": "#2d826d",
       "linestyle": "solid"
     },
     "VER": {
-      "color": "#0600ef",
+      "color": "#1e5bc6",
       "linestyle": "solid"
     },
     "VET": {
-      "color": "#00665e",
+      "color": "#2d826d",
       "linestyle": "dashed"
     },
     "HAM": {
-      "color": "#00f5d0",
+      "color": "#6cd3bf",
       "linestyle": "solid"
     },
     "GAS": {
-      "color": "#2b4562",
+      "color": "#4e7c9b",
       "linestyle": "solid"
     },
     "BOT": {
-      "color": "#900000",
+      "color": "#b12039",
       "linestyle": "dashed"
     },
     "MAG": {
@@ -273,31 +273,31 @@
       "linestyle": "dashed"
     },
     "RUS": {
-      "color": "#00f5d0",
+      "color": "#6cd3bf",
       "linestyle": "dashed"
     },
     "TSU": {
-      "color": "#2b4562",
+      "color": "#4e7c9b",
       "linestyle": "dashed"
     },
     "OCO": {
-      "color": "#fe86bc",
+      "color": "#2293d1",
       "linestyle": "dashed"
     },
     "ALB": {
-      "color": "#00a0dd",
+      "color": "#37bedd",
       "linestyle": "solid"
     },
     "ALO": {
-      "color": "#fe86bc",
+      "color": "#2293d1",
       "linestyle": "solid"
     },
     "LAT": {
-      "color": "#00a0dd",
+      "color": "#37bedd",
       "linestyle": "dashed"
     },
     "ZHO": {
-      "color": "#900000",
+      "color": "#b12039",
       "linestyle": "solid"
     }
   },

@@ -257,7 +257,9 @@ def _driver_styles(session: Session, drivers: list[str]) -> Styles:
     styles = {}
     for driver in drivers:
         try:
-            style = fastf1.plotting.get_driver_style(driver, ["color", "linestyle"], session)
+            style = fastf1.plotting.get_driver_style(
+                driver, ["color", "linestyle"], session, colormap="official"
+            )
         except (KeyError, ValueError):
             continue
         styles[driver] = {"color": style["color"], "linestyle": style["linestyle"]}
