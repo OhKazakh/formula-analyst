@@ -2,7 +2,10 @@
 
 Race analysis dashboard built on [FastF1](https://github.com/theOehrly/Fast-F1) timing data. Pick a Grand Prix and see how the race played out, or follow a whole championship season. Every race from 2018 to the latest 2026 round is included.
 
-![Race overview](docs/overview.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/overview-dark.png">
+  <img alt="Race overview" src="docs/overview.png">
+</picture>
 
 ## Features
 
@@ -21,6 +24,8 @@ Every race opens with a summary: the podium, the fastest lap, the number of pit 
 - Standings after any round, with each driver's maximum possible points and whether they can still win the title.
 - Points progression through the season.
 - Points per round for every driver, race and sprint combined.
+
+The app follows the system's light or dark setting, and drivers are drawn in their teams' official colours. Every chart is interactive: hover a point for its lap time, tyre, position or speed.
 
 ![Race replay](docs/replay.png)
 
@@ -73,6 +78,7 @@ app.py                  page navigation
 views/race.py           race page
 views/championship.py   championship page
 views/data.py           cached data loading for both pages
+views/theme.py          colours and styles shared by the pages
 src/analysis.py         race analysis and charts
 src/championship.py     standings, title maths and championship charts
 src/races.py            loading races from FastF1 or the bundle, saving bundles
