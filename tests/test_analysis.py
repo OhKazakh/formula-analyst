@@ -331,3 +331,45 @@ def test_distinct_colors_shade_the_second_teammate():
 
 def test_format_seconds():
     assert analysis.format_seconds(83.226) == "1:23.226"
+
+
+def summary_laps() -> pd.DataFrame:
+    def row(driver, number, seconds, status="1", personal_best=True, pit_in=None):
+        return {
+            "Driver": driver,
+            "LapNumber": float(number),
+            "LapTime": pd.Timedelta(milliseconds=int(seconds * 1000)),
+            "IsPersonalBest": personal_best,
+            "TrackStatus": status,
+            "PitInTime": pd.Timedelta(minutes=number) if pit_in else pd.NaT,
+            "Time": pd.Timedelta(milliseconds=int(seconds * 1000 * number)),
+        }
+
+    return pd.DataFrame(
+        [
+            row("AAA", 1, 90.0),
+            row("AAA", 2, 95.0, status="4"),
+            row("AAA", 3, 92.0, status="6", pit_in=True),
+            row("AAA", 4, 88.5, status="5"),
+            row("BBB", 1, 91.0),
+            row("BBB", 2, 89.0, status="4"),
+            row("BBB", 3, 87.0, personal_best=False, pit_in=True),
+            row("BBB", 4, 93.0, status="5", pit_in=True),
+        ]
+    )
+
+
+def test_race_summary_counts_track_status_and_pit_stops():
+    summary = analysis.race_summary(summary_laps(), winner="AAA")
+
+    assert summary.fastest == analysis.FastestLap("AAA", 4, pd.Timedelta(milliseconds=88500))
+    assert (summary.safety_car_laps, summary.virtual_safety_car_laps) == (1, 1)
+    assert summary.red_flag
+    assert summary.pit_stops == 2
+
+
+def test_race_summary_laps_led_and_lead_changes():
+    summary = analysis.race_summary(summary_laps(), winner="AAA")
+
+    assert summary.laps_led == {"AAA": 2, "BBB": 2}
+    assert summary.lead_changes == 2

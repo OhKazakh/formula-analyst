@@ -13,6 +13,9 @@ from matplotlib.figure import Figure
 from matplotlib.patches import Patch
 
 GREEN_FLAG = "1"
+SAFETY_CAR = "4"
+RED_FLAG = "5"
+VIRTUAL_SAFETY_CAR = ("6", "7")
 DEFAULT_FUEL_EFFECT = 0.055
 FALLBACK_COLOR = "#888888"
 UNKNOWN_COMPOUND = "UNKNOWN"
@@ -702,3 +705,51 @@ def dominance_map_figure(
     ax.legend(handles=handles, title="Faster in", loc="upper left", bbox_to_anchor=(1.0, 1))
     fig.tight_layout()
     return fig
+
+
+@dataclass(frozen=True)
+class FastestLap:
+    driver: str
+    lap: int
+    time: pd.Timedelta
+
+
+@dataclass(frozen=True)
+class RaceSummary:
+    fastest: FastestLap | None
+    pit_stops: int
+    safety_car_laps: int
+    virtual_safety_car_laps: int
+    red_flag: bool
+    laps_led: dict[str, int]
+    lead_changes: int
+
+
+def race_summary(laps: pd.DataFrame, winner: str) -> RaceSummary:
+    personal_bests = laps[laps["IsPersonalBest"]].dropna(subset=["LapTime"])
+    fastest = None
+    if not personal_bests.empty:
+        best = personal_bests.loc[personal_bests["LapTime"].idxmin()]
+        fastest = FastestLap(str(best["Driver"]), int(best["LapNumber"]), best["LapTime"])
+
+    status = laps["TrackStatus"].fillna("").astype(str)
+    red_flag = status.str.contains(RED_FLAG)
+    winner_status = status[laps["Driver"] == winner]
+    safety_car = winner_status.str.contains(SAFETY_CAR)
+    virtual = winner_status.apply(lambda codes: any(code in codes for code in VIRTUAL_SAFETY_CAR))
+
+    leaders = pd.Series(dtype=str)
+    if "Time" in laps.columns:
+        positions = lap_positions(laps)
+        leaders = positions[positions["Position"] == 1].sort_values("LapNumber")["Driver"]
+    led = leaders.value_counts()
+
+    return RaceSummary(
+        fastest=fastest,
+        pit_stops=int((laps["PitInTime"].notna() & ~red_flag).sum()),
+        safety_car_laps=int(safety_car.sum()),
+        virtual_safety_car_laps=int((virtual & ~safety_car).sum()),
+        red_flag=bool(red_flag.any()),
+        laps_led={str(driver): int(count) for driver, count in led.items()},
+        lead_changes=max(int((leaders != leaders.shift()).sum()) - 1, 0),
+    )
