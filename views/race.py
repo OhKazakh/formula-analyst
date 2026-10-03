@@ -4,7 +4,7 @@ from datetime import date
 import pandas as pd
 import streamlit as st
 
-from src import analysis, races, seasons
+from src import analysis, degradation, races, seasons
 from views import data, theme
 from views.data import show
 from views.links import requested, requested_int
@@ -430,10 +430,53 @@ def wear_rates(race: races.Race, clean: pd.DataFrame) -> None:
     show(analysis.stint_fit_figure(stint_laps, "FuelCorrected", color))
 
 
-def strategy_tab(race: races.Race, clean: pd.DataFrame) -> None:
+def model_takeaway(expected: dict[str, float]) -> str:
+    phrases = [f"{loss:+.1f} s on the {compound}" for compound, loss in expected.items()]
+    listed = phrases[0] if len(phrases) == 1 else ", ".join(phrases[:-1]) + f" and {phrases[-1]}"
+    return (
+        f"After {degradation.HORIZON} laps on a fresh set, the model expects lap times to "
+        f"change by {listed}."
+    )
+
+
+def tyre_model(race: races.Race, bundle_version: str) -> None:
+    st.subheader("What would a model trained on other races expect?")
+    if race.year < degradation.FIRST_SEASON:
+        st.info(
+            "The tyre model covers 2019 onwards, when every race used tyres named soft, "
+            "medium and hard."
+        )
+        return
+    metrics = data.tyre_metrics(bundle_version)
+    curves = degradation.race_curves(data.tyre_curves(bundle_version), race.year, race.round_number)
+    if metrics is None or curves.empty:
+        st.info("The tyre model hasn't been trained on this race yet.")
+        return
+
+    losses = degradation.stint_losses(race.laps, race.total_laps)
+    used = [
+        compound for compound in degradation.DRY_COMPOUNDS if compound in set(losses["Compound"])
+    ]
+    curves = curves[curves["Compound"].isin(used or degradation.DRY_COMPOUNDS)]
+    if expected := degradation.loss_after(curves):
+        st.markdown(model_takeaway(expected))
+    show(analysis.tyre_model_figure(curves, losses, race.compound_colors))
+    mae = metrics["mae"]
+    st.caption(
+        "Lines come from a gradient-boosted model trained on dry-tyre stints from "
+        f"{metrics['first_season']}–{metrics['last_season']} races, with this race held out. "
+        "Dots are this race's laps. On races it hasn't seen, the model is off by "
+        f"{mae['model']:.2f} s a lap on average, against {mae['baseline']:.2f} s for a "
+        f"straight line per compound and {mae['no_wear']:.2f} s for assuming no wear."
+    )
+
+
+def strategy_tab(race: races.Race, clean: pd.DataFrame, bundle_version: str) -> None:
     tyre_strategy(race)
     st.divider()
     wear_rates(race, clean)
+    st.divider()
+    tyre_model(race, bundle_version)
 
 
 def telemetry_tab(race: races.Race) -> None:
@@ -555,7 +598,7 @@ def render() -> None:
             pace_tab(race, clean)
     if strategy.open:
         with strategy:
-            strategy_tab(race, clean)
+            strategy_tab(race, clean, bundle_version)
     if telemetry.open:
         with telemetry:
             telemetry_tab(race)

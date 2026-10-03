@@ -379,6 +379,59 @@ def stint_fit_figure(
     return _finish(figure, 380)
 
 
+def tyre_model_figure(
+    curves: pd.DataFrame, losses: pd.DataFrame, compound_colors: dict[str, str]
+) -> go.Figure:
+    figure = go.Figure()
+    present = list(dict.fromkeys([*curves["Compound"], *losses["Compound"]]))
+    for compound in _compound_order(present, compound_colors):
+        color = compound_colors.get(compound, FALLBACK_COLOR)
+        laps = losses[losses["Compound"] == compound]
+        if not laps.empty:
+            figure.add_trace(
+                go.Scatter(
+                    x=laps["TyreLife"],
+                    y=laps["Loss"],
+                    mode="markers",
+                    name=compound,
+                    legendgroup=compound,
+                    showlegend=False,
+                    marker={
+                        "color": color,
+                        "size": 6,
+                        "opacity": 0.5,
+                        "line": {"color": OUTLINE, "width": 0.5},
+                    },
+                    customdata=laps["Driver"],
+                    hovertemplate=(
+                        "<b>%{customdata}</b> · tyre age %{x}<br>%{y:+.2f} s<extra></extra>"
+                    ),
+                )
+            )
+        curve = curves[curves["Compound"] == compound]
+        if not curve.empty:
+            _add_line(
+                figure,
+                {"color": color, "dash": "solid", "width": 3},
+                x=curve["TyreLife"],
+                y=curve["Predicted"],
+                name=compound,
+                legendgroup=compound,
+                mode="lines",
+                hovertemplate=(
+                    f"{compound} · tyre age %{{x}}<br>predicted %{{y:+.2f}} s<extra></extra>"
+                ),
+            )
+    measured = losses["Loss"].astype(float)
+    lows = np.array([curves["Predicted"].min(), measured.quantile(0.02)], dtype=float)
+    highs = np.array([curves["Predicted"].max(), measured.quantile(0.98)], dtype=float)
+    if not np.isnan(lows).all():
+        figure.update_yaxes(range=[np.nanmin(lows) - 0.25, np.nanmax(highs) + 0.25])
+    figure.update_xaxes(title="Tyre age (laps)")
+    figure.update_yaxes(title="Time lost since the stint began (s)", zeroline=True)
+    return _finish(figure, 440, legend_title_text="Model")
+
+
 def _elapsed(trace: pd.DataFrame) -> np.ndarray:
     distance = trace["Distance"].to_numpy(dtype=float)
     speed = np.maximum(trace["Speed"].to_numpy(dtype=float) / 3.6, 1.0)

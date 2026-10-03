@@ -7,7 +7,7 @@ from datetime import date
 import fastf1
 from fastf1.exceptions import ErgastError, RateLimitExceededError
 
-from src import races, seasons
+from src import model, races, seasons
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -70,6 +70,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"stopped: {exc}. Run the same command again later to continue.")
         return 1
     print(f"saved  {path.relative_to(races.ROOT)} championship results", flush=True)
+    path = model.build()
+    print(f"saved  {path.relative_to(races.ROOT)} tyre model", flush=True)
     return 1 if failures else 0
 
 
