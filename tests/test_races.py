@@ -204,3 +204,57 @@ def test_track_map_applies_rotation():
     np.testing.assert_allclose(
         map_corners.iloc[0][["X", "Y"]].astype(float), [0.0, 150.0], atol=1e-9
     )
+
+
+def test_team_radio_captures_read_lists_and_numbered_updates():
+    stream = [
+        [
+            "00:00:01",
+            {"Captures": [{"Utc": "2024-09-01T12:00:00Z", "RacingNumber": "16", "Path": "a.mp3"}]},
+        ],
+        [
+            "00:00:02",
+            {
+                "Captures": {
+                    "1": {"Utc": "2024-09-01T12:01:00.5Z", "RacingNumber": "81", "Path": "b.mp3"}
+                }
+            },
+        ],
+    ]
+
+    captures = races.team_radio_captures(stream)
+
+    assert [capture["Path"] for capture in captures] == ["a.mp3", "b.mp3"]
+
+
+def test_round_trip_keeps_weather_messages_and_radio(tmp_path):
+    weather = pd.DataFrame(
+        {
+            "Time": [10.0],
+            "AirTemp": [30.0],
+            "TrackTemp": [45.0],
+            "Humidity": [40.0],
+            "Rainfall": [False],
+            "WindSpeed": [1.0],
+        }
+    )
+    messages = pd.DataFrame(
+        {
+            "Time": [20.0],
+            "Lap": [1.0],
+            "Category": ["Flag"],
+            "Flag": ["GREEN"],
+            "Message": ["GREEN LIGHT"],
+        }
+    )
+    radio = pd.DataFrame({"Time": [30.0], "Driver": ["AAA"], "Url": ["https://example.com/a.mp3"]})
+    race = make_race()
+    race = races.Race(**{**race.__dict__, "weather": weather, "messages": messages, "radio": radio})
+
+    path = races.save_race(race, tmp_path)
+    loaded = races.read_race(path)
+
+    pd.testing.assert_frame_equal(loaded.weather, weather)
+    pd.testing.assert_frame_equal(loaded.messages, messages)
+    pd.testing.assert_frame_equal(loaded.radio, radio)
+    assert races.bundle_format(path) == races.FORMAT_VERSION

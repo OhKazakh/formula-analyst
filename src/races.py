@@ -13,6 +13,7 @@ import fastf1.plotting
 import numpy as np
 import pandas as pd
 import requests
+from fastf1 import _api as live_timing
 from fastf1.core import Session
 from fastf1.exceptions import DataNotLoadedError
 from fastf1.mvapi.api import get_circuit
@@ -25,7 +26,8 @@ CACHE_DIR = ROOT / "cache"
 DATA_DIR = ROOT / "data"
 
 OFFLINE_ENV = "FORMULA_ANALYST_OFFLINE"
-LIVE_TIMING_PROBE = "https://livetiming.formula1.com/static/StreamingStatus.json"
+LIVE_TIMING = "https://livetiming.formula1.com"
+LIVE_TIMING_PROBE = f"{LIVE_TIMING}/static/StreamingStatus.json"
 
 LAP_COLUMNS = [
     "Driver",
@@ -43,14 +45,36 @@ LAP_COLUMNS = [
     "IsPersonalBest",
     "LapStartTime",
     "Time",
+    "Sector1",
+    "Sector2",
+    "Sector3",
+    "SpeedI1",
+    "SpeedI2",
+    "SpeedFL",
+    "SpeedST",
 ]
-TELEMETRY_COLUMNS = ["Driver", "Distance", "Speed"]
+TELEMETRY_COLUMNS = [
+    "Driver",
+    "Distance",
+    "Speed",
+    "Time",
+    "RPM",
+    "Gear",
+    "Throttle",
+    "Brake",
+    "DRS",
+]
+WEATHER_COLUMNS = ["Time", "AirTemp", "TrackTemp", "Humidity", "Rainfall", "WindSpeed"]
+MESSAGE_COLUMNS = ["Time", "Lap", "Category", "Flag", "Message"]
+RADIO_COLUMNS = ["Time", "Driver", "Url"]
 CORNER_COLUMNS = ["Number", "Letter", "Distance"]
 TRACK_COLUMNS = ["X", "Y"]
 MAP_CORNER_COLUMNS = ["Label", "X", "Y"]
 SAVED_COLUMNS = ["Year", "Round", "EventName", "Path"]
 COMPOUND_PLACEHOLDERS = ["nan", "None", ""]
 CORNER_LABEL_OFFSET = 50.0
+DRS_OPEN = 10
+FORMAT_VERSION = 2
 
 
 class RaceDataUnavailable(RuntimeError):
@@ -73,6 +97,9 @@ class Race:
     map_corners: pd.DataFrame = field(
         default_factory=lambda: pd.DataFrame(columns=MAP_CORNER_COLUMNS)
     )
+    weather: pd.DataFrame = field(default_factory=lambda: pd.DataFrame(columns=WEATHER_COLUMNS))
+    messages: pd.DataFrame = field(default_factory=lambda: pd.DataFrame(columns=MESSAGE_COLUMNS))
+    radio: pd.DataFrame = field(default_factory=lambda: pd.DataFrame(columns=RADIO_COLUMNS))
 
     @property
     def drivers(self) -> list[str]:
@@ -121,7 +148,7 @@ def load_race(year: int, event: str, root: Path = DATA_DIR) -> Race:
 
 def load_live_race(year: int, event: str) -> Race:
     session = fastf1.get_session(year, event, "R")
-    session.load(weather=False, messages=False)
+    session.load(weather=True, messages=True)
     try:
         laps = session.laps
     except DataNotLoadedError as exc:
@@ -151,6 +178,9 @@ def race_from_session(session: Session) -> Race:
         compound_colors=dict(fastf1.plotting.get_compound_mapping(session)),
         track=track,
         map_corners=map_corners,
+        weather=_weather(session),
+        messages=_messages(session),
+        radio=_team_radio(session),
     )
 
 
@@ -168,6 +198,8 @@ def _lap_table(session: Session) -> pd.DataFrame:
     laps["Compound"] = clean_compounds(laps["Compound"])
     laps["IsAccurate"] = laps["IsAccurate"].astype(bool)
     laps["IsPersonalBest"] = laps["IsPersonalBest"].astype(bool)
+    for number in (1, 2, 3):
+        laps[f"Sector{number}"] = laps[f"Sector{number}Time"].dt.total_seconds()
     return laps[LAP_COLUMNS]
 
 
@@ -185,14 +217,95 @@ def _fastest_lap_telemetry(session: Session, laps: pd.DataFrame) -> pd.DataFrame
             pd.DataFrame(
                 {
                     "Driver": driver,
-                    "Distance": car_data["Distance"].to_numpy(),
-                    "Speed": car_data["Speed"].to_numpy(),
+                    "Distance": car_data["Distance"].to_numpy(dtype="float32"),
+                    "Speed": car_data["Speed"].to_numpy(dtype="int16"),
+                    "Time": car_data["Time"].dt.total_seconds().to_numpy(dtype="float32"),
+                    "RPM": car_data["RPM"].to_numpy(dtype="int16"),
+                    "Gear": car_data["nGear"].to_numpy(dtype="int8"),
+                    "Throttle": car_data["Throttle"].clip(0, 100).to_numpy(dtype="int8"),
+                    "Brake": car_data["Brake"].astype(bool).to_numpy(),
+                    "DRS": (car_data["DRS"] >= DRS_OPEN).to_numpy(),
                 }
             )
         )
     if not traces:
         return pd.DataFrame(columns=TELEMETRY_COLUMNS)
     return pd.concat(traces, ignore_index=True)
+
+
+def _weather(session: Session) -> pd.DataFrame:
+    try:
+        weather = session.weather_data
+    except DataNotLoadedError:
+        return pd.DataFrame(columns=WEATHER_COLUMNS)
+    if weather is None or weather.empty:
+        return pd.DataFrame(columns=WEATHER_COLUMNS)
+    return pd.DataFrame(
+        {
+            "Time": weather["Time"].dt.total_seconds().to_numpy(),
+            "AirTemp": weather["AirTemp"].to_numpy(dtype=float),
+            "TrackTemp": weather["TrackTemp"].to_numpy(dtype=float),
+            "Humidity": weather["Humidity"].to_numpy(dtype=float),
+            "Rainfall": weather["Rainfall"].astype(bool).to_numpy(),
+            "WindSpeed": weather["WindSpeed"].to_numpy(dtype=float),
+        }
+    )
+
+
+def _session_seconds(session: Session, utc: pd.Series) -> np.ndarray:
+    if session.t0_date is None:
+        return np.full(len(utc), np.nan)
+    return (pd.Series(utc) - session.t0_date).dt.total_seconds().to_numpy()
+
+
+def _messages(session: Session) -> pd.DataFrame:
+    try:
+        messages = session.race_control_messages
+    except DataNotLoadedError:
+        return pd.DataFrame(columns=MESSAGE_COLUMNS)
+    if messages is None or messages.empty:
+        return pd.DataFrame(columns=MESSAGE_COLUMNS)
+    return pd.DataFrame(
+        {
+            "Time": _session_seconds(session, messages["Time"]),
+            "Lap": pd.to_numeric(messages["Lap"], errors="coerce").to_numpy(),
+            "Category": messages["Category"].astype(str).to_numpy(),
+            "Flag": messages["Flag"].fillna("").astype(str).to_numpy(),
+            "Message": messages["Message"].astype(str).to_numpy(),
+        }
+    )
+
+
+def team_radio_captures(stream: list) -> list[dict]:
+    captures = []
+    for _, payload in stream or []:
+        items = payload.get("Captures", []) if isinstance(payload, dict) else []
+        captures.extend(items.values() if isinstance(items, dict) else items)
+    return captures
+
+
+def _team_radio(session: Session) -> pd.DataFrame:
+    try:
+        captures = team_radio_captures(live_timing.fetch_page(session.api_path, "team_radio"))
+        drivers = session.results.set_index("DriverNumber")["Abbreviation"]
+    except Exception:
+        return pd.DataFrame(columns=RADIO_COLUMNS)
+    if not captures:
+        return pd.DataFrame(columns=RADIO_COLUMNS)
+    utc = pd.to_datetime(
+        [capture["Utc"] for capture in captures], utc=True, format="ISO8601"
+    ).tz_convert(None)
+    radio = pd.DataFrame(
+        {
+            "Time": _session_seconds(session, utc),
+            "Driver": [
+                drivers.get(capture["RacingNumber"], capture["RacingNumber"])
+                for capture in captures
+            ],
+            "Url": [f"{LIVE_TIMING}{session.api_path}{capture['Path']}" for capture in captures],
+        }
+    )
+    return radio.sort_values("Time", ignore_index=True)
 
 
 def _corners(session: Session) -> pd.DataFrame:
@@ -282,7 +395,11 @@ def save_race(race: Race, root: Path = DATA_DIR) -> Path:
     race.laps.to_parquet(path / "laps.parquet", index=False)
     race.telemetry.to_parquet(path / "telemetry.parquet", index=False)
     race.track.astype("float32").to_parquet(path / "track.parquet", index=False)
+    race.weather.to_parquet(path / "weather.parquet", index=False)
+    race.messages.to_parquet(path / "messages.parquet", index=False)
+    race.radio.to_parquet(path / "radio.parquet", index=False)
     meta = {
+        "format": FORMAT_VERSION,
         "year": race.year,
         "round": race.round_number,
         "event": race.event,
@@ -297,12 +414,17 @@ def save_race(race: Race, root: Path = DATA_DIR) -> Path:
     return path
 
 
+def _read_optional(path: Path, columns: list[str]) -> pd.DataFrame:
+    return pd.read_parquet(path) if path.exists() else pd.DataFrame(columns=columns)
+
+
+def bundle_format(path: Path) -> int:
+    return json.loads((path / "race.json").read_text()).get("format", 1)
+
+
 def read_race(path: Path) -> Race:
     meta = json.loads((path / "race.json").read_text())
-    track_path = path / "track.parquet"
-    track = (
-        pd.read_parquet(track_path) if track_path.exists() else pd.DataFrame(columns=TRACK_COLUMNS)
-    )
+    track = _read_optional(path / "track.parquet", TRACK_COLUMNS)
     return Race(
         year=meta["year"],
         round_number=meta["round"],
@@ -316,6 +438,9 @@ def read_race(path: Path) -> Race:
         compound_colors=meta["compound_colors"],
         track=track,
         map_corners=pd.DataFrame(meta.get("map_corners", []), columns=MAP_CORNER_COLUMNS),
+        weather=_read_optional(path / "weather.parquet", WEATHER_COLUMNS),
+        messages=_read_optional(path / "messages.parquet", MESSAGE_COLUMNS),
+        radio=_read_optional(path / "radio.parquet", RADIO_COLUMNS),
     )
 
 

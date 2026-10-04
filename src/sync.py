@@ -29,11 +29,31 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Only refresh the championship results, without downloading races.",
     )
+    parser.add_argument(
+        "--upgrade",
+        action="store_true",
+        help="Download saved races again if they were saved in an older format.",
+    )
+    parser.add_argument(
+        "--skip-model", action="store_true", help="Don't retrain the tyre model afterwards."
+    )
     return parser.parse_args(argv)
 
 
-def sync_races(year: int, names: list[str] | None, force: bool) -> int:
-    if names:
+def outdated_events(year: int) -> list[str]:
+    saved = races.saved_races()
+    saved = saved[saved["Year"] == year]
+    return [
+        event
+        for event, path in zip(saved["EventName"], saved["Path"], strict=True)
+        if races.bundle_format(path) < races.FORMAT_VERSION
+    ]
+
+
+def sync_races(year: int, names: list[str] | None, force: bool, upgrade: bool = False) -> int:
+    if upgrade:
+        events, force = outdated_events(year), True
+    elif names:
         events = [fastf1.get_event(year, name)["EventName"] for name in names]
     else:
         events = races.race_calendar(year)["EventName"].tolist()
@@ -48,7 +68,9 @@ def sync_races(year: int, names: list[str] | None, force: bool) -> int:
             continue
         try:
             path = races.save_race(races.load_live_race(year, event))
-        except races.RaceDataUnavailable as exc:
+        except (RateLimitExceededError, ErgastError):
+            raise
+        except Exception as exc:
             failures += 1
             print(f"failed {year} {event}: {exc}")
             continue
@@ -64,14 +86,17 @@ def main(argv: list[str] | None = None) -> int:
     fastf1.Cache.set_disabled()
 
     try:
-        failures = 0 if args.results_only else sync_races(args.year, args.event, args.force)
+        failures = (
+            0 if args.results_only else sync_races(args.year, args.event, args.force, args.upgrade)
+        )
         path = seasons.save_season(seasons.fetch_season(args.year))
     except (RateLimitExceededError, ErgastError) as exc:
         print(f"stopped: {exc}. Run the same command again later to continue.")
         return 1
     print(f"saved  {path.relative_to(races.ROOT)} championship results", flush=True)
-    path = model.build()
-    print(f"saved  {path.relative_to(races.ROOT)} tyre model", flush=True)
+    if not args.skip_model:
+        path = model.build()
+        print(f"saved  {path.relative_to(races.ROOT)} tyre model", flush=True)
     return 1 if failures else 0
 
 
