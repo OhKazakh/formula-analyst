@@ -3,6 +3,7 @@ disableWidgetStateDuplicationWarning = true
 
 [server]
 headless = true
+enableStaticServing = true
 
 [browser]
 gatherUsageStats = false
@@ -12,6 +13,23 @@ primaryColor = "#E10600"
 linkUnderline = true
 baseRadius = "0.6rem"
 showSidebarBorder = true
+# Titillium Web is the open-source face formula1.com pairs with its own licensed Formula1 font.
+font = "Titillium Web, sans-serif"
+
+[[theme.fontFaces]]
+family = "Titillium Web"
+url = "app/static/fonts/TitilliumWeb-Regular.woff2"
+weight = 400
+
+[[theme.fontFaces]]
+family = "Titillium Web"
+url = "app/static/fonts/TitilliumWeb-SemiBold.woff2"
+weight = 600
+
+[[theme.fontFaces]]
+family = "Titillium Web"
+url = "app/static/fonts/TitilliumWeb-Bold.woff2"
+weight = 700
 
 [theme.light]
 backgroundColor = "#FFFFFF"
