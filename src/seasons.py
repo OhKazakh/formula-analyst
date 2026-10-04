@@ -11,9 +11,21 @@ from fastf1.ergast import Ergast
 from fastf1.ergast.interface import ErgastMultiResponse
 
 from src.charts import Styles
-from src.races import DATA_DIR
+from src.races import DATA_DIR, read_optional
 
-RESULT_COLUMNS = ["Round", "Session", "Driver", "Name", "Team", "Position", "Classified", "Points"]
+RESULT_COLUMNS = [
+    "Round",
+    "Session",
+    "Driver",
+    "Name",
+    "Team",
+    "Position",
+    "Classified",
+    "Points",
+    "Grid",
+    "Status",
+]
+TEAM_COLUMNS = ["Round", "Team", "Position", "Points", "Wins"]
 SCHEDULE_COLUMNS = ["Round", "EventName", "Country", "Location", "Sprint", "Date"]
 SPRINT_FORMATS = {"sprint", "sprint_shootout", "sprint_qualifying"}
 
@@ -24,6 +36,7 @@ class Season:
     schedule: pd.DataFrame
     results: pd.DataFrame
     driver_styles: Styles = field(default_factory=dict)
+    team_standings: pd.DataFrame = field(default_factory=lambda: pd.DataFrame(columns=TEAM_COLUMNS))
 
     @property
     def completed_rounds(self) -> list[int]:
@@ -42,7 +55,13 @@ def fetch_season(year: int) -> Season:
     ]
     held = [results for results in sessions if not results.empty]
     results = pd.concat(held, ignore_index=True) if held else sessions[0]
-    return Season(year=year, schedule=_schedule(year), results=results)
+    rounds = sorted(int(round_number) for round_number in results["Round"].unique())
+    return Season(
+        year=year,
+        schedule=_schedule(year),
+        results=results,
+        team_standings=_team_standings(ergast, year, rounds),
+    )
 
 
 def _results(fetch: Callable[..., ErgastMultiResponse], year: int, session: str) -> pd.DataFrame:
@@ -70,8 +89,34 @@ def _results(fetch: Callable[..., ErgastMultiResponse], year: int, session: str)
             "Position": results["position"].astype(int),
             "Classified": results["positionText"].astype(str).str.isdigit(),
             "Points": results["points"].astype(float),
+            "Grid": results["grid"].astype(int),
+            "Status": results["status"].astype(str),
         }
     )
+
+
+# Official standings rather than summed driver points, which miss penalties such as
+# Racing Point's 15-point deduction in 2020.
+def _team_standings(ergast: Ergast, year: int, rounds: list[int]) -> pd.DataFrame:
+    frames = []
+    for round_number in rounds:
+        response = ergast.get_constructor_standings(season=year, round=round_number)
+        if not response.content:
+            continue
+        standings = response.content[0]
+        position = pd.to_numeric(standings["position"], errors="coerce")
+        frames.append(
+            pd.DataFrame(
+                {
+                    "Round": round_number,
+                    "Team": standings["constructorName"],
+                    "Position": position.astype("Int64"),
+                    "Points": standings["points"].astype(float),
+                    "Wins": standings["wins"].astype(int),
+                }
+            )
+        )
+    return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame(columns=TEAM_COLUMNS)
 
 
 def _schedule(year: int) -> pd.DataFrame:
@@ -93,6 +138,7 @@ def save_season(season: Season, root: Path = DATA_DIR) -> Path:
     path.mkdir(parents=True, exist_ok=True)
     season.results.to_parquet(path / "results.parquet", index=False)
     season.schedule.to_parquet(path / "schedule.parquet", index=False)
+    season.team_standings.to_parquet(path / "team_standings.parquet", index=False)
     return path
 
 
@@ -107,6 +153,7 @@ def load_season(year: int, root: Path = DATA_DIR) -> Season:
         schedule=pd.read_parquet(path / "schedule.parquet"),
         results=pd.read_parquet(path / "results.parquet"),
         driver_styles=_latest_styles(path),
+        team_standings=read_optional(path / "team_standings.parquet", TEAM_COLUMNS),
     )
 
 

@@ -1,4 +1,5 @@
 import json
+from types import SimpleNamespace
 
 import pandas as pd
 
@@ -21,6 +22,8 @@ class FakeResponse:
                     "position": range(1, len(codes) + 1),
                     "positionText": ["1", "R"][: len(codes)],
                     "points": [25.0, 0.0][: len(codes)],
+                    "grid": [2, 1][: len(codes)],
+                    "status": ["Finished", "Engine"][: len(codes)],
                 }
             )
             for _, codes in page
@@ -40,7 +43,29 @@ def test_results_follow_every_page():
     assert results["Round"].tolist() == [1, 1, 1, 2]
     assert results["Driver"].tolist() == ["AAA", "BBB", "CCC", "AAA"]
     assert results["Classified"].tolist() == [True, False, True, True]
+    assert results["Status"].tolist() == ["Finished", "Engine", "Finished", "Finished"]
     assert (results["Session"] == "Race").all()
+
+
+class FakeErgast:
+    def get_constructor_standings(self, season: int, round: int):
+        standings = pd.DataFrame(
+            {
+                "position": [1, 2],
+                "points": [25.0 * round, 18.0 * round],
+                "wins": [round, 0],
+                "constructorName": ["Team A", "Team B"],
+            }
+        )
+        return SimpleNamespace(content=[standings] if round < 3 else [])
+
+
+def test_team_standings_keep_every_round_that_has_standings():
+    standings = seasons._team_standings(FakeErgast(), 2024, [1, 2, 3])
+
+    assert standings["Round"].tolist() == [1, 1, 2, 2]
+    assert standings.loc[standings["Round"] == 2, "Points"].tolist() == [50.0, 36.0]
+    assert standings["Position"].tolist() == [1, 2, 1, 2]
 
 
 def test_save_and_load_season_with_styles_from_races(tmp_path):
@@ -60,8 +85,13 @@ def test_save_and_load_season_with_styles_from_races(tmp_path):
                     "Position": 1,
                     "Classified": True,
                     "Points": 25.0,
+                    "Grid": 3,
+                    "Status": "Finished",
                 }
             ]
+        ),
+        team_standings=pd.DataFrame(
+            {"Round": [1], "Team": ["T"], "Position": [1], "Points": [25.0], "Wins": [1]}
         ),
     )
     seasons.save_season(season, tmp_path)
@@ -74,6 +104,7 @@ def test_save_and_load_season_with_styles_from_races(tmp_path):
 
     assert seasons.saved_seasons(tmp_path) == [2024]
     pd.testing.assert_frame_equal(loaded.results, season.results)
+    pd.testing.assert_frame_equal(loaded.team_standings, season.team_standings)
     assert loaded.completed_rounds == [1]
     assert loaded.event_name(2) == "B"
     assert loaded.driver_styles["AAA"]["color"] == "#222222"

@@ -414,7 +414,7 @@ def save_race(race: Race, root: Path = DATA_DIR) -> Path:
     return path
 
 
-def _read_optional(path: Path, columns: list[str]) -> pd.DataFrame:
+def read_optional(path: Path, columns: list[str]) -> pd.DataFrame:
     return pd.read_parquet(path) if path.exists() else pd.DataFrame(columns=columns)
 
 
@@ -424,7 +424,7 @@ def bundle_format(path: Path) -> int:
 
 def read_race(path: Path) -> Race:
     meta = json.loads((path / "race.json").read_text())
-    track = _read_optional(path / "track.parquet", TRACK_COLUMNS)
+    track = read_optional(path / "track.parquet", TRACK_COLUMNS)
     return Race(
         year=meta["year"],
         round_number=meta["round"],
@@ -438,9 +438,9 @@ def read_race(path: Path) -> Race:
         compound_colors=meta["compound_colors"],
         track=track,
         map_corners=pd.DataFrame(meta.get("map_corners", []), columns=MAP_CORNER_COLUMNS),
-        weather=_read_optional(path / "weather.parquet", WEATHER_COLUMNS),
-        messages=_read_optional(path / "messages.parquet", MESSAGE_COLUMNS),
-        radio=_read_optional(path / "radio.parquet", RADIO_COLUMNS),
+        weather=read_optional(path / "weather.parquet", WEATHER_COLUMNS),
+        messages=read_optional(path / "messages.parquet", MESSAGE_COLUMNS),
+        radio=read_optional(path / "radio.parquet", RADIO_COLUMNS),
     )
 
 
