@@ -21,6 +21,8 @@ def test_weather_by_lap_takes_the_last_reading_before_each_lap_ends():
             "Time": [0.0, 150.0, 250.0],
             "AirTemp": [30.0, 29.0, 28.0],
             "TrackTemp": [50.0, 48.0, 46.0],
+            "Humidity": [40.0, 45.0, 60.0],
+            "WindSpeed": [1.2, 3.4, 2.0],
             "Rainfall": [False, False, True],
         }
     )
@@ -29,7 +31,14 @@ def test_weather_by_lap_takes_the_last_reading_before_each_lap_ends():
     summary = conditions.weather_summary(by_lap)
 
     assert by_lap["TrackTemp"].tolist() == [50.0, 48.0, 46.0]
-    assert summary == {"track_start": 50.0, "track_end": 46.0, "air_start": 30.0, "rain_laps": [3]}
+    assert summary == {
+        "track_start": 50.0,
+        "track_end": 46.0,
+        "air_start": 30.0,
+        "humidity": 45.0,
+        "wind": 3.4,
+        "rain_laps": [3],
+    }
 
 
 @pytest.mark.parametrize(
@@ -84,3 +93,38 @@ def test_radio_clips_are_placed_on_the_drivers_lap():
         [2, "AAA", "b"],
         [3, "BBB", "c"],
     ]
+
+
+MESSAGES = pd.DataFrame(
+    {
+        "Lap": [9.0, 12.0, 14.0, 20.0, 21.0, 30.0, 31.0, 40.0],
+        "Message": [
+            "FIA STEWARDS: 5 SECOND TIME PENALTY FOR CAR 3 (RIC) - "
+            "FORCING ANOTHER CAR OFF THE TRACK",
+            "10 SECOND STOP/GO PENALTY FOR CAR 27 (HUL) - CAUSING A COLLISION",
+            "FIA STEWARDS: PENALTY SERVED - 5 SECOND TIME PENALTY FOR CAR 3 (RIC)",
+            "CAR 87 (BEA) TIME 1:42.615 DELETED - TRACK LIMITS AT TURN 6 LAP 20 18:19:37",
+            "CAR 87 (BEA) LAP DELETED - TRACK LIMITS AT TURN 4",
+            "CAR 4 (NOR) TIME 1:41.002 DELETED - TRACK LIMITS AT TURN 4 LAP 30 18:01:10",
+            "BLACK AND WHITE FLAG FOR CAR 4 (NOR) - TRACK LIMITS",
+            "FIA STEWARDS: REPRIMAND (DRIVING) FOR CAR 1 (VER) - UNSAFE RELEASE",
+        ],
+    }
+)
+
+
+def test_penalties_name_the_driver_and_reason():
+    table = conditions.penalties(MESSAGES)
+
+    assert table[["Lap", "Driver", "Penalty"]].values.tolist() == [
+        [9.0, "RIC", "5 s time penalty"],
+        [12.0, "HUL", "10 s stop-go penalty"],
+        [40.0, "VER", "Reprimand"],
+    ]
+    assert table["Reason"].iloc[0] == "Forcing another car off the track"
+
+
+def test_track_limits_count_deleted_laps_and_warnings():
+    table = conditions.track_limits(MESSAGES)
+
+    assert table.values.tolist() == [["BEA", 2, False], ["NOR", 1, True]]

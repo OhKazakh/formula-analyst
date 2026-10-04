@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import re
+from collections import Counter
+
 import pandas as pd
 import plotly.graph_objects as go
 
@@ -7,6 +10,15 @@ from src.charts import ACCENT, OUTLINE, finish
 
 RAIN = "rgba(0, 103, 173, 0.18)"
 MESSAGE_TYPES = ["Penalty", "Investigation", "Track limits", "Safety car", "Flag", "DRS", "Other"]
+PENALTY_COLUMNS = ["Lap", "Driver", "Penalty", "Reason"]
+PENALTY = re.compile(
+    r"^(?!(?:FIA STEWARDS: )?PENALTY SERVED).*?"
+    r"(?P<penalty>(?:\d+ SECOND (?:TIME|STOP/GO) |DRIVE THROUGH |STOP-AND-GO )?PENALTY"
+    r"|REPRIMAND(?: \(\w+\))?) "
+    r"FOR CAR \d+ \((?P<driver>[A-Z]{3})\)\s*(?:-\s*(?P<reason>[^(]+))?"
+)
+DELETED = re.compile(r"^CAR \d+ \((?P<driver>[A-Z]{3})\) (?:TIME [\d:.]+ |LAP )DELETED")
+WARNED = re.compile(r"^BLACK AND WHITE FLAG (?:FOR )?CAR \d+ \((?P<driver>[A-Z]{3})\)")
 
 
 def lap_end_times(laps: pd.DataFrame) -> pd.DataFrame:
@@ -16,7 +28,7 @@ def lap_end_times(laps: pd.DataFrame) -> pd.DataFrame:
 
 
 def weather_by_lap(weather: pd.DataFrame, laps: pd.DataFrame) -> pd.DataFrame:
-    columns = ["LapNumber", "AirTemp", "TrackTemp", "Rainfall"]
+    columns = ["LapNumber", "AirTemp", "TrackTemp", "Humidity", "WindSpeed", "Rainfall"]
     if weather.empty or "Time" not in laps:
         return pd.DataFrame(columns=columns)
     readings = weather.dropna(subset=["Time"]).sort_values("Time")
@@ -38,6 +50,8 @@ def weather_summary(by_lap: pd.DataFrame) -> dict[str, float | list[int]]:
         "track_start": float(by_lap["TrackTemp"].iloc[0]),
         "track_end": float(by_lap["TrackTemp"].iloc[-1]),
         "air_start": float(by_lap["AirTemp"].iloc[0]),
+        "humidity": float(by_lap["Humidity"].median()),
+        "wind": float(by_lap["WindSpeed"].max()),
         "rain_laps": rain,
     }
 
@@ -98,6 +112,44 @@ def race_control(messages: pd.DataFrame) -> pd.DataFrame:
     table = pd.DataFrame({"Lap": messages["Lap"], "Type": types, "Message": messages["Message"]})
     blue = table["Message"].str.contains("blue flag", case=False)
     return table[~blue].reset_index(drop=True)
+
+
+def _penalty_name(text: str) -> str:
+    name = text.lower().replace(" second ", " s ").replace("stop/go", "stop-go")
+    name = name.replace("stop-and-go", "stop-go").replace("drive through", "drive-through")
+    return re.sub(r" \(\w+\)", "", name).capitalize()
+
+
+def penalties(messages: pd.DataFrame) -> pd.DataFrame:
+    rows = []
+    for lap, message in zip(messages["Lap"], messages["Message"], strict=True):
+        if match := PENALTY.match(message.strip()):
+            rows.append(
+                {
+                    "Lap": lap,
+                    "Driver": match["driver"],
+                    "Penalty": _penalty_name(match["penalty"]),
+                    "Reason": (match["reason"] or "").strip().capitalize(),
+                }
+            )
+    return pd.DataFrame(rows, columns=PENALTY_COLUMNS)
+
+
+def track_limits(messages: pd.DataFrame) -> pd.DataFrame:
+    deleted, warned = Counter(), set()
+    for message in messages["Message"]:
+        if match := DELETED.match(message.strip()):
+            deleted[match["driver"]] += 1
+        elif match := WARNED.match(message.strip()):
+            warned.add(match["driver"])
+    drivers = sorted(set(deleted) | warned, key=lambda driver: (-deleted[driver], driver))
+    return pd.DataFrame(
+        {
+            "Driver": drivers,
+            "Deleted": [deleted[driver] for driver in drivers],
+            "Warned": [driver in warned for driver in drivers],
+        }
+    )
 
 
 def radio_by_lap(radio: pd.DataFrame, laps: pd.DataFrame) -> pd.DataFrame:

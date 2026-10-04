@@ -172,7 +172,8 @@ def championship_section(race: races.Race, season: seasons.Season | None) -> Non
 def weather_text(summary: dict) -> str:
     text = (
         f"Track {summary['track_start']:.0f} °C at the start and {summary['track_end']:.0f} °C "
-        f"at the finish, air {summary['air_start']:.0f} °C."
+        f"at the finish, air {summary['air_start']:.0f} °C, humidity {summary['humidity']:.0f}% "
+        f"and wind up to {summary['wind']:.1f} m/s."
     )
     rain = summary["rain_laps"]
     return f"{text} Rain on {lap_ranges(rain)}." if rain else f"{text} No rain."
@@ -197,6 +198,37 @@ def decisions_text(counts: pd.Series) -> str:
     return f"{listing(parts)}." if parts else "No penalties or investigations."
 
 
+def track_limits_text(limits: pd.DataFrame) -> str:
+    deleted = limits[limits["Deleted"] > 0]
+    warned = limits.loc[limits["Warned"], "Driver"].tolist()
+    parts = []
+    if not deleted.empty:
+        counts = listing([f"{row.Driver} {row.Deleted}" for row in deleted.itertuples()])
+        parts.append(f"**Laps deleted for track limits:** {counts}.")
+    if warned:
+        parts.append(f"**Black-and-white flag:** {listing(warned)}.")
+    return " ".join(parts)
+
+
+def penalties_table(race: races.Race, penalties: pd.DataFrame) -> pd.DataFrame:
+    teams = race.laps.drop_duplicates("Driver").set_index("Driver")["Team"]
+    return pd.DataFrame(
+        {
+            "Lap": penalties["Lap"],
+            "Badge": [
+                logos.badge(
+                    str(teams.get(driver, "")),
+                    race.driver_styles.get(driver, {}).get("color"),
+                )
+                for driver in penalties["Driver"]
+            ],
+            "Driver": penalties["Driver"],
+            "Penalty": penalties["Penalty"],
+            "Reason": penalties["Reason"],
+        }
+    )
+
+
 def race_control_section(race: races.Race) -> None:
     st.subheader("What did race control decide?")
     table = conditions.race_control(race.messages)
@@ -205,6 +237,21 @@ def race_control_section(race: races.Race) -> None:
         return
     counts = table["Type"].value_counts()
     st.markdown(decisions_text(counts))
+    penalties = conditions.penalties(race.messages)
+    if not penalties.empty:
+        st.dataframe(
+            penalties_table(race, penalties),
+            hide_index=True,
+            width="stretch",
+            column_config={
+                "Lap": st.column_config.NumberColumn(width="small", format="%d"),
+                "Badge": BADGE,
+                "Penalty": st.column_config.TextColumn(width=170),
+                "Reason": st.column_config.TextColumn(width=480),
+            },
+        )
+    if text := track_limits_text(conditions.track_limits(race.messages)):
+        st.markdown(text)
     present = [kind for kind in conditions.MESSAGE_TYPES if kind in counts.index]
     default = [kind for kind in ("Penalty", "Investigation", "Safety car") if kind in present]
     chosen = st.pills(
