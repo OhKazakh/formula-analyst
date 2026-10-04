@@ -36,13 +36,12 @@ class Season:
 
 def fetch_season(year: int) -> Season:
     ergast = Ergast(result_type="pandas", auto_cast=True)
-    results = pd.concat(
-        [
-            _results(ergast.get_race_results, year, "Race"),
-            _results(ergast.get_sprint_results, year, "Sprint"),
-        ],
-        ignore_index=True,
-    )
+    sessions = [
+        _results(ergast.get_race_results, year, "Race"),
+        _results(ergast.get_sprint_results, year, "Sprint"),
+    ]
+    held = [results for results in sessions if not results.empty]
+    results = pd.concat(held, ignore_index=True) if held else sessions[0]
     return Season(year=year, schedule=_schedule(year), results=results)
 
 
