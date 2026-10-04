@@ -1,12 +1,12 @@
 {
-  "laps": 126491,
-  "stints": 6458,
-  "races": 161,
+  "laps": 126886,
+  "stints": 6491,
+  "races": 162,
   "first_season": 2019,
   "last_season": 2026,
   "folds": 5,
   "mae": {
-    "model": 0.581,
+    "model": 0.582,
     "baseline": 0.629,
     "no_wear": 0.751
   }
