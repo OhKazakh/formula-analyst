@@ -10,6 +10,7 @@ from views.text import listing, plural
 
 TYRE = st.column_config.ImageColumn(" ", width="small")
 PER_LAP = st.column_config.NumberColumn(format="%.3f s/lap")
+SHOWN_PLANS = 6
 
 
 def with_badges(table: pd.DataFrame, colors: dict[str, str]) -> pd.DataFrame:
@@ -140,6 +141,10 @@ def model_takeaway(expected: dict[str, float]) -> str:
     )
 
 
+def race_curves(race: races.Race, bundle_version: str) -> pd.DataFrame:
+    return degradation.race_curves(data.tyre_curves(bundle_version), race.year, race.round_number)
+
+
 def tyre_model(race: races.Race, bundle_version: str) -> None:
     st.subheader("What would a model trained on other races expect?")
     if race.year < degradation.FIRST_SEASON:
@@ -149,7 +154,7 @@ def tyre_model(race: races.Race, bundle_version: str) -> None:
         )
         return
     metrics = data.tyre_metrics(bundle_version)
-    curves = degradation.race_curves(data.tyre_curves(bundle_version), race.year, race.round_number)
+    curves = race_curves(race, bundle_version)
     if metrics is None or curves.empty:
         st.info("The tyre model hasn't been trained on this race yet.")
         return
@@ -172,6 +177,80 @@ def tyre_model(race: races.Race, bundle_version: str) -> None:
     )
 
 
+def describe(plan: strategy.Plan) -> str:
+    tyres_used = " → ".join(compound.title() for compound in plan.compounds)
+    laps = listing([str(lap) for lap in plan.pit_laps])
+    stops = "one-stop" if len(plan.pit_laps) == 1 else f"{len(plan.pit_laps)}-stop"
+    return f"a {stops}, {tyres_used}, stopping on lap {laps}"
+
+
+def simulator_section(race: races.Race, bundle_version: str) -> None:
+    st.subheader("What would the fastest strategy have been?")
+    if race.year < degradation.FIRST_SEASON:
+        st.info("The strategy simulator uses the tyre model, which covers 2019 onwards.")
+        return
+    curves = race_curves(race, bundle_version)
+    offsets = strategy.compound_offsets(race.laps, race.total_laps, list(degradation.DRY_COMPOUNDS))
+    if curves.empty or len(offsets) < 2:
+        st.info("This race didn't have enough dry running on two compounds to compare strategies.")
+        return
+    measured = strategy.pit_loss(strategy.pit_stops(race.laps))
+    loss = st.slider(
+        "Time lost to a pit stop (s)",
+        10.0,
+        40.0,
+        round(measured or 22.0, 1),
+        0.5,
+        key=race_key(race, "pit_loss"),
+        help="Measured from this race's stops. Change it to see when an extra stop pays off.",
+    )
+    plans = strategy.plans(curves, offsets, race.total_laps, loss)
+    if not plans:
+        st.info("No strategy fits within how long the tyres were run at this circuit.")
+        return
+    best = plans[0]
+    text = f"The model's fastest plan is {describe(best)}."
+    winner = race.order[0] if race.order else None
+    if winner:
+        actual = strategy.driver_plan(race.laps, winner)
+        actual_time = strategy.plan_time(actual, curves, offsets, race.total_laps, loss)
+        if actual_time is not None:
+            behind = actual_time - best.time
+            text += (
+                f" {winner}'s winning strategy matches it."
+                if behind < 0.05
+                else f" {winner}'s winning strategy comes out {behind:.1f} s slower in the "
+                "same model."
+            )
+    st.markdown(text)
+    shown = plans[:SHOWN_PLANS]
+    st.dataframe(
+        pd.DataFrame(
+            {
+                "Tyres": [tyres.badges(plan.compounds, race.compound_colors) for plan in shown],
+                "Stops": [len(plan.pit_laps) for plan in shown],
+                "Pit laps": [", ".join(str(lap) for lap in plan.pit_laps) for plan in shown],
+                "Gap": [
+                    "Fastest" if plan is best else f"+{plan.time - best.time:.1f} s"
+                    for plan in shown
+                ],
+            }
+        ),
+        hide_index=True,
+        width="stretch",
+        column_config={"Tyres": st.column_config.ImageColumn(width="medium")},
+    )
+    pace = listing(
+        [f"{compound.title()} +{offset:.2f} s" for compound, offset in offsets.items() if offset]
+    )
+    st.caption(
+        "Each stint adds up this race's fresh-tyre pace per compound"
+        + (f" ({pace} a lap against the quickest)" if pace else "")
+        + " and the tyre model's wear curve, and every stop adds the pit loss. Traffic, safety "
+        "cars and tyre warm-up aren't modelled, so treat gaps of a few seconds as a tie."
+    )
+
+
 def strategy_tab(race: races.Race, clean: pd.DataFrame, bundle_version: str) -> None:
     tyre_strategy(race)
     st.divider()
@@ -180,3 +259,5 @@ def strategy_tab(race: races.Race, clean: pd.DataFrame, bundle_version: str) -> 
     wear_rates(race, clean)
     st.divider()
     tyre_model(race, bundle_version)
+    st.divider()
+    simulator_section(race, bundle_version)
