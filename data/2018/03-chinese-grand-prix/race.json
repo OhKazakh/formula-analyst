@@ -1,4 +1,5 @@
 {
+  "format": 2,
   "year": 2018,
   "round": 3,
   "event": "Chinese Grand Prix",
@@ -215,7 +216,7 @@
       "linestyle": "solid"
     },
     "ALO": {
-      "color": "#ff8000",
+      "color": "#ff8700",
       "linestyle": "solid"
     },
     "VET": {
@@ -239,7 +240,7 @@
       "linestyle": "solid"
     },
     "VAN": {
-      "color": "#ff8000",
+      "color": "#ff8700",
       "linestyle": "dashed"
     },
     "STR": {

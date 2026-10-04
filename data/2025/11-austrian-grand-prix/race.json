@@ -1,4 +1,5 @@
 {
+  "format": 2,
   "year": 2025,
   "round": 11,
   "event": "Austrian Grand Prix",
@@ -131,27 +132,27 @@
   ],
   "driver_styles": {
     "NOR": {
-      "color": "#ff8000",
+      "color": "#f47600",
       "linestyle": "solid"
     },
     "PIA": {
-      "color": "#ff8000",
+      "color": "#f47600",
       "linestyle": "dashed"
     },
     "LEC": {
-      "color": "#e80020",
+      "color": "#ed1131",
       "linestyle": "solid"
     },
     "HAM": {
-      "color": "#e80020",
+      "color": "#ed1131",
       "linestyle": "dashed"
     },
     "RUS": {
-      "color": "#27f4d2",
+      "color": "#00d7b6",
       "linestyle": "dashed"
     },
     "LAW": {
-      "color": "#6692ff",
+      "color": "#6c98ff",
       "linestyle": "solid"
     },
     "ALO": {
@@ -159,27 +160,27 @@
       "linestyle": "solid"
     },
     "BOR": {
-      "color": "#52e252",
+      "color": "#01c00e",
       "linestyle": "dashed"
     },
     "HUL": {
-      "color": "#52e252",
+      "color": "#01c00e",
       "linestyle": "solid"
     },
     "OCO": {
-      "color": "#b6babd",
+      "color": "#9c9fa2",
       "linestyle": "solid"
     },
     "BEA": {
-      "color": "#b6babd",
+      "color": "#9c9fa2",
       "linestyle": "dashed"
     },
     "HAD": {
-      "color": "#6692ff",
+      "color": "#6c98ff",
       "linestyle": "dashed"
     },
     "GAS": {
-      "color": "#0093cc",
+      "color": "#00a1e8",
       "linestyle": "solid"
     },
     "STR": {
@@ -187,27 +188,27 @@
       "linestyle": "dashed"
     },
     "COL": {
-      "color": "#0093cc",
+      "color": "#00a1e8",
       "linestyle": "dashed"
     },
     "TSU": {
-      "color": "#3671c6",
+      "color": "#4781d7",
       "linestyle": "dashed"
     },
     "ALB": {
-      "color": "#64c4ff",
+      "color": "#1868db",
       "linestyle": "solid"
     },
     "VER": {
-      "color": "#3671c6",
+      "color": "#4781d7",
       "linestyle": "solid"
     },
     "ANT": {
-      "color": "#27f4d2",
+      "color": "#00d7b6",
       "linestyle": "solid"
     },
     "SAI": {
-      "color": "#64c4ff",
+      "color": "#1868db",
       "linestyle": "dashed"
     }
   },

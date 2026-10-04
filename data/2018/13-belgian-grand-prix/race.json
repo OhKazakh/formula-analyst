@@ -1,4 +1,5 @@
 {
+  "format": 2,
   "year": 2018,
   "round": 13,
   "event": "Belgian Grand Prix",
@@ -277,7 +278,7 @@
       "linestyle": "dashed"
     },
     "VAN": {
-      "color": "#ff8000",
+      "color": "#ff8700",
       "linestyle": "dashed"
     },
     "RIC": {
@@ -293,7 +294,7 @@
       "linestyle": "solid"
     },
     "ALO": {
-      "color": "#ff8000",
+      "color": "#ff8700",
       "linestyle": "solid"
     },
     "HUL": {

@@ -1,4 +1,5 @@
 {
+  "format": 2,
   "year": 2018,
   "round": 10,
   "event": "British Grand Prix",
@@ -239,7 +240,7 @@
       "linestyle": "dashed"
     },
     "ALO": {
-      "color": "#ff8000",
+      "color": "#ff8700",
       "linestyle": "solid"
     },
     "MAG": {
@@ -251,7 +252,7 @@
       "linestyle": "solid"
     },
     "VAN": {
-      "color": "#ff8000",
+      "color": "#ff8700",
       "linestyle": "dashed"
     },
     "STR": {

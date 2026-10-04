@@ -1,4 +1,5 @@
 {
+  "format": 2,
   "year": 2024,
   "round": 11,
   "event": "Austrian Grand Prix",
@@ -139,7 +140,7 @@
       "linestyle": "dashed"
     },
     "SAI": {
-      "color": "#e8002d",
+      "color": "#e80020",
       "linestyle": "dashed"
     },
     "HAM": {
@@ -171,7 +172,7 @@
       "linestyle": "solid"
     },
     "LEC": {
-      "color": "#e8002d",
+      "color": "#e80020",
       "linestyle": "solid"
     },
     "OCO": {

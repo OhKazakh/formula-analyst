@@ -1,4 +1,5 @@
 {
+  "format": 2,
   "year": 2024,
   "round": 13,
   "event": "Hungarian Grand Prix",
@@ -203,7 +204,7 @@
       "linestyle": "solid"
     },
     "LEC": {
-      "color": "#e8002d",
+      "color": "#e80020",
       "linestyle": "solid"
     },
     "VER": {
@@ -211,7 +212,7 @@
       "linestyle": "solid"
     },
     "SAI": {
-      "color": "#e8002d",
+      "color": "#e80020",
       "linestyle": "dashed"
     },
     "PER": {

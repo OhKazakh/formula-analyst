@@ -1,4 +1,5 @@
 {
+  "format": 2,
   "year": 2024,
   "round": 24,
   "event": "Abu Dhabi Grand Prix",
@@ -195,11 +196,11 @@
       "linestyle": "solid"
     },
     "SAI": {
-      "color": "#e8002d",
+      "color": "#e80020",
       "linestyle": "dashed"
     },
     "LEC": {
-      "color": "#e8002d",
+      "color": "#e80020",
       "linestyle": "solid"
     },
     "HAM": {

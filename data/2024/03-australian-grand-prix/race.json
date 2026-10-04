@@ -1,4 +1,5 @@
 {
+  "format": 2,
   "year": 2024,
   "round": 3,
   "event": "Australian Grand Prix",
@@ -170,11 +171,11 @@
   ],
   "driver_styles": {
     "SAI": {
-      "color": "#e8002d",
+      "color": "#e80020",
       "linestyle": "dashed"
     },
     "LEC": {
-      "color": "#e8002d",
+      "color": "#e80020",
       "linestyle": "solid"
     },
     "NOR": {

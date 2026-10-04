@@ -1,4 +1,5 @@
 {
+  "format": 2,
   "year": 2018,
   "round": 7,
   "event": "Canadian Grand Prix",
@@ -231,7 +232,7 @@
       "linestyle": "dashed"
     },
     "VAN": {
-      "color": "#ff8000",
+      "color": "#ff8700",
       "linestyle": "dashed"
     },
     "SIR": {
@@ -239,7 +240,7 @@
       "linestyle": "dashed"
     },
     "ALO": {
-      "color": "#ff8000",
+      "color": "#ff8700",
       "linestyle": "solid"
     },
     "HAR": {

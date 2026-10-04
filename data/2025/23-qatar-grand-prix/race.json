@@ -1,4 +1,5 @@
 {
+  "format": 2,
   "year": 2025,
   "round": 23,
   "event": "Qatar Grand Prix",
@@ -191,27 +192,27 @@
   ],
   "driver_styles": {
     "VER": {
-      "color": "#3671c6",
+      "color": "#4781d7",
       "linestyle": "solid"
     },
     "PIA": {
-      "color": "#ff8000",
+      "color": "#f47600",
       "linestyle": "dashed"
     },
     "SAI": {
-      "color": "#64c4ff",
+      "color": "#1868db",
       "linestyle": "dashed"
     },
     "NOR": {
-      "color": "#ff8000",
+      "color": "#f47600",
       "linestyle": "solid"
     },
     "ANT": {
-      "color": "#27f4d2",
+      "color": "#00d7b6",
       "linestyle": "solid"
     },
     "RUS": {
-      "color": "#27f4d2",
+      "color": "#00d7b6",
       "linestyle": "dashed"
     },
     "ALO": {
@@ -219,39 +220,39 @@
       "linestyle": "solid"
     },
     "LEC": {
-      "color": "#e80020",
+      "color": "#ed1131",
       "linestyle": "solid"
     },
     "LAW": {
-      "color": "#6692ff",
+      "color": "#6c98ff",
       "linestyle": "solid"
     },
     "TSU": {
-      "color": "#3671c6",
+      "color": "#4781d7",
       "linestyle": "dashed"
     },
     "ALB": {
-      "color": "#64c4ff",
+      "color": "#1868db",
       "linestyle": "solid"
     },
     "HAM": {
-      "color": "#e80020",
+      "color": "#ed1131",
       "linestyle": "dashed"
     },
     "BOR": {
-      "color": "#52e252",
+      "color": "#01c00e",
       "linestyle": "dashed"
     },
     "COL": {
-      "color": "#0093cc",
+      "color": "#00a1e8",
       "linestyle": "dashed"
     },
     "OCO": {
-      "color": "#b6babd",
+      "color": "#9c9fa2",
       "linestyle": "solid"
     },
     "GAS": {
-      "color": "#0093cc",
+      "color": "#00a1e8",
       "linestyle": "solid"
     },
     "STR": {
@@ -259,15 +260,15 @@
       "linestyle": "dashed"
     },
     "HAD": {
-      "color": "#6692ff",
+      "color": "#6c98ff",
       "linestyle": "dashed"
     },
     "BEA": {
-      "color": "#b6babd",
+      "color": "#9c9fa2",
       "linestyle": "dashed"
     },
     "HUL": {
-      "color": "#52e252",
+      "color": "#01c00e",
       "linestyle": "solid"
     }
   },

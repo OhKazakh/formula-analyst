@@ -1,4 +1,5 @@
 {
+  "format": 2,
   "year": 2018,
   "round": 20,
   "event": "Brazilian Grand Prix",
@@ -233,7 +234,7 @@
       "linestyle": "solid"
     },
     "VAN": {
-      "color": "#ff8000",
+      "color": "#ff8700",
       "linestyle": "dashed"
     },
     "OCO": {
@@ -245,7 +246,7 @@
       "linestyle": "dashed"
     },
     "ALO": {
-      "color": "#ff8000",
+      "color": "#ff8700",
       "linestyle": "solid"
     },
     "STR": {

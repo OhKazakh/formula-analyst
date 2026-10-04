@@ -1,4 +1,5 @@
 {
+  "format": 2,
   "year": 2026,
   "round": 14,
   "event": "Spanish Grand Prix",
@@ -31,67 +32,67 @@
   "map_corners": [],
   "driver_styles": {
     "ANT": {
-      "color": "#27f4d2",
+      "color": "#00d7b6",
       "linestyle": "solid"
     },
     "VER": {
-      "color": "#3671c6",
+      "color": "#4781d7",
       "linestyle": "solid"
     },
     "NOR": {
-      "color": "#ff8000",
+      "color": "#f47600",
       "linestyle": "solid"
     },
     "LEC": {
-      "color": "#e80020",
+      "color": "#ed1131",
       "linestyle": "solid"
     },
     "RUS": {
-      "color": "#27f4d2",
+      "color": "#00d7b6",
       "linestyle": "dashed"
     },
     "LAW": {
-      "color": "#3671c6",
+      "color": "#4781d7",
       "linestyle": "dashed"
     },
     "COL": {
-      "color": "#0093cc",
+      "color": "#00a1e8",
       "linestyle": "dashed"
     },
     "PIA": {
-      "color": "#ff8000",
+      "color": "#f47600",
       "linestyle": "dashed"
     },
     "LIN": {
-      "color": "#6692ff",
+      "color": "#6c98ff",
       "linestyle": "dashed"
     },
     "HUL": {
-      "color": "#ff2d00",
+      "color": "#f50537",
       "linestyle": "solid"
     },
     "OCO": {
-      "color": "#b6babd",
+      "color": "#9c9fa2",
       "linestyle": "solid"
     },
     "GAS": {
-      "color": "#0093cc",
+      "color": "#00a1e8",
       "linestyle": "solid"
     },
     "BOR": {
-      "color": "#ff2d00",
+      "color": "#f50537",
       "linestyle": "dashed"
     },
     "TSU": {
-      "color": "#6692ff",
+      "color": "#6c98ff",
       "linestyle": "solid"
     },
     "ALB": {
-      "color": "#64c4ff",
+      "color": "#1868db",
       "linestyle": "solid"
     },
     "BEA": {
-      "color": "#b6babd",
+      "color": "#9c9fa2",
       "linestyle": "dashed"
     },
     "ALO": {
@@ -99,15 +100,15 @@
       "linestyle": "solid"
     },
     "BOT": {
-      "color": "#444444",
+      "color": "#909090",
       "linestyle": "dashed"
     },
     "SAI": {
-      "color": "#64c4ff",
+      "color": "#1868db",
       "linestyle": "dashed"
     },
     "PER": {
-      "color": "#444444",
+      "color": "#909090",
       "linestyle": "solid"
     },
     "STR": {
@@ -115,7 +116,7 @@
       "linestyle": "dashed"
     },
     "HAM": {
-      "color": "#e80020",
+      "color": "#ed1131",
       "linestyle": "dashed"
     }
   },

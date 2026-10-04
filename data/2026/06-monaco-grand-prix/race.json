@@ -1,4 +1,5 @@
 {
+  "format": 2,
   "year": 2026,
   "round": 6,
   "event": "Monaco Grand Prix",
@@ -127,39 +128,39 @@
   ],
   "driver_styles": {
     "ANT": {
-      "color": "#27f4d2",
+      "color": "#00d7b6",
       "linestyle": "solid"
     },
     "HAM": {
-      "color": "#e80020",
+      "color": "#ed1131",
       "linestyle": "dashed"
     },
     "HAD": {
-      "color": "#3671c6",
+      "color": "#4781d7",
       "linestyle": "dashed"
     },
     "PIA": {
-      "color": "#ff8000",
+      "color": "#f47600",
       "linestyle": "dashed"
     },
     "LAW": {
-      "color": "#6692ff",
+      "color": "#6c98ff",
       "linestyle": "solid"
     },
     "LIN": {
-      "color": "#6692ff",
+      "color": "#6c98ff",
       "linestyle": "dashed"
     },
     "GAS": {
-      "color": "#0093cc",
+      "color": "#00a1e8",
       "linestyle": "solid"
     },
     "ALB": {
-      "color": "#64c4ff",
+      "color": "#1868db",
       "linestyle": "solid"
     },
     "OCO": {
-      "color": "#b6babd",
+      "color": "#9c9fa2",
       "linestyle": "solid"
     },
     "ALO": {
@@ -167,31 +168,31 @@
       "linestyle": "solid"
     },
     "BOR": {
-      "color": "#ff2d00",
+      "color": "#f50537",
       "linestyle": "dashed"
     },
     "RUS": {
-      "color": "#27f4d2",
+      "color": "#00d7b6",
       "linestyle": "dashed"
     },
     "HUL": {
-      "color": "#ff2d00",
+      "color": "#f50537",
       "linestyle": "solid"
     },
     "COL": {
-      "color": "#0093cc",
+      "color": "#00a1e8",
       "linestyle": "dashed"
     },
     "PER": {
-      "color": "#444444",
+      "color": "#909090",
       "linestyle": "solid"
     },
     "SAI": {
-      "color": "#64c4ff",
+      "color": "#1868db",
       "linestyle": "dashed"
     },
     "LEC": {
-      "color": "#e80020",
+      "color": "#ed1131",
       "linestyle": "solid"
     },
     "STR": {
@@ -199,19 +200,19 @@
       "linestyle": "dashed"
     },
     "NOR": {
-      "color": "#ff8000",
+      "color": "#f47600",
       "linestyle": "solid"
     },
     "BEA": {
-      "color": "#b6babd",
+      "color": "#9c9fa2",
       "linestyle": "dashed"
     },
     "BOT": {
-      "color": "#444444",
+      "color": "#909090",
       "linestyle": "dashed"
     },
     "VER": {
-      "color": "#3671c6",
+      "color": "#4781d7",
       "linestyle": "solid"
     }
   },
