@@ -67,6 +67,13 @@ def test_max_round_points(year, sprint, expected):
     assert championship.max_round_points(year, sprint) == expected
 
 
+@pytest.mark.parametrize(
+    ("year", "sprint", "expected"), [(2018, False, 43), (2021, True, 49), (2024, True, 59)]
+)
+def test_a_team_can_score_a_one_two(year, sprint, expected):
+    assert championship.max_round_points(year, sprint, cars=2) == expected
+
+
 def test_remaining_points_counts_rounds_after_the_cutoff():
     schedule = pd.DataFrame({"Round": [1, 2, 3], "Sprint": [False, True, False]})
 
@@ -102,3 +109,63 @@ def test_progression_figure_is_cumulative(results):
     first, second = figure.data
     assert list(first.y) == [25.0, 51.0]
     assert (second.line.color, second.line.dash) == ("#123456", "dash")
+
+
+OFFICIAL = pd.DataFrame(
+    {
+        "Round": [1, 1, 2, 2],
+        "Team": ["Red", "Blue", "Red", "Blue"],
+        "Position": [1, 2, 2, 1],
+        "Points": [43.0, 15.0, 58.0, 63.0],
+        "Wins": [1, 0, 1, 1],
+    }
+)
+
+
+def test_team_standings_use_the_latest_official_round():
+    assert championship.team_standings(OFFICIAL, 2)["Team"].tolist() == ["Blue", "Red"]
+    assert championship.team_standings(OFFICIAL, 1)["Points"].tolist() == [43.0, 15.0]
+    assert championship.team_standings(OFFICIAL, 0).empty
+
+
+def test_standings_change_counts_points_and_places():
+    change = championship.standings_change(
+        championship.team_standings(OFFICIAL, 2), championship.team_standings(OFFICIAL, 1), "Team"
+    ).set_index("Team")
+
+    assert change["Gained"].to_dict() == {"Blue": 48.0, "Red": 15.0}
+    assert change["Moved"].to_dict() == {"Blue": 1, "Red": -1}
+
+
+def test_team_colours_and_penalties_come_from_the_drivers(results):
+    teams = results.assign(Team=results["Driver"].map({"AAA": "Red", "BBB": "Red", "CCC": "Blue"}))
+    styles = {"AAA": {"color": "#ff0000"}, "CCC": {"color": "#0000ff"}}
+    official = pd.DataFrame(
+        {
+            "Round": [2, 2],
+            "Team": ["Red", "Blue"],
+            "Position": [1, 2],
+            "Points": [84.0, 20.0],
+            "Wins": [2, 0],
+        }
+    )
+
+    assert championship.team_colors(teams, styles) == {"Red": "#ff0000", "Blue": "#0000ff"}
+    assert championship.driver_teams(teams)["CCC"] == "Blue"
+    assert championship.penalties(official, teams, 2) == {"Red": -10.0, "Blue": -10.0}
+
+
+def test_team_charts_add_up_both_cars(results):
+    schedule = pd.DataFrame({"Round": [1, 2], "EventName": ["Alpha Grand Prix", "Beta Grand Prix"]})
+    teams = results.assign(Team=results["Driver"].map({"AAA": "Red", "BBB": "Red", "CCC": "Blue"}))
+
+    heatmap = championship.points_heatmap(teams, schedule, ["Red", "Blue"], 2, by="Team")
+    progression = championship.team_progression_figure(
+        OFFICIAL, schedule, ["Red", "Blue"], {"Red": "#ff0000"}, 2
+    )
+
+    rounds, totals = heatmap.data
+    assert totals.z.ravel().tolist() == [94.0, 30.0]
+    assert rounds.customdata[0][0] == "Race P1, P2"
+    assert list(progression.data[0].y) == [43.0, 58.0]
+    assert progression.data[0].line.color == "#ff0000"
