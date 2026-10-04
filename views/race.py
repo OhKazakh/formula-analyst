@@ -6,7 +6,7 @@ import streamlit as st
 
 from src import analysis, races, seasons
 from src.charts import FALLBACK_COLOR
-from views import data, theme
+from views import data, logos, theme
 from views.links import requested, requested_int
 from views.overview_tab import overview_tab
 from views.pace_tab import pace_tab
@@ -28,6 +28,7 @@ HEADER_STYLE = f"""<style>
 .race-place .position {{ font-size: 13px; font-weight: 600; color: {theme.SECONDARY_TEXT}; }}
 .race-place .name {{ font-size: 18px; font-weight: 600; }}
 .race-place .team {{ font-size: 14px; color: {theme.SECONDARY_TEXT}; }}
+.race-place .team img {{ width: 20px; height: 20px; vertical-align: -5px; margin-right: 6px; }}
 .race-facts {{
   display: flex; flex-wrap: wrap; gap: 4px 24px; margin-top: 12px;
   font-size: 15px; font-variant-numeric: tabular-nums;
@@ -193,17 +194,20 @@ def header(race: races.Race, summary: analysis.RaceSummary, season: seasons.Seas
     details.append(f"{race.total_laps} laps")
     st.caption(" · ".join(details))
 
-    places = "".join(
-        f'<div class="race-place" style="border-left-color:'
-        f'{race.driver_styles.get(driver, {}).get("color", FALLBACK_COLOR)}">'
-        f'<div class="position">P{position}</div>'
-        f'<div class="name">{html.escape(name)}</div>'
-        f'<div class="team">{html.escape(team)}</div></div>'
-        for position, (driver, name, team) in enumerate(podium(race, season), start=1)
-    )
+    places = []
+    for position, (driver, name, team) in enumerate(podium(race, season), start=1):
+        color = race.driver_styles.get(driver, {}).get("color", FALLBACK_COLOR)
+        places.append(
+            f'<div class="race-place" style="border-left-color:{color}">'
+            f'<div class="position">P{position}</div>'
+            f'<div class="name">{html.escape(name)}</div>'
+            f'<div class="team"><img src="{logos.badge(team, color)}" alt="">'
+            f"{html.escape(team)}</div>"
+            "</div>"
+        )
     facts = "".join(f"<span>{fact}</span>" for fact in race_facts(summary))
     st.html(
-        f'{HEADER_STYLE}<div class="race-podium">{places}</div>'
+        f'{HEADER_STYLE}<div class="race-podium">{"".join(places)}</div>'
         f'<div class="race-facts">{facts}</div>'
     )
 
