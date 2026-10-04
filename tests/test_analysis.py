@@ -162,18 +162,6 @@ def test_pace_figure_outlines_lines_that_vanish_on_white():
     assert (line.name, line.line.color) == ("AAA", "#ffffff")
 
 
-def test_speed_trace_distinguishes_teammates_by_line_style():
-    trace = pd.DataFrame({"Distance": [0.0, 10.0], "Speed": [300.0, 305.0]})
-    corners = pd.DataFrame({"Number": [1, 2], "Letter": ["", "A"], "Distance": [2.0, 8.0]})
-
-    figure = analysis.speed_trace_figure({"AAA": trace, "BBB": trace}, TEAMMATES, corners)
-    first, second = figure.data
-
-    assert (first.line.dash, second.line.dash) == ("solid", "dash")
-    assert [annotation.text for annotation in figure.layout.annotations] == ["1", "2A"]
-    assert [shape.x0 for shape in figure.layout.shapes] == [2.0, 8.0]
-
-
 def test_strategy_figure_one_bar_trace_per_compound():
     stints = pd.DataFrame(
         {

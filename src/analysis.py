@@ -9,7 +9,6 @@ import plotly.graph_objects as go
 from src.charts import (
     ACCENT,
     FALLBACK_COLOR,
-    LABEL_OPACITY,
     NEUTRAL,
     OUTLINE,
     TEAMMATE_SYMBOLS,
@@ -216,60 +215,6 @@ def strategy_figure(
         bargap=0.3,
         legend_title_text="Compound",
     )
-
-
-def _corner_label(number: object, letter: object) -> str:
-    return f"{number}{letter if isinstance(letter, str) else ''}"
-
-
-def speed_trace_figure(
-    traces: dict[str, pd.DataFrame], styles: Styles, corners: pd.DataFrame
-) -> go.Figure:
-    figure = go.Figure()
-    for driver, trace in traces.items():
-        add_line(
-            figure,
-            line_style(styles, driver),
-            x=trace["Distance"],
-            y=trace["Speed"],
-            name=driver,
-            mode="lines",
-            hovertemplate=f"{driver} %{{y:.0f}} km/h<extra></extra>",
-        )
-    if traces:
-        lowest = min(trace["Speed"].min() for trace in traces.values())
-        highest = max(trace["Speed"].max() for trace in traces.values())
-        figure.update_layout(
-            shapes=[
-                {
-                    "type": "line",
-                    "xref": "x",
-                    "yref": "paper",
-                    "x0": distance,
-                    "x1": distance,
-                    "y0": 0,
-                    "y1": 1,
-                    "line": {"color": NEUTRAL, "width": 1, "dash": "dot"},
-                    "layer": "below",
-                }
-                for distance in corners["Distance"]
-            ],
-            annotations=[
-                {
-                    "x": corner.Distance,
-                    "y": lowest - 20,
-                    "text": _corner_label(corner.Number, corner.Letter),
-                    "showarrow": False,
-                    "font": {"size": 11},
-                    "opacity": LABEL_OPACITY,
-                }
-                for corner in corners.itertuples()
-            ],
-        )
-        figure.update_yaxes(range=[lowest - 30, highest + 15])
-    figure.update_xaxes(title="Distance (m)", hoverformat=",.0f")
-    figure.update_yaxes(title="Speed (km/h)")
-    return finish(figure, 440, hovermode="x unified")
 
 
 def stint_fit_figure(
