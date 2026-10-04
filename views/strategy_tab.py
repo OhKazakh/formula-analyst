@@ -1,12 +1,12 @@
 import pandas as pd
 import streamlit as st
 
-from src import analysis, degradation, races
+from src import analysis, degradation, races, strategy
 from src.charts import FALLBACK_COLOR
 from views import data, tyres
 from views.data import show
 from views.state import race_key
-from views.text import listing
+from views.text import listing, plural
 
 TYRE = st.column_config.ImageColumn(" ", width="small")
 PER_LAP = st.column_config.NumberColumn(format="%.3f s/lap")
@@ -31,6 +31,46 @@ def tyre_strategy(race: races.Race) -> None:
             width="stretch",
             column_config={"Tyre": TYRE},
         )
+
+
+def pit_stops_section(race: races.Race) -> None:
+    st.subheader("How long did the pit stops take?")
+    stops = strategy.pit_stops(race.laps)
+    if stops.empty:
+        st.info("No pit stops were recorded for this race.")
+        return
+    quickest = stops.loc[stops["PitLane"].idxmin()]
+    text = (
+        f"The quickest stop was **{quickest['Driver']}**'s on lap {quickest['Lap']}, "
+        f"{quickest['PitLane']:.1f} s in the pit lane."
+    )
+    if (loss := strategy.pit_loss(stops)) is not None:
+        text += f" A stop cost about {loss:.0f} s against staying out."
+    st.markdown(text)
+    show(strategy.pit_stop_figure(stops, analysis.team_colors(race.laps, race.driver_styles)))
+    st.caption(
+        "Time from the pit entry line to the pit exit line, so slow pit lanes and penalties "
+        "served in the box count too."
+    )
+
+    attempts = strategy.undercuts(race.laps, stops)
+    if attempts.empty:
+        return
+    worked = int(attempts["Worked"].sum())
+    st.markdown(f"**Undercuts.** {worked} of {plural(len(attempts), 'attempt')} worked.")
+    st.dataframe(
+        attempts.assign(Result=attempts["Worked"].map({True: "Worked", False: "Failed"})).drop(
+            columns="Worked"
+        ),
+        hide_index=True,
+        width="stretch",
+        column_config={"Gap": st.column_config.NumberColumn("Gap before", format="%.1f s")},
+    )
+    st.caption(
+        f"A driver within {strategy.UNDERCUT_GAP:.0f} s of the car ahead pitted first, and that "
+        f"car pitted within {strategy.UNDERCUT_WINDOW} laps. The undercut worked if the driver "
+        "came out ahead once both had stopped."
+    )
 
 
 def wear_rates(race: races.Race, clean: pd.DataFrame) -> None:
@@ -134,6 +174,8 @@ def tyre_model(race: races.Race, bundle_version: str) -> None:
 
 def strategy_tab(race: races.Race, clean: pd.DataFrame, bundle_version: str) -> None:
     tyre_strategy(race)
+    st.divider()
+    pit_stops_section(race)
     st.divider()
     wear_rates(race, clean)
     st.divider()
