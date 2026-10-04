@@ -3,7 +3,7 @@ import streamlit as st
 
 from src import analysis, races, sectors
 from views.data import show
-from views.state import race_key
+from views.state import favourite, race_key, with_favourite
 
 SECONDS = st.column_config.NumberColumn(format="%.3f")
 
@@ -11,7 +11,10 @@ SECONDS = st.column_config.NumberColumn(format="%.3f")
 def driver_pace(race: races.Race, clean: pd.DataFrame) -> None:
     st.subheader("How did each driver's pace change over the race?")
     drivers = st.multiselect(
-        "Drivers", race.drivers, default=race.drivers[:3], key=race_key(race, "pace_drivers")
+        "Drivers",
+        race.drivers,
+        default=with_favourite(race.drivers[:3], race.drivers),
+        key=race_key(race, f"pace_drivers-{favourite() or ''}"),
     )
     with st.container(horizontal=True):
         representative = st.toggle(
@@ -87,8 +90,8 @@ def lap_distribution(race: races.Race) -> None:
     drivers = st.multiselect(
         "Drivers",
         race.drivers,
-        default=race.drivers[:10],
-        key=race_key(race, "distribution_drivers"),
+        default=with_favourite(race.drivers[:10], race.drivers),
+        key=race_key(race, f"distribution_drivers-{favourite() or ''}"),
     )
     if not drivers:
         st.info("Pick at least one driver.")

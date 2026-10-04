@@ -3,7 +3,7 @@ import streamlit as st
 
 from src import analysis, conditions, races
 from views.data import show
-from views.state import race_key
+from views.state import favourite, race_key, with_favourite
 from views.text import lap_ranges, listing, plural
 
 ALL_DRIVERS = "All drivers"
@@ -33,8 +33,8 @@ def running_order(race: races.Race, summary: analysis.RaceSummary) -> list[str]:
     highlight = st.multiselect(
         "Highlight drivers",
         race.drivers,
-        default=race.drivers[:3],
-        key=race_key(race, "position_highlight"),
+        default=with_favourite(race.drivers[:3], race.drivers),
+        key=race_key(race, f"position_highlight-{favourite() or ''}"),
     )
     positions = analysis.lap_positions(race.laps)
     show(analysis.position_figure(positions, race.drivers, race.driver_styles, highlight))
@@ -127,7 +127,14 @@ def team_radio_section(race: races.Race) -> None:
         st.info("Team radio isn't available for this race.")
         return
     speakers = [driver for driver in race.drivers if driver in set(clips["Driver"])]
-    chosen = st.selectbox("Driver", [ALL_DRIVERS, *speakers], key=race_key(race, "radio_driver"))
+    options = [ALL_DRIVERS, *speakers]
+    liked = favourite()
+    chosen = st.selectbox(
+        "Driver",
+        options,
+        index=options.index(liked) if liked in speakers else 0,
+        key=race_key(race, f"radio_driver-{liked or ''}"),
+    )
     shown = clips if chosen == ALL_DRIVERS else clips[clips["Driver"] == chosen]
     shown = shown.reset_index(drop=True)
     table = pd.DataFrame(

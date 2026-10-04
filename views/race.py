@@ -11,7 +11,7 @@ from views.links import requested, requested_int
 from views.overview_tab import overview_tab
 from views.pace_tab import pace_tab
 from views.replay_tab import replay_tab
-from views.state import keep_widget_state
+from views.state import keep_widget_state, pick_favourite
 from views.strategy_tab import strategy_tab
 from views.telemetry_tab import telemetry_tab
 
@@ -231,6 +231,7 @@ def render() -> None:
             st.button("Try again")
             st.stop()
 
+    favourite = pick_favourite(race.drivers)
     summary = analysis.race_summary(race.laps, race.order[0] if race.order else "")
     header(race, summary, bundled_season(year, bundle_version))
 
@@ -238,13 +239,12 @@ def render() -> None:
     overview, replay, pace, strategy, telemetry = st.tabs(
         TABS, default=requested_tab(), key="race_tab", on_change="rerun"
     )
-    st.query_params.from_dict(
-        {
-            "season": str(year),
-            "race": races.slugify(event),
-            "tab": st.session_state.get("race_tab", TABS[0]).lower(),
-        }
-    )
+    params = {
+        "season": str(year),
+        "race": races.slugify(event),
+        "tab": st.session_state.get("race_tab", TABS[0]).lower(),
+    }
+    st.query_params.from_dict(params | ({"driver": favourite} if favourite else {}))
     if overview.open:
         with overview:
             overview_tab(race, summary)

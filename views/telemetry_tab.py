@@ -4,7 +4,7 @@ import streamlit as st
 from src import analysis, races, telemetry
 from views import tyres
 from views.data import show
-from views.state import race_key
+from views.state import favourite, race_key
 
 FASTER_WHERE = "Who's faster where"
 
@@ -80,13 +80,18 @@ def track_map_section(
 
 def telemetry_tab(race: races.Race) -> None:
     st.subheader("How do two drivers compare on their fastest lap?")
+    liked = favourite()
+    first_index = race.drivers.index(liked) if liked in race.drivers else 0
+    second_index = 0 if first_index else min(1, len(race.drivers) - 1)
     left, right = st.columns(2)
-    first = left.selectbox("Driver A", race.drivers, index=0, key=race_key(race, "driver_a"))
+    first = left.selectbox(
+        "Driver A", race.drivers, index=first_index, key=race_key(race, f"driver_a-{liked or ''}")
+    )
     second = right.selectbox(
         "Driver B",
         race.drivers,
-        index=min(1, len(race.drivers) - 1),
-        key=race_key(race, "driver_b"),
+        index=second_index,
+        key=race_key(race, f"driver_b-{liked or ''}"),
     )
 
     drivers = list(dict.fromkeys([first, second]))
