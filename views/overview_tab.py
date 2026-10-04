@@ -1,12 +1,15 @@
 import pandas as pd
 import streamlit as st
 
-from src import analysis, conditions, races
+from src import analysis, championship, conditions, races, seasons
+from views import logos, theme
 from views.data import show
 from views.state import favourite, race_key, with_favourite
 from views.text import lap_ranges, listing, plural
 
 ALL_DRIVERS = "All drivers"
+BADGE = st.column_config.ImageColumn(" ", width="small")
+STANDINGS_HEIGHT = 423
 DECISIONS = {
     "Penalty": ("penalty", "penalties"),
     "Investigation": ("investigation", "investigations"),
@@ -60,6 +63,110 @@ def gaps_section(race: races.Race, highlight: list[str]) -> None:
     if any(neutralised.values()):
         caption += " Shaded laps ran behind the safety car (SC) or the virtual safety car (VSC)."
     st.caption(caption)
+
+
+def move_text(moved: float) -> str:
+    if pd.isna(moved) or moved == 0:
+        return "–"
+    return f"▲{int(moved)}" if moved > 0 else f"▼{int(-moved)}"
+
+
+def previous_round(season: seasons.Season, round_number: int) -> int | None:
+    earlier = [completed for completed in season.completed_rounds if completed < round_number]
+    return earlier[-1] if earlier else None
+
+
+def driver_impact(season: seasons.Season, round_number: int) -> pd.DataFrame:
+    after = championship.standings(season.results, round_number)
+    before_round = previous_round(season, round_number)
+    before = (
+        championship.standings(season.results, before_round) if before_round else after.iloc[0:0]
+    )
+    return championship.standings_change(after, before, "Driver")
+
+
+def team_impact(season: seasons.Season, round_number: int) -> pd.DataFrame:
+    after = championship.team_standings(season.team_standings, round_number)
+    before_round = previous_round(season, round_number)
+    before = championship.team_standings(season.team_standings, before_round or 0)
+    return championship.standings_change(after, before, "Team")
+
+
+def impact_text(drivers: pd.DataFrame, teams: pd.DataFrame) -> str:
+    parts = []
+    for table, key, verb, label in (
+        (drivers, "Name", "leads", "drivers"),
+        (teams, "Team", "lead", "teams"),
+    ):
+        if len(table) > 1:
+            first, second = table.iloc[0], table.iloc[1]
+            margin = first["Points"] - second["Points"]
+            parts.append(
+                f"**{first[key]}** {verb} the {label} by {margin:g} "
+                f"{'point' if margin == 1 else 'points'} over {second[key]}"
+            )
+    return f"After this race, {listing(parts)}." if parts else ""
+
+
+def standings_frame(
+    table: pd.DataFrame, key: str, label: str, colors: dict[str, str], previous: bool
+) -> pd.DataFrame:
+    return pd.DataFrame(
+        {
+            "Pos": table["Position"],
+            "Badge": [logos.badge(team, colors.get(team)) for team in table["Team"]],
+            label: table[key],
+            "Points": table["Points"],
+            "This race": table["Gained"],
+            "Move": table["Moved"].map(move_text) if previous else "",
+        }
+    )
+
+
+def championship_section(race: races.Race, season: seasons.Season | None) -> None:
+    st.subheader("What did it mean for the championship?")
+    if season is None or race.round_number not in season.completed_rounds:
+        st.info("Championship standings aren't available for this race yet.")
+        return
+    drivers = driver_impact(season, race.round_number)
+    teams = team_impact(season, race.round_number)
+    if text := impact_text(drivers, teams):
+        st.markdown(text)
+    styles = season.driver_styles | race.driver_styles
+    colors = championship.team_colors(season.results, styles)
+    previous = previous_round(season, race.round_number) is not None
+    config = {
+        "Pos": st.column_config.NumberColumn(width="small"),
+        "Badge": BADGE,
+        "Driver": st.column_config.TextColumn(width=170),
+        "Team": st.column_config.TextColumn(width=170),
+        "Points": st.column_config.NumberColumn(format="%g"),
+        "This race": st.column_config.NumberColumn(format="+%g"),
+    }
+    left, right = st.columns(2)
+    left.dataframe(
+        theme.favourite_rows(
+            standings_frame(drivers, "Name", "Driver", colors, previous),
+            drivers["Driver"].eq(favourite()),
+        ),
+        hide_index=True,
+        width="stretch",
+        height=STANDINGS_HEIGHT,
+        column_config=config,
+    )
+    if not teams.empty:
+        right.dataframe(
+            standings_frame(teams, "Team", "Team", colors, previous),
+            hide_index=True,
+            width="stretch",
+            height=STANDINGS_HEIGHT,
+            column_config=config,
+        )
+    st.caption(
+        "Standings after this round, with the points scored here, sprint included, and the "
+        "places gained or lost. Team standings are the official ones, so they include any "
+        "points deductions."
+    )
 
 
 def weather_text(summary: dict) -> str:
@@ -162,13 +269,17 @@ def team_radio_section(race: races.Race) -> None:
     )
 
 
-def overview_tab(race: races.Race, summary: analysis.RaceSummary) -> None:
+def overview_tab(
+    race: races.Race, summary: analysis.RaceSummary, season: seasons.Season | None
+) -> None:
     if "Time" not in race.laps.columns:
         st.info("Lap timing isn't available for this race.")
         return
     highlight = running_order(race, summary)
     st.divider()
     gaps_section(race, highlight)
+    st.divider()
+    championship_section(race, season)
     st.divider()
     conditions_section(race)
     st.divider()

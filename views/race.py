@@ -253,7 +253,7 @@ def render() -> None:
     st.query_params.from_dict(params | ({"driver": favourite} if favourite else {}))
     if overview.open:
         with overview:
-            overview_tab(race, summary)
+            overview_tab(race, summary, season)
     if timing.open:
         with timing:
             timing_tab(race, season)
