@@ -7,3 +7,8 @@ GLOBAL_STYLE = """<style>
 [data-testid="stTab"][aria-selected="true"],
 [data-testid="stSliderThumbValue"] { color: inherit; }
 </style>"""
+
+# formula1.com's sector purple and positive green, used for the fastest and personal-best laps.
+FASTEST = "background-color: #5300A6; color: #FFFFFF"
+PERSONAL_BEST = "background-color: #28973E; color: #15151E"
+FAVOURITE_ROW = "background-color: rgba(225, 6, 0, 0.12)"

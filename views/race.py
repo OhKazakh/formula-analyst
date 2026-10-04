@@ -14,11 +14,12 @@ from views.replay_tab import replay_tab
 from views.state import keep_widget_state, pick_favourite
 from views.strategy_tab import strategy_tab
 from views.telemetry_tab import telemetry_tab
+from views.timing_tab import timing_tab
 
 FIRST_SEASON = 2018
 DEFAULT_YEAR = 2024
 DEFAULT_EVENT = "Italian Grand Prix"
-TABS = ["Overview", "Replay", "Pace", "Strategy", "Telemetry"]
+TABS = ["Overview", "Timing", "Replay", "Pace", "Strategy", "Telemetry"]
 HEADER_STYLE = f"""<style>
 .race-podium {{ display: flex; flex-wrap: wrap; gap: 12px; }}
 .race-place {{
@@ -236,11 +237,12 @@ def render() -> None:
             st.stop()
 
     favourite = pick_favourite(race.drivers)
+    season = bundled_season(year, bundle_version)
     summary = analysis.race_summary(race.laps, race.order[0] if race.order else "")
-    header(race, summary, bundled_season(year, bundle_version))
+    header(race, summary, season)
 
     clean = analysis.representative_laps(race.laps)
-    overview, replay, pace, strategy, telemetry = st.tabs(
+    overview, timing, replay, pace, strategy, telemetry = st.tabs(
         TABS, default=requested_tab(), key="race_tab", on_change="rerun"
     )
     params = {
@@ -252,6 +254,9 @@ def render() -> None:
     if overview.open:
         with overview:
             overview_tab(race, summary)
+    if timing.open:
+        with timing:
+            timing_tab(race, season)
     if replay.open:
         with replay:
             replay_tab(race, bundle_version)
