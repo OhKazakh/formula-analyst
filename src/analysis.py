@@ -9,6 +9,7 @@ import plotly.graph_objects as go
 from src.charts import (
     ACCENT,
     FALLBACK_COLOR,
+    LABEL_OPACITY,
     NEUTRAL,
     OUTLINE,
     TEAMMATE_SYMBOLS,
@@ -587,6 +588,76 @@ def position_figure(
         annotations=labels,
         margin={"l": 10, "r": 50, "t": 20, "b": 10},
     )
+
+
+def gap_to_leader(laps: pd.DataFrame) -> pd.DataFrame:
+    timed = laps.dropna(subset=["Time"])[["Driver", "LapNumber", "Time"]]
+    seconds = timed["Time"].dt.total_seconds()
+    leader = seconds.groupby(timed["LapNumber"]).transform("min")
+    return (
+        timed.assign(Gap=seconds - leader)[["Driver", "LapNumber", "Gap"]]
+        .sort_values(["Driver", "LapNumber"])
+        .reset_index(drop=True)
+    )
+
+
+def neutralised_laps(laps: pd.DataFrame) -> dict[str, list[int]]:
+    timed = laps.dropna(subset=["Time"])
+    leaders = timed.loc[timed.groupby("LapNumber")["Time"].idxmin()]
+    status = leaders.set_index("LapNumber")["TrackStatus"].fillna("").astype(str)
+    safety_car = status[status.str.contains(SAFETY_CAR)].index
+    virtual = status[
+        status.apply(lambda codes: any(code in codes for code in VIRTUAL_SAFETY_CAR))
+    ].index.difference(safety_car)
+    return {"SC": [int(lap) for lap in safety_car], "VSC": [int(lap) for lap in virtual]}
+
+
+def gap_figure(
+    gaps: pd.DataFrame,
+    drivers: list[str],
+    styles: Styles,
+    highlight: list[str] | None = None,
+    neutralised: dict[str, list[int]] | None = None,
+) -> go.Figure:
+    highlighted = set(highlight or [])
+    figure = go.Figure()
+    for label, laps in (neutralised or {}).items():
+        for lap in laps:
+            figure.add_vrect(
+                x0=lap - 0.5, x1=lap + 0.5, fillcolor=NEUTRAL, line_width=0, layer="below"
+            )
+        if laps:
+            figure.add_annotation(
+                x=laps[0],
+                y=0,
+                yref="paper",
+                yanchor="bottom",
+                text=label,
+                showarrow=False,
+                font={"size": 10},
+                opacity=LABEL_OPACITY,
+            )
+    for driver in sorted(drivers, key=lambda driver: not highlighted or driver in highlighted):
+        driver_gaps = gaps[gaps["Driver"] == driver]
+        if driver_gaps.empty:
+            continue
+        emphasis = not highlighted or driver in highlighted
+        line = line_style(styles, driver, width=2.5 if highlighted and emphasis else 1.5)
+        if not emphasis:
+            line["color"] = NEUTRAL
+        add_line(
+            figure,
+            line,
+            x=driver_gaps["LapNumber"],
+            y=driver_gaps["Gap"],
+            name=driver,
+            mode="lines",
+            showlegend=bool(highlighted) and emphasis,
+            hovertemplate=f"<b>{driver}</b> · lap %{{x}} · +%{{y:.1f}} s<extra></extra>",
+        )
+    figure.update_yaxes(title="Gap to the leader (s)", autorange="reversed", rangemode="tozero")
+    figure.update_xaxes(title="Lap")
+    return finish(figure, 460)
 
 
 def quick_laps(laps: pd.DataFrame, threshold: float = QUICK_LAP_THRESHOLD) -> pd.DataFrame:

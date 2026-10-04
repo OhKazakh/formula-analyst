@@ -434,3 +434,24 @@ def test_race_summary_laps_led_and_lead_changes():
 
     assert summary.laps_led == {"AAA": 2, "BBB": 2}
     assert summary.lead_changes == 2
+
+
+def test_gap_to_leader_is_measured_at_each_lap_end():
+    laps = pd.DataFrame(
+        {
+            "Driver": ["AAA", "BBB", "AAA", "BBB"],
+            "LapNumber": [1.0, 1.0, 2.0, 2.0],
+            "Time": pd.to_timedelta([100.0, 101.5, 200.0, 199.0], unit="s"),
+            "TrackStatus": ["1", "1", "4", "4"],
+        }
+    )
+
+    gaps = analysis.gap_to_leader(laps).set_index(["Driver", "LapNumber"])["Gap"]
+
+    assert gaps.to_dict() == {
+        ("AAA", 1.0): 0.0,
+        ("AAA", 2.0): 1.0,
+        ("BBB", 1.0): 1.5,
+        ("BBB", 2.0): 0.0,
+    }
+    assert analysis.neutralised_laps(laps) == {"SC": [2], "VSC": []}
