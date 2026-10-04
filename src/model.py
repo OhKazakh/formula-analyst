@@ -15,8 +15,7 @@ from sklearn.preprocessing import OrdinalEncoder
 from src import degradation, races, seasons
 
 CATEGORICAL = ["Compound", "Location"]
-NUMERIC = ["TyreLife", "StartAge", "Year"]
-FEATURES = CATEGORICAL + NUMERIC
+NUMERIC = ["TyreLife", "StartAge", "Year", "TrackTemp"]
 FOLDS = 5
 LONGEST_STINT_QUANTILE = 0.95
 
@@ -42,6 +41,13 @@ def pipeline() -> Pipeline:
     return Pipeline([("encode", encode), ("regressor", regressor)])
 
 
+def track_temperature(path: Path) -> float:
+    weather = path / "weather.parquet"
+    if not weather.exists():
+        return np.nan
+    return float(pd.read_parquet(weather, columns=["TrackTemp"])["TrackTemp"].median())
+
+
 def bundled_races(root: Path = races.DATA_DIR) -> pd.DataFrame:
     saved = races.saved_races(root)
     saved = saved[saved["Year"] >= degradation.FIRST_SEASON].reset_index(drop=True)
@@ -54,6 +60,7 @@ def bundled_races(root: Path = races.DATA_DIR) -> pd.DataFrame:
             degradation.race_id(y, r) for y, r in zip(saved["Year"], saved["Round"], strict=True)
         ],
         Location=[locations[y].get(r) for y, r in zip(saved["Year"], saved["Round"], strict=True)],
+        TrackTemp=[track_temperature(Path(path)) for path in saved["Path"]],
     )
 
 
@@ -63,7 +70,11 @@ def training_table(bundled: pd.DataFrame) -> pd.DataFrame:
         race = races.read_race(row.Path)
         losses = degradation.stint_losses(race.laps, race.total_laps)
         if not losses.empty:
-            frames.append(losses.assign(Race=row.Race, Year=row.Year, Location=row.Location))
+            frames.append(
+                losses.assign(
+                    Race=row.Race, Year=row.Year, Location=row.Location, TrackTemp=row.TrackTemp
+                )
+            )
     return pd.concat(frames, ignore_index=True)
 
 
@@ -93,6 +104,7 @@ def curve_grid(bundled: pd.DataFrame, table: pd.DataFrame) -> pd.DataFrame:
                 "Race": race.Race,
                 "Year": race.Year,
                 "Location": race.Location,
+                "TrackTemp": race.TrackTemp,
                 "Compound": compound,
                 "TyreLife": age,
                 "StartAge": float(degradation.FRESH_TYRE_AGE),
@@ -104,24 +116,29 @@ def curve_grid(bundled: pd.DataFrame, table: pd.DataFrame) -> pd.DataFrame:
     )
 
 
+def usable_features(table: pd.DataFrame) -> list[str]:
+    return CATEGORICAL + [column for column in NUMERIC if table[column].notna().any()]
+
+
 def cross_validate(
     table: pd.DataFrame, grid: pd.DataFrame, folds: int = FOLDS
 ) -> tuple[pd.DataFrame, dict[str, float]]:
+    features = usable_features(table)
     curves, errors = [], {"model": [], "baseline": [], "no_wear": []}
     # Grouped by race so laps from the same race never end up on both sides.
     for train_rows, test_rows in GroupKFold(n_splits=folds).split(table, groups=table["Race"]):
         train, test = table.iloc[train_rows], table.iloc[test_rows]
-        model = pipeline().fit(train[FEATURES], train["Loss"])
-        errors["model"].append(np.abs(model.predict(test[FEATURES]) - test["Loss"].to_numpy()))
+        model = pipeline().fit(train[features], train["Loss"])
+        errors["model"].append(np.abs(model.predict(test[features]) - test["Loss"].to_numpy()))
         errors["baseline"].append(baseline_errors(train, test))
         errors["no_wear"].append(np.abs(test["Loss"].to_numpy()))
         held_out = grid[grid["Race"].isin(test["Race"].unique())]
-        curves.append(held_out.assign(Predicted=model.predict(held_out[FEATURES])))
+        curves.append(held_out.assign(Predicted=model.predict(held_out[features])))
 
     unseen = grid[~grid["Race"].isin(table["Race"].unique())]
     if not unseen.empty:
-        model = pipeline().fit(table[FEATURES], table["Loss"])
-        curves.append(unseen.assign(Predicted=model.predict(unseen[FEATURES])))
+        model = pipeline().fit(table[features], table["Loss"])
+        curves.append(unseen.assign(Predicted=model.predict(unseen[features])))
     mae = {name: float(np.concatenate(values).mean()) for name, values in errors.items()}
     return pd.concat(curves, ignore_index=True)[degradation.CURVE_COLUMNS], mae
 

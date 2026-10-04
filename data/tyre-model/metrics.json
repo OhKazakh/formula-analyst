@@ -6,7 +6,7 @@
   "last_season": 2026,
   "folds": 5,
   "mae": {
-    "model": 0.584,
+    "model": 0.581,
     "baseline": 0.629,
     "no_wear": 0.751
   }

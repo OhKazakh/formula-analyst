@@ -67,7 +67,9 @@ def test_build_saves_held_out_curves_and_metrics(bundle):
 
 
 def test_curve_grid_starts_on_a_fresh_set():
-    bundled = pd.DataFrame({"Race": ["2024-01"], "Year": [2024], "Location": ["Monza"]})
+    bundled = pd.DataFrame(
+        {"Race": ["2024-01"], "Year": [2024], "Location": ["Monza"], "TrackTemp": [40.0]}
+    )
     table = pd.DataFrame({"Compound": ["SOFT"] * 20, "TyreLife": range(1, 21)})
 
     grid = model.curve_grid(bundled, table)
