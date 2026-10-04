@@ -6,24 +6,36 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 
+from src.charts import (
+    ACCENT,
+    FALLBACK_COLOR,
+    LABEL_OPACITY,
+    NEUTRAL,
+    OUTLINE,
+    TEAMMATE_SYMBOLS,
+    Styles,
+    add_line,
+    compound_order,
+    corner_labels,
+    driver_style,
+    edge,
+    finish,
+    line_style,
+    marker_style,
+    rgb,
+    rgba,
+    track_figure,
+    track_points,
+)
+
 GREEN_FLAG = "1"
 SAFETY_CAR = "4"
 RED_FLAG = "5"
 VIRTUAL_SAFETY_CAR = ("6", "7")
 DEFAULT_FUEL_EFFECT = 0.055
-FALLBACK_COLOR = "#888888"
 UNKNOWN_COMPOUND = "UNKNOWN"
-NEUTRAL = "rgba(128, 128, 128, 0.35)"
-OUTLINE = "rgba(128, 128, 128, 0.8)"
 BUTTON = "#F7F4F1"
 BUTTON_TEXT = "#15151E"
-ACCENT = "#E10600"
-LIGHT_BACKGROUND = "#FFFFFF"
-DARK_BACKGROUND = "#15151E"
-LOW_CONTRAST = 1.6
-LABEL_OPACITY = 0.75
-PLOTLY_DASHES = {"solid": "solid", "dashed": "dash", "dashdot": "dashdot", "dotted": "dot"}
-TEAMMATE_SYMBOLS = {"solid": "circle", "dashed": "square", "dashdot": "diamond", "dotted": "x"}
 REPLAY_FRAMES_PER_LAP = 20
 REPLAY_MAX_FRAMES = 1500
 REPLAY_FRAME_MS = 60
@@ -35,8 +47,6 @@ QUICK_LAP_THRESHOLD = 1.07
 MINI_SECTORS = 25
 MAP_POINTS = 1200
 TIME_LABELS = {"FuelCorrected": "Fuel-corrected lap time (s)"}
-
-Styles = dict[str, dict[str, str]]
 
 
 def representative_laps(laps: pd.DataFrame) -> pd.DataFrame:
@@ -129,88 +139,6 @@ def format_lap_time(value: pd.Timedelta) -> str:
     return "" if pd.isna(value) else format_seconds(value.total_seconds())
 
 
-def _rgb(color: str) -> tuple[int, int, int]:
-    value = color.lstrip("#")
-    return int(value[0:2], 16), int(value[2:4], 16), int(value[4:6], 16)
-
-
-def _rgba(color: str, alpha: float) -> str:
-    red, green, blue = _rgb(color)
-    return f"rgba({red}, {green}, {blue}, {alpha})"
-
-
-def _luminance(color: str) -> float:
-    channels = np.array(_rgb(color)) / 255
-    linear = np.where(channels <= 0.04045, channels / 12.92, ((channels + 0.055) / 1.055) ** 2.4)
-    return float(linear @ np.array([0.2126, 0.7152, 0.0722]))
-
-
-def contrast(first: str, second: str) -> float:
-    lighter, darker = sorted((_luminance(first), _luminance(second)), reverse=True)
-    return (lighter + 0.05) / (darker + 0.05)
-
-
-# A few official colours (white Williams, yellow Renault) vanish on one of the backgrounds.
-def hard_to_see(color: str) -> bool:
-    if not color.startswith("#"):
-        return False
-    backgrounds = (LIGHT_BACKGROUND, DARK_BACKGROUND)
-    return min(contrast(color, background) for background in backgrounds) < LOW_CONTRAST
-
-
-def _style(styles: Styles, driver: str) -> tuple[str, str]:
-    style = styles.get(driver, {})
-    return style.get("color", FALLBACK_COLOR), style.get("linestyle", "solid")
-
-
-def _line(styles: Styles, driver: str, width: float = 2) -> dict:
-    color, linestyle = _style(styles, driver)
-    return {"color": color, "dash": PLOTLY_DASHES.get(linestyle, "solid"), "width": width}
-
-
-def _marker(styles: Styles, driver: str, size: int = 7) -> dict:
-    color, linestyle = _style(styles, driver)
-    symbol = TEAMMATE_SYMBOLS.get(linestyle, "circle")
-    if linestyle == "solid":
-        return {
-            "symbol": symbol,
-            "color": color,
-            "size": size,
-            "line": {"color": OUTLINE, "width": 1},
-        }
-    return {"symbol": f"{symbol}-open", "color": color, "size": size, "line": {"width": 2}}
-
-
-def _halo(x: object, y: object, line: dict) -> go.Scatter:
-    return go.Scatter(
-        x=x,
-        y=y,
-        mode="lines",
-        line={**line, "color": OUTLINE, "width": line["width"] + 2.5},
-        hoverinfo="skip",
-        showlegend=False,
-    )
-
-
-def _add_line(figure: go.Figure, line: dict, **trace: object) -> None:
-    if hard_to_see(line["color"]):
-        figure.add_trace(_halo(trace["x"], trace["y"], line))
-    figure.add_trace(go.Scatter(line=line, **trace))
-
-
-def _finish(figure: go.Figure, height: int, **layout: object) -> go.Figure:
-    figure.update_layout(
-        height=height,
-        margin={"l": 10, "r": 10, "t": 30, "b": 10},
-        legend={"orientation": "h", "x": 0, "xanchor": "left", "y": 1.02, "yanchor": "bottom"},
-        hovermode="closest",
-    )
-    figure.update_layout(**layout)
-    figure.update_xaxes(automargin=True)
-    figure.update_yaxes(automargin=True)
-    return figure
-
-
 def _tyre_labels(laps: pd.DataFrame) -> list[str]:
     labels = []
     for compound, age in zip(laps["Compound"], laps["TyreLife"], strict=True):
@@ -230,14 +158,14 @@ def pace_figure(
         driver_laps = laps[laps["Driver"] == driver].sort_values("LapNumber")
         if driver_laps.empty:
             continue
-        _add_line(
+        add_line(
             figure,
-            _line(styles, driver),
+            line_style(styles, driver),
             x=driver_laps["LapNumber"],
             y=driver_laps[time_column],
             name=driver,
             mode="lines+markers",
-            marker=_marker(styles, driver),
+            marker=marker_style(styles, driver),
             customdata=np.column_stack(
                 [driver_laps[time_column].map(format_seconds), _tyre_labels(driver_laps)]
             ),
@@ -248,19 +176,14 @@ def pace_figure(
         )
     figure.update_xaxes(title="Lap")
     figure.update_yaxes(title=TIME_LABELS.get(time_column, "Lap time (s)"))
-    return _finish(figure, 460)
-
-
-def _compound_order(present: list[str], compound_colors: dict[str, str]) -> list[str]:
-    known = [compound for compound in compound_colors if compound in present]
-    return known + [compound for compound in present if compound not in compound_colors]
+    return finish(figure, 460)
 
 
 def strategy_figure(
     stints: pd.DataFrame, order: list[str], compound_colors: dict[str, str]
 ) -> go.Figure:
     figure = go.Figure()
-    for compound in _compound_order(stints["Compound"].unique().tolist(), compound_colors):
+    for compound in compound_order(stints["Compound"].unique().tolist(), compound_colors):
         rows = stints[stints["Compound"] == compound]
         figure.add_trace(
             go.Bar(
@@ -286,7 +209,7 @@ def strategy_figure(
     figure.update_xaxes(title="Lap")
     if not stints.empty:
         figure.update_xaxes(range=[0, int(stints["EndLap"].max()) + 1])
-    return _finish(
+    return finish(
         figure,
         max(320, 26 * len(order) + 100),
         barmode="overlay",
@@ -304,9 +227,9 @@ def speed_trace_figure(
 ) -> go.Figure:
     figure = go.Figure()
     for driver, trace in traces.items():
-        _add_line(
+        add_line(
             figure,
-            _line(styles, driver),
+            line_style(styles, driver),
             x=trace["Distance"],
             y=trace["Speed"],
             name=driver,
@@ -346,7 +269,7 @@ def speed_trace_figure(
         figure.update_yaxes(range=[lowest - 30, highest + 15])
     figure.update_xaxes(title="Distance (m)", hoverformat=",.0f")
     figure.update_yaxes(title="Speed (km/h)")
-    return _finish(figure, 440, hovermode="x unified")
+    return finish(figure, 440, hovermode="x unified")
 
 
 def stint_fit_figure(
@@ -366,7 +289,7 @@ def stint_fit_figure(
     if len(stint_laps) >= 2:
         fit = linear_fit(x, y)
         ends = np.array([x.min(), x.max()], dtype=float)
-        _add_line(
+        add_line(
             figure,
             {"color": color, "dash": "dash", "width": 2},
             x=ends,
@@ -377,7 +300,7 @@ def stint_fit_figure(
         )
     figure.update_xaxes(title="Tyre age (laps)")
     figure.update_yaxes(title=TIME_LABELS.get(time_column, "Lap time (s)"))
-    return _finish(figure, 380)
+    return finish(figure, 380)
 
 
 def tyre_model_figure(
@@ -385,7 +308,7 @@ def tyre_model_figure(
 ) -> go.Figure:
     figure = go.Figure()
     present = list(dict.fromkeys([*curves["Compound"], *losses["Compound"]]))
-    for compound in _compound_order(present, compound_colors):
+    for compound in compound_order(present, compound_colors):
         color = compound_colors.get(compound, FALLBACK_COLOR)
         laps = losses[losses["Compound"] == compound]
         if not laps.empty:
@@ -411,7 +334,7 @@ def tyre_model_figure(
             )
         curve = curves[curves["Compound"] == compound]
         if not curve.empty:
-            _add_line(
+            add_line(
                 figure,
                 {"color": color, "dash": "solid", "width": 3},
                 x=curve["TyreLife"],
@@ -430,7 +353,7 @@ def tyre_model_figure(
         figure.update_yaxes(range=[np.nanmin(lows) - 0.25, np.nanmax(highs) + 0.25])
     figure.update_xaxes(title="Tyre age (laps)")
     figure.update_yaxes(title="Time lost since the stint began (s)", zeroline=True)
-    return _finish(figure, 440, legend_title_text="Model")
+    return finish(figure, 440, legend_title_text="Model")
 
 
 def _elapsed(trace: pd.DataFrame) -> np.ndarray:
@@ -485,13 +408,6 @@ def race_positions(
     return pd.concat(frames, ignore_index=True)
 
 
-def track_points(track: pd.DataFrame, fractions: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    xy = track[["X", "Y"]].to_numpy(dtype=float)
-    distance = np.concatenate([[0.0], np.cumsum(np.hypot(*np.diff(xy, axis=0).T))])
-    target = (np.asarray(fractions) % 1.0) * distance[-1]
-    return np.interp(target, distance, xy[:, 0]), np.interp(target, distance, xy[:, 1])
-
-
 def _standings(frame: pd.DataFrame, lap: int, total_laps: int) -> str:
     stopped = frame["Finish"].where(~frame["Running"].eq(True), np.inf)
     ordered = frame.assign(Stopped=stopped).sort_values(
@@ -507,19 +423,6 @@ def replay_height(track: pd.DataFrame) -> int:
     return int(np.clip(estimate, *REPLAY_HEIGHT_RANGE))
 
 
-def _corner_labels(map_corners: pd.DataFrame, size: int = 11) -> go.Scatter:
-    return go.Scatter(
-        x=map_corners["X"],
-        y=map_corners["Y"],
-        text=map_corners["Label"],
-        mode="text",
-        textfont={"size": size},
-        opacity=LABEL_OPACITY,
-        hoverinfo="skip",
-        showlegend=False,
-    )
-
-
 def replay_figure(
     track: pd.DataFrame,
     map_corners: pd.DataFrame,
@@ -529,8 +432,10 @@ def replay_figure(
     total_laps: int,
 ) -> go.Figure:
     width = track["X"].max() - track["X"].min()
-    colors = [_style(styles, driver)[0] for driver in drivers]
-    symbols = [TEAMMATE_SYMBOLS.get(_style(styles, driver)[1], "circle") for driver in drivers]
+    colors = [driver_style(styles, driver)[0] for driver in drivers]
+    symbols = [
+        TEAMMATE_SYMBOLS.get(driver_style(styles, driver)[1], "circle") for driver in drivers
+    ]
 
     frames, steps, previous_lap = [], [], 0
     for number, frame in positions.groupby("Frame"):
@@ -574,7 +479,7 @@ def replay_figure(
                 line={"color": NEUTRAL, "width": 10},
                 hoverinfo="skip",
             ),
-            _corner_labels(map_corners, size=10),
+            corner_labels(map_corners, size=10),
             go.Scatter(
                 x=start[0].x,
                 y=start[0].y,
@@ -703,10 +608,10 @@ def position_figure(
             continue
         emphasis = not highlighted or driver in highlighted
         bold = bool(highlighted) and emphasis
-        line = _line(styles, driver, width=2.5 if bold else 1.5)
+        line = line_style(styles, driver, width=2.5 if bold else 1.5)
         if not emphasis:
             line["color"] = NEUTRAL
-        _add_line(
+        add_line(
             figure,
             line,
             x=driver_positions["LapNumber"],
@@ -730,7 +635,7 @@ def position_figure(
     places = int(positions["Position"].max()) if not positions.empty else 1
     figure.update_yaxes(title="Position", range=[places + 0.5, 0.5], tick0=1, dtick=1)
     figure.update_xaxes(title="Lap")
-    return _finish(
+    return finish(
         figure,
         max(420, 26 * places + 80),
         showlegend=False,
@@ -760,10 +665,6 @@ def team_pace(laps: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-def _edge(color: str) -> str:
-    return OUTLINE if hard_to_see(color) else color
-
-
 def team_pace_figure(laps: pd.DataFrame, styles: Styles) -> go.Figure:
     quick = quick_laps(laps)
     colors = team_colors(quick, styles)
@@ -773,15 +674,15 @@ def team_pace_figure(laps: pd.DataFrame, styles: Styles) -> go.Figure:
             go.Box(
                 y=quick.loc[quick["Team"] == team, "LapTimeSeconds"],
                 name=team,
-                fillcolor=_rgba(colors[team], 0.55),
-                line={"color": _edge(colors[team]), "width": 1.5},
+                fillcolor=rgba(colors[team], 0.55),
+                line={"color": edge(colors[team]), "width": 1.5},
                 boxpoints=False,
                 yhoverformat=".3f",
             )
         )
     figure.update_xaxes(tickangle=-30)
     figure.update_yaxes(title="Lap time (s)")
-    return _finish(figure, 440, showlegend=False)
+    return finish(figure, 440, showlegend=False)
 
 
 def lap_distribution_figure(
@@ -797,7 +698,7 @@ def lap_distribution_figure(
     rng = np.random.default_rng(0)
     scattered = []
     for position, (driver, driver_laps) in enumerate(groups):
-        color = _style(styles, driver)[0]
+        color = driver_style(styles, driver)[0]
         figure.add_trace(
             go.Violin(
                 x=np.full(len(driver_laps), position),
@@ -805,8 +706,8 @@ def lap_distribution_figure(
                 name=driver,
                 width=0.8,
                 points=False,
-                fillcolor=_rgba(color, 0.3),
-                line={"color": _edge(color), "width": 1},
+                fillcolor=rgba(color, 0.3),
+                line={"color": edge(color), "width": 1},
                 hoverinfo="skip",
                 showlegend=False,
             )
@@ -817,7 +718,7 @@ def lap_distribution_figure(
     if scattered:
         points = pd.concat(scattered)
         compounds = points["Compound"].fillna(UNKNOWN_COMPOUND)
-        for compound in _compound_order(compounds.unique().tolist(), compound_colors):
+        for compound in compound_order(compounds.unique().tolist(), compound_colors):
             rows = points[compounds == compound]
             figure.add_trace(
                 go.Scatter(
@@ -850,23 +751,7 @@ def lap_distribution_figure(
         range=[-0.6, len(groups) - 0.4],
     )
     figure.update_yaxes(title="Lap time (s)")
-    return _finish(figure, 460, violinmode="overlay", legend_title_text="Compound")
-
-
-def _map_figure(track: pd.DataFrame) -> go.Figure:
-    figure = go.Figure(
-        go.Scatter(
-            x=track["X"],
-            y=track["Y"],
-            mode="lines",
-            line={"color": NEUTRAL, "width": 14},
-            hoverinfo="skip",
-            showlegend=False,
-        )
-    )
-    figure.update_xaxes(visible=False)
-    figure.update_yaxes(visible=False, scaleanchor="x", scaleratio=1)
-    return figure
+    return finish(figure, 460, violinmode="overlay", legend_title_text="Compound")
 
 
 def speed_map_figure(
@@ -876,7 +761,7 @@ def speed_map_figure(
     x, y = track_points(track, fractions)
     distance = trace["Distance"].to_numpy(dtype=float)
     speed = np.interp(fractions * distance[-1], distance, trace["Speed"].to_numpy(dtype=float))
-    figure = _map_figure(track)
+    figure = track_figure(track)
     figure.add_trace(
         go.Scatter(
             x=x,
@@ -901,8 +786,8 @@ def speed_map_figure(
             showlegend=False,
         )
     )
-    figure.add_trace(_corner_labels(map_corners))
-    return _finish(figure, 520)
+    figure.add_trace(corner_labels(map_corners))
+    return finish(figure, 520)
 
 
 def mini_sector_times(trace: pd.DataFrame, sectors: int = MINI_SECTORS) -> np.ndarray:
@@ -918,7 +803,7 @@ def faster_by_sector(traces: dict[str, pd.DataFrame], sectors: int = MINI_SECTOR
 
 
 def _shade(color: str, factor: float) -> str:
-    return "#" + "".join(f"{round(channel * factor):02x}" for channel in _rgb(color))
+    return "#" + "".join(f"{round(channel * factor):02x}" for channel in rgb(color))
 
 
 def distinct_colors(drivers: list[str], styles: Styles) -> dict[str, str]:
@@ -942,7 +827,7 @@ def dominance_map_figure(
     fractions = np.linspace(0.0, 1.0, MAP_POINTS)
     x, y = track_points(track, fractions)
     sector = np.minimum((fractions * sectors).astype(int), sectors - 1)
-    figure = _map_figure(track)
+    figure = track_figure(track)
     shown: set[str] = set()
     for number in range(sectors):
         inside = np.flatnonzero(sector == number)
@@ -962,8 +847,8 @@ def dominance_map_figure(
             )
         )
         shown.add(driver)
-    figure.add_trace(_corner_labels(map_corners))
-    return _finish(figure, 520, legend_title_text="Faster in")
+    figure.add_trace(corner_labels(map_corners))
+    return finish(figure, 520, legend_title_text="Faster in")
 
 
 @dataclass(frozen=True)

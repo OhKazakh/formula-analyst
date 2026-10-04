@@ -4,7 +4,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-from src.analysis import FALLBACK_COLOR, OUTLINE, PLOTLY_DASHES, Styles
+from src.charts import FALLBACK_COLOR, OUTLINE, PLOTLY_DASHES, Styles
 
 RACE_WIN_POINTS = 25
 FASTEST_LAP_SEASONS = range(2019, 2025)

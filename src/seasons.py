@@ -10,7 +10,7 @@ import pandas as pd
 from fastf1.ergast import Ergast
 from fastf1.ergast.interface import ErgastMultiResponse
 
-from src.analysis import Styles
+from src.charts import Styles
 from src.races import DATA_DIR
 
 RESULT_COLUMNS = ["Round", "Session", "Driver", "Name", "Team", "Position", "Classified", "Points"]

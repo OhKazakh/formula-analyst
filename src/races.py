@@ -17,7 +17,8 @@ from fastf1.core import Session
 from fastf1.exceptions import DataNotLoadedError
 from fastf1.mvapi.api import get_circuit
 
-from src.analysis import Styles, fastest_lap
+from src.analysis import fastest_lap
+from src.charts import Styles
 
 ROOT = Path(__file__).resolve().parent.parent
 CACHE_DIR = ROOT / "cache"

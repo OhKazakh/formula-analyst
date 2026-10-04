@@ -371,19 +371,6 @@ def test_format_seconds():
     assert analysis.format_seconds(83.226) == "1:23.226"
 
 
-def test_contrast_matches_wcag_extremes():
-    assert analysis.contrast("#FFFFFF", "#000000") == pytest.approx(21.0)
-    assert analysis.contrast("#E10600", "#FFFFFF") == pytest.approx(4.97, abs=0.01)
-
-
-@pytest.mark.parametrize(
-    ("color", "expected"),
-    [("#ffffff", True), ("#fff500", True), ("#1c1c25", True), ("#ff8000", False)],
-)
-def test_hard_to_see_on_light_or_dark_backgrounds(color, expected):
-    assert analysis.hard_to_see(color) is expected
-
-
 def test_replay_height_follows_the_track_shape():
     wide = pd.DataFrame({"X": [0.0, 1000.0, 1000.0, 0.0], "Y": [0.0, 0.0, 300.0, 300.0]})
 
