@@ -24,11 +24,13 @@ def test_teams_without_a_mark_get_initials(team, letters):
     assert f">{letters}</text>" in logos.badge_svg(team, "#123456")
 
 
-def test_teams_with_a_mark_use_its_path():
-    badge = logos.badge_svg("Red Bull Racing", "#3671C6")
+def test_badges_use_the_seasons_official_logo():
+    mark = logos.badge_svg("Mercedes", "#27F4D2", 2026)
+    tile = logos.badge_svg("Racing Point", "#F596C8", 2020)
 
-    assert "<path" in badge
-    assert "<text" not in badge
+    assert "<image" in mark and 'filter="url(#ink)"' in mark
+    assert "<image" in tile and "<rect" not in tile
+    assert ">FI</text>" in logos.badge_svg("Force India", "#F596C8", 2018)
 
 
 def test_badges_pick_readable_ink_and_outline_pale_colours():

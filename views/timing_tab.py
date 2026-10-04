@@ -74,7 +74,7 @@ def tower_table(
     table = pd.DataFrame(
         {
             "Pos": standing["Position"],
-            "Team": [logos.badge(row["Team"], colors[row["Driver"]]) for row in rows],
+            "Team": [logos.badge(row["Team"], colors[row["Driver"]], race.year) for row in rows],
             "Driver": standing["Driver"],
             "Interval": [interval_text(row) for row in rows],
             "Gap": [gap_text(row) for row in rows],

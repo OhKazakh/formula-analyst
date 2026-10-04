@@ -7,7 +7,7 @@ from datetime import date
 import fastf1
 from fastf1.exceptions import ErgastError, RateLimitExceededError
 
-from src import model, races, seasons
+from src import model, races, seasons, team_logos
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -89,11 +89,14 @@ def main(argv: list[str] | None = None) -> int:
         failures = (
             0 if args.results_only else sync_races(args.year, args.event, args.force, args.upgrade)
         )
-        path = seasons.save_season(seasons.fetch_season(args.year))
+        season = seasons.fetch_season(args.year)
+        path = seasons.save_season(season)
     except (RateLimitExceededError, ErgastError) as exc:
         print(f"stopped: {exc}. Run the same command again later to continue.")
         return 1
     print(f"saved  {path.relative_to(races.ROOT)} championship results", flush=True)
+    if logos := team_logos.fetch_logos(args.year, season.results["Team"].unique().tolist()):
+        print(f"saved  {args.year} team logos: {', '.join(logos)}", flush=True)
     if not args.skip_model:
         path = model.build()
         print(f"saved  {path.relative_to(races.ROOT)} tyre model", flush=True)

@@ -109,12 +109,12 @@ def impact_text(drivers: pd.DataFrame, teams: pd.DataFrame) -> str:
 
 
 def standings_frame(
-    table: pd.DataFrame, key: str, label: str, colors: dict[str, str], previous: bool
+    table: pd.DataFrame, key: str, label: str, colors: dict[str, str], year: int, previous: bool
 ) -> pd.DataFrame:
     return pd.DataFrame(
         {
             "Pos": table["Position"],
-            "Badge": [logos.badge(team, colors.get(team)) for team in table["Team"]],
+            "Badge": [logos.badge(team, colors.get(team), year) for team in table["Team"]],
             label: table[key],
             "Points": table["Points"],
             "This race": table["Gained"],
@@ -146,7 +146,7 @@ def championship_section(race: races.Race, season: seasons.Season | None) -> Non
     left, right = st.columns(2)
     left.dataframe(
         theme.favourite_rows(
-            standings_frame(drivers, "Name", "Driver", colors, previous),
+            standings_frame(drivers, "Name", "Driver", colors, race.year, previous),
             drivers["Driver"].eq(favourite()),
         ),
         hide_index=True,
@@ -156,7 +156,7 @@ def championship_section(race: races.Race, season: seasons.Season | None) -> Non
     )
     if not teams.empty:
         right.dataframe(
-            standings_frame(teams, "Team", "Team", colors, previous),
+            standings_frame(teams, "Team", "Team", colors, race.year, previous),
             hide_index=True,
             width="stretch",
             height=STANDINGS_HEIGHT,
@@ -219,6 +219,7 @@ def penalties_table(race: races.Race, penalties: pd.DataFrame) -> pd.DataFrame:
                 logos.badge(
                     str(teams.get(driver, "")),
                     race.driver_styles.get(driver, {}).get("color"),
+                    race.year,
                 )
                 for driver in penalties["Driver"]
             ],

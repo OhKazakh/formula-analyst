@@ -67,7 +67,7 @@ Every race from 2018 to the latest 2026 round ships with the app in `data/` (abo
 
 When the live timing service is reachable, as it usually is on a home connection, the app also downloads races that aren't bundled. The first download of a race takes about a minute and is cached in `cache/`.
 
-After a race weekend, one command adds the new races, updates the championship and retrains the tyre model:
+After a race weekend, one command adds the new races, updates the championship, downloads any new team logos and retrains the tyre model:
 
 ```bash
 pip install -r requirements-dev.txt
@@ -107,7 +107,6 @@ views/links.py          shareable links from URL parameters
 views/state.py          keeps widget values when switching tabs, and the favourite driver
 views/tyres.py          tyre compound badges and stint capsules
 views/logos.py          team badges
-views/marks/            team marks from Simple Icons
 views/text.py           small helpers for the generated sentences
 src/analysis.py         positions, pace, gaps, replay and the other race charts
 src/charts.py           chart styling shared by every figure
@@ -122,6 +121,7 @@ src/seasons.py          loading and saving season results
 src/degradation.py      time lost to tyre wear in each stint, and the saved model curves
 src/model.py            training and cross-validating the tyre model
 src/sync.py             command line tool that builds the bundle
+src/team_logos.py       downloads each season's team logos
 data/                   bundled races and season results
 tests/                  unit tests
 ```
@@ -157,6 +157,6 @@ Everything in `src/` works on plain pandas DataFrames and has no Streamlit depen
 
 Timing data is provided by FastF1, and the bundled data is derived from it. Race and sprint results and team standings come from the [Jolpica F1 API](https://github.com/jolpica/jolpica-f1), the successor to Ergast, through FastF1. This is an unofficial, non-commercial project and is not affiliated with any racing series or its rights holders.
 
-The team marks for Ferrari, McLaren, Red Bull, Aston Martin, Audi, Cadillac and Renault come from [Simple Icons](https://simpleicons.org) (CC0); teams without a freely licensed mark are shown by their initials. Team names and marks belong to their owners and are only used to identify the teams. [Titillium Web](https://fonts.google.com/specimen/Titillium+Web) is by the Accademia di Belle Arti di Urbino, used under the SIL Open Font License included in `static/fonts/OFL.txt`.
+Team logos are each season's own, from formula1.com. The 2018 season uses the 2019 versions where a team kept its name, and Force India and Sauber, whose 2018 logos aren't online any more, are shown by their initials. Team names and logos belong to the teams and are only used to identify them. [Titillium Web](https://fonts.google.com/specimen/Titillium+Web) is by the Accademia di Belle Arti di Urbino, used under the SIL Open Font License included in `static/fonts/OFL.txt`.
 
 Released under the [MIT License](LICENSE).

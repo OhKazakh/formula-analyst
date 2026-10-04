@@ -202,7 +202,7 @@ def header(race: races.Race, summary: analysis.RaceSummary, season: seasons.Seas
             f'<div class="race-place" style="border-left-color:{color}">'
             f'<div class="position">P{position}</div>'
             f'<div class="name">{html.escape(name)}</div>'
-            f'<div class="team"><img src="{logos.badge(team, color)}" alt="">'
+            f'<div class="team"><img src="{logos.badge(team, color, race.year)}" alt="">'
             f"{html.escape(team)}</div>"
             "</div>"
         )

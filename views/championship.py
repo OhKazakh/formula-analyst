@@ -36,11 +36,11 @@ def title_race(
     )
 
 
-def standings_table(contenders: pd.DataFrame, colors: dict[str, str]) -> pd.DataFrame:
+def standings_table(contenders: pd.DataFrame, colors: dict[str, str], year: int) -> pd.DataFrame:
     return pd.DataFrame(
         {
             "Pos": contenders["Position"],
-            "Badge": [logos.badge(team, colors.get(team)) for team in contenders["Team"]],
+            "Badge": [logos.badge(team, colors.get(team), year) for team in contenders["Team"]],
             "Driver": contenders["Name"],
             "Team": contenders["Team"],
             "Points": contenders["Points"],
@@ -51,11 +51,11 @@ def standings_table(contenders: pd.DataFrame, colors: dict[str, str]) -> pd.Data
     )
 
 
-def team_table(contenders: pd.DataFrame, colors: dict[str, str]) -> pd.DataFrame:
+def team_table(contenders: pd.DataFrame, colors: dict[str, str], year: int) -> pd.DataFrame:
     return pd.DataFrame(
         {
             "Pos": contenders["Position"],
-            "Badge": [logos.badge(team, colors.get(team)) for team in contenders["Team"]],
+            "Badge": [logos.badge(team, colors.get(team), year) for team in contenders["Team"]],
             "Team": contenders["Team"],
             "Points": contenders["Points"],
             "Wins": contenders["Wins"],
@@ -81,7 +81,7 @@ def drivers_view(season: seasons.Season, after: int, colors: dict[str, str]) -> 
     finished = after == season.schedule["Round"].max()
     st.markdown(title_race(contenders, remaining, finished))
 
-    standings = standings_table(contenders, colors)
+    standings = standings_table(contenders, colors, season.year)
     st.dataframe(
         theme.favourite_rows(standings, contenders["Driver"].eq(favourite())),
         hide_index=True,
@@ -141,7 +141,7 @@ def teams_view(season: seasons.Season, after: int, colors: dict[str, str]) -> No
     finished = after == season.schedule["Round"].max()
     st.markdown(title_race(contenders, remaining, finished, teams=True))
 
-    standings = team_table(contenders, colors)
+    standings = team_table(contenders, colors, season.year)
     st.dataframe(
         standings,
         hide_index=True,
