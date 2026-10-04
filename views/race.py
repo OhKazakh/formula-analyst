@@ -4,17 +4,21 @@ from datetime import date
 import pandas as pd
 import streamlit as st
 
-from src import analysis, degradation, races, seasons
+from src import analysis, races, seasons
+from src.charts import FALLBACK_COLOR
 from views import data, theme
-from views.data import show
 from views.links import requested, requested_int
+from views.overview_tab import overview_tab
+from views.pace_tab import pace_tab
+from views.replay_tab import replay_tab
+from views.state import keep_widget_state
+from views.strategy_tab import strategy_tab
+from views.telemetry_tab import telemetry_tab
 
 FIRST_SEASON = 2018
 DEFAULT_YEAR = 2024
 DEFAULT_EVENT = "Italian Grand Prix"
-FASTER_WHERE = "Who's faster where"
 TABS = ["Overview", "Replay", "Pace", "Strategy", "Telemetry"]
-WIDGET_PREFIX = "race:"
 HEADER_STYLE = f"""<style>
 .race-podium {{ display: flex; flex-wrap: wrap; gap: 12px; }}
 .race-place {{
@@ -73,16 +77,6 @@ COUNTRY_CODES = {
 def flag(country: str | None) -> str:
     code = COUNTRY_CODES.get(country or "", "")
     return "".join(chr(0x1F1E6 + ord(letter) - ord("A")) for letter in code)
-
-
-def race_key(race: races.Race, name: str) -> str:
-    return f"{WIDGET_PREFIX}{name}:{race.year}:{race.round_number}"
-
-
-# Tabs only run while open, and Streamlit drops the state of widgets it didn't draw.
-def keep_widget_state() -> None:
-    for key in [key for key in st.session_state if str(key).startswith(WIDGET_PREFIX)]:
-        st.session_state[key] = st.session_state[key]
 
 
 def season_events(year: int, bundled: pd.DataFrame, online: bool) -> list[str]:
@@ -201,7 +195,7 @@ def header(race: races.Race, summary: analysis.RaceSummary, season: seasons.Seas
 
     places = "".join(
         f'<div class="race-place" style="border-left-color:'
-        f'{race.driver_styles.get(driver, {}).get("color", analysis.FALLBACK_COLOR)}">'
+        f'{race.driver_styles.get(driver, {}).get("color", FALLBACK_COLOR)}">'
         f'<div class="position">P{position}</div>'
         f'<div class="name">{html.escape(name)}</div>'
         f'<div class="team">{html.escape(team)}</div></div>'
@@ -212,343 +206,6 @@ def header(race: races.Race, summary: analysis.RaceSummary, season: seasons.Seas
         f'{HEADER_STYLE}<div class="race-podium">{places}</div>'
         f'<div class="race-facts">{facts}</div>'
     )
-
-
-def laps_led_text(summary: analysis.RaceSummary) -> str:
-    leaders = list(summary.laps_led.items())
-    if not leaders:
-        return ""
-    first, laps = leaders[0]
-    if len(leaders) == 1:
-        return f"**{first}** led every lap."
-    others = [f"{driver} {count}" for driver, count in leaders[1:5]]
-    listed = others[0] if len(others) == 1 else ", ".join(others[:-1]) + f" and {others[-1]}"
-    changes = "once" if summary.lead_changes == 1 else f"{summary.lead_changes} times"
-    return f"**{first}** led {laps} laps, {listed}. The lead changed hands {changes}."
-
-
-def overview_tab(race: races.Race, summary: analysis.RaceSummary) -> None:
-    st.subheader("How did the running order change?")
-    if "Time" not in race.laps.columns:
-        st.info("Lap timing isn't available for this race.")
-        return
-    if text := laps_led_text(summary):
-        st.markdown(text)
-    highlight = st.multiselect(
-        "Highlight drivers",
-        race.drivers,
-        default=race.drivers[:3],
-        key=race_key(race, "position_highlight"),
-    )
-    positions = analysis.lap_positions(race.laps)
-    show(analysis.position_figure(positions, race.drivers, race.driver_styles, highlight))
-    st.caption("Position at the end of each lap, from the order drivers crossed the timing line.")
-
-
-def replay_tab(race: races.Race, bundle_version: str) -> None:
-    st.subheader("How did the race unfold on track?")
-    if race.track.empty or not {"LapStartTime", "Time"} <= set(race.laps.columns):
-        st.info("A track map isn't available for this race.")
-        return
-    figure = data.replay_chart(race.year, race.event, bundle_version, race)
-    st.plotly_chart(figure, config={"displayModeBar": False})
-    st.caption(
-        "Press Play or drag the slider. Positions within a lap are estimated from lap times "
-        "and the winner's fastest-lap speed profile, and the order is the order on track, "
-        "before any penalties."
-    )
-
-
-def driver_pace(race: races.Race, clean: pd.DataFrame) -> None:
-    st.subheader("How did each driver's pace change over the race?")
-    drivers = st.multiselect(
-        "Drivers", race.drivers, default=race.drivers[:3], key=race_key(race, "pace_drivers")
-    )
-    with st.container(horizontal=True):
-        representative = st.toggle(
-            "Representative laps only",
-            value=True,
-            key=race_key(race, "representative"),
-            help="Excludes pit in/out laps, laps under safety car or flags, "
-            "and laps FastF1 marks as inaccurate.",
-        )
-        fuel = st.toggle(
-            "Fuel-corrected",
-            value=False,
-            key=race_key(race, "fuel_corrected"),
-            help="Normalises every lap to an empty tank so tyre wear isn't hidden "
-            "by the car getting lighter.",
-        )
-
-    if not drivers:
-        st.info("Pick at least one driver.")
-        return
-
-    source = clean if representative else race.laps
-    laps = source[source["Driver"].isin(drivers)].copy()
-    if laps.empty:
-        st.info(
-            "None of these drivers have representative laps in this race. "
-            "Turn off “Representative laps only” to see every lap."
-            if representative
-            else "No laps to show for these drivers."
-        )
-        return
-
-    column = "LapTimeSeconds"
-    if fuel:
-        laps["FuelCorrected"] = analysis.fuel_corrected(laps, race.total_laps)
-        column = "FuelCorrected"
-    show(analysis.pace_figure(laps, drivers, race.driver_styles, column))
-
-
-def team_pace(race: races.Race) -> None:
-    st.subheader("Which teams were quickest?")
-    pace = analysis.team_pace(race.laps)
-    if pace.empty:
-        st.info("This race has no representative laps to compare.")
-        return
-    if len(pace) > 1:
-        st.markdown(
-            f"**{pace['Team'].iloc[0]}** were quickest, {pace['Gap'].iloc[1]:.3f} s a lap "
-            f"faster than {pace['Team'].iloc[1]}."
-        )
-    chart, table = st.columns([2, 1])
-    with chart:
-        show(analysis.team_pace_figure(race.laps, race.driver_styles))
-    table.dataframe(
-        pd.DataFrame(
-            {
-                "Team": pace["Team"],
-                "Median lap": pace["Median"].map(analysis.format_seconds),
-                "Gap": pace["Gap"].map(lambda gap: f"+{gap:.3f}s" if gap else "–"),
-            }
-        ),
-        hide_index=True,
-        width="stretch",
-    )
-    st.caption(
-        "Racing laps within 107% of the fastest, without pit laps, safety car periods or "
-        "inaccurate laps. Teams are ordered by their median lap time."
-    )
-
-
-def lap_distribution(race: races.Race) -> None:
-    st.subheader("How consistent was each driver?")
-    drivers = st.multiselect(
-        "Drivers",
-        race.drivers,
-        default=race.drivers[:10],
-        key=race_key(race, "distribution_drivers"),
-    )
-    if not drivers:
-        st.info("Pick at least one driver.")
-        return
-    show(
-        analysis.lap_distribution_figure(
-            race.laps, drivers, race.driver_styles, race.compound_colors
-        )
-    )
-    st.caption(
-        "Each dot is one lap, coloured by tyre compound; the shape shows how lap times spread."
-    )
-
-
-def pace_tab(race: races.Race, clean: pd.DataFrame) -> None:
-    driver_pace(race, clean)
-    st.divider()
-    team_pace(race)
-    st.divider()
-    lap_distribution(race)
-
-
-def tyre_strategy(race: races.Race) -> None:
-    st.subheader("What tyre strategy did everyone run?")
-    stints = analysis.stint_summary(race.laps)
-    show(analysis.strategy_figure(stints, race.drivers, race.compound_colors))
-    with st.expander("Stint table"):
-        st.dataframe(
-            stints.rename(columns={"StartLap": "Start lap", "EndLap": "End lap"}),
-            hide_index=True,
-            width="stretch",
-        )
-
-
-def wear_rates(race: races.Race, clean: pd.DataFrame) -> None:
-    st.subheader("How fast did the tyres degrade?")
-    left, right = st.columns(2)
-    min_laps = left.slider("Minimum laps per stint", 3, 20, 8, key=race_key(race, "min_laps"))
-    fuel_effect = right.slider(
-        "Fuel effect (s per lap of fuel)",
-        0.0,
-        0.1,
-        analysis.DEFAULT_FUEL_EFFECT,
-        0.005,
-        key=race_key(race, "fuel_effect"),
-    )
-
-    laps = clean.copy()
-    laps["FuelCorrected"] = analysis.fuel_corrected(laps, race.total_laps, fuel_effect)
-    deg = analysis.degradation(laps, "FuelCorrected", min_laps)
-    if deg.empty:
-        st.info("No stints long enough to fit.")
-        return
-
-    per_lap = st.column_config.NumberColumn(format="%.3f s/lap")
-    summary, table = st.columns([2, 3])
-    summary.markdown("**By compound**")
-    summary.dataframe(
-        analysis.degradation_by_compound(deg)
-        .reset_index()
-        .rename(columns={"count": "Stints", "mean": "Mean", "median": "Median"}),
-        hide_index=True,
-        width="stretch",
-        column_config={"Mean": per_lap, "Median": per_lap},
-    )
-    table.markdown("**By stint**")
-    table.dataframe(
-        deg.rename(columns={"DegPerLap": "Degradation"}),
-        hide_index=True,
-        width="stretch",
-        column_config={"Degradation": per_lap},
-    )
-    st.caption(
-        "Seconds lost per lap of tyre age, after fuel correction. A negative rate means the "
-        "laps got quicker through the stint, for example as the track rubbered in or "
-        "traffic cleared."
-    )
-
-    row = st.selectbox(
-        "Inspect stint",
-        deg.index,
-        format_func=lambda i: (
-            f"{deg.at[i, 'Driver']} · stint {deg.at[i, 'Stint']} · {deg.at[i, 'Compound']}"
-        ),
-    )
-    driver, stint = deg.at[row, "Driver"], deg.at[row, "Stint"]
-    stint_laps = laps[(laps["Driver"] == driver) & (laps["Stint"] == stint)]
-    color = race.driver_styles.get(driver, {}).get("color", analysis.FALLBACK_COLOR)
-    show(analysis.stint_fit_figure(stint_laps, "FuelCorrected", color))
-
-
-def model_takeaway(expected: dict[str, float]) -> str:
-    phrases = [f"{loss:+.1f} s on the {compound}" for compound, loss in expected.items()]
-    listed = phrases[0] if len(phrases) == 1 else ", ".join(phrases[:-1]) + f" and {phrases[-1]}"
-    return (
-        f"After {degradation.HORIZON} laps on a fresh set, the model expects lap times to "
-        f"change by {listed}."
-    )
-
-
-def tyre_model(race: races.Race, bundle_version: str) -> None:
-    st.subheader("What would a model trained on other races expect?")
-    if race.year < degradation.FIRST_SEASON:
-        st.info(
-            "The tyre model covers 2019 onwards, when every race used tyres named soft, "
-            "medium and hard."
-        )
-        return
-    metrics = data.tyre_metrics(bundle_version)
-    curves = degradation.race_curves(data.tyre_curves(bundle_version), race.year, race.round_number)
-    if metrics is None or curves.empty:
-        st.info("The tyre model hasn't been trained on this race yet.")
-        return
-
-    losses = degradation.stint_losses(race.laps, race.total_laps)
-    used = [
-        compound for compound in degradation.DRY_COMPOUNDS if compound in set(losses["Compound"])
-    ]
-    curves = curves[curves["Compound"].isin(used or degradation.DRY_COMPOUNDS)]
-    if expected := degradation.loss_after(curves):
-        st.markdown(model_takeaway(expected))
-    show(analysis.tyre_model_figure(curves, losses, race.compound_colors))
-    mae = metrics["mae"]
-    st.caption(
-        "Lines come from a gradient-boosted model trained on dry-tyre stints from "
-        f"{metrics['first_season']}–{metrics['last_season']} races, with this race held out. "
-        "Dots are this race's laps. On races it hasn't seen, the model is off by "
-        f"{mae['model']:.2f} s a lap on average, against {mae['baseline']:.2f} s for a "
-        f"straight line per compound and {mae['no_wear']:.2f} s for assuming no wear."
-    )
-
-
-def strategy_tab(race: races.Race, clean: pd.DataFrame, bundle_version: str) -> None:
-    tyre_strategy(race)
-    st.divider()
-    wear_rates(race, clean)
-    st.divider()
-    tyre_model(race, bundle_version)
-
-
-def telemetry_tab(race: races.Race) -> None:
-    st.subheader("How do two drivers compare on their fastest lap?")
-    left, right = st.columns(2)
-    first = left.selectbox("Driver A", race.drivers, index=0, key=race_key(race, "driver_a"))
-    second = right.selectbox(
-        "Driver B",
-        race.drivers,
-        index=min(1, len(race.drivers) - 1),
-        key=race_key(race, "driver_b"),
-    )
-
-    drivers = list(dict.fromkeys([first, second]))
-    laps = {driver: analysis.fastest_lap(race.laps, driver) for driver in drivers}
-    timed = {driver: lap for driver, lap in laps.items() if lap is not None}
-    if missing := [driver for driver in drivers if driver not in timed]:
-        st.warning(f"No timed lap for {', '.join(missing)}.")
-    if not timed:
-        return
-
-    summary = pd.DataFrame(
-        [
-            {
-                "Driver": driver,
-                "Lap": int(lap["LapNumber"]),
-                "Time": analysis.format_lap_time(lap["LapTime"]),
-                "Compound": (
-                    lap["Compound"] if pd.notna(lap["Compound"]) else analysis.UNKNOWN_COMPOUND
-                ),
-                "Tyre age": int(lap["TyreLife"]) if pd.notna(lap["TyreLife"]) else None,
-            }
-            for driver, lap in timed.items()
-        ]
-    )
-    st.dataframe(summary, hide_index=True, width="stretch")
-    if summary["Lap"].nunique() > 1:
-        st.caption(
-            "These laps were set at different points in the race, so fuel load and tyre age differ."
-        )
-
-    traces = {driver: race.trace(driver) for driver in timed}
-    traces = {driver: trace for driver, trace in traces.items() if not trace.empty}
-    if not traces:
-        st.warning("Telemetry isn't available for these laps.")
-        return
-    show(analysis.speed_trace_figure(traces, race.driver_styles, race.corners))
-
-    if race.track.empty:
-        return
-    st.subheader("Where on the lap?")
-    options = [f"{driver} speed" for driver in traces]
-    if len(traces) == 2:
-        options.append(FASTER_WHERE)
-    view = st.radio(
-        "Colour the track by",
-        options,
-        horizontal=True,
-        key=race_key(race, f"track_map_view-{first}-{second}"),
-    )
-    if view == FASTER_WHERE:
-        show(
-            analysis.dominance_map_figure(race.track, race.map_corners, traces, race.driver_styles)
-        )
-        st.caption(
-            f"The lap is split into {analysis.MINI_SECTORS} equal mini-sectors, each coloured "
-            "by the driver who was quicker through it."
-        )
-    else:
-        driver = view.removesuffix(" speed")
-        show(analysis.speed_map_figure(race.track, race.map_corners, traces[driver]))
 
 
 def requested_tab() -> str | None:
