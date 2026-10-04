@@ -3,10 +3,19 @@ import streamlit as st
 
 from src import analysis, degradation, races
 from src.charts import FALLBACK_COLOR
-from views import data
+from views import data, tyres
 from views.data import show
 from views.state import race_key
 from views.text import listing
+
+TYRE = st.column_config.ImageColumn(" ", width="small")
+PER_LAP = st.column_config.NumberColumn(format="%.3f s/lap")
+
+
+def with_badges(table: pd.DataFrame, colors: dict[str, str]) -> pd.DataFrame:
+    badges = [tyres.badge(compound, colors) for compound in table["Compound"]]
+    position = table.columns.get_loc("Compound")
+    return table.assign(Tyre=badges)[[*table.columns[:position], "Tyre", *table.columns[position:]]]
 
 
 def tyre_strategy(race: races.Race) -> None:
@@ -15,9 +24,12 @@ def tyre_strategy(race: races.Race) -> None:
     show(analysis.strategy_figure(stints, race.drivers, race.compound_colors))
     with st.expander("Stint table"):
         st.dataframe(
-            stints.rename(columns={"StartLap": "Start lap", "EndLap": "End lap"}),
+            with_badges(stints, race.compound_colors).rename(
+                columns={"StartLap": "Start lap", "EndLap": "End lap"}
+            ),
             hide_index=True,
             width="stretch",
+            column_config={"Tyre": TYRE},
         )
 
 
@@ -41,23 +53,25 @@ def wear_rates(race: races.Race, clean: pd.DataFrame) -> None:
         st.info("No stints long enough to fit.")
         return
 
-    per_lap = st.column_config.NumberColumn(format="%.3f s/lap")
     summary, table = st.columns([2, 3])
     summary.markdown("**By compound**")
     summary.dataframe(
-        analysis.degradation_by_compound(deg)
-        .reset_index()
-        .rename(columns={"count": "Stints", "mean": "Mean", "median": "Median"}),
+        with_badges(
+            analysis.degradation_by_compound(deg)
+            .reset_index()
+            .rename(columns={"count": "Stints", "mean": "Mean", "median": "Median"}),
+            race.compound_colors,
+        ),
         hide_index=True,
         width="stretch",
-        column_config={"Mean": per_lap, "Median": per_lap},
+        column_config={"Tyre": TYRE, "Mean": PER_LAP, "Median": PER_LAP},
     )
     table.markdown("**By stint**")
     table.dataframe(
-        deg.rename(columns={"DegPerLap": "Degradation"}),
+        with_badges(deg.rename(columns={"DegPerLap": "Degradation"}), race.compound_colors),
         hide_index=True,
         width="stretch",
-        column_config={"Degradation": per_lap},
+        column_config={"Tyre": TYRE, "Degradation": PER_LAP},
     )
     st.caption(
         "Seconds lost per lap of tyre age, after fuel correction. A negative rate means the "
