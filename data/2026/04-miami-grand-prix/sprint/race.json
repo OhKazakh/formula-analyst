@@ -1,0 +1,133 @@
+{
+  "format": 2,
+  "year": 2026,
+  "round": 4,
+  "event": "Miami Grand Prix",
+  "session": "Sprint",
+  "total_laps": 19,
+  "order": [
+    "NOR",
+    "PIA",
+    "LEC",
+    "RUS",
+    "VER",
+    "ANT",
+    "HAM",
+    "GAS",
+    "HAD",
+    "COL",
+    "OCO",
+    "BEA",
+    "SAI",
+    "LAW",
+    "ALO",
+    "PER",
+    "STR",
+    "ALB",
+    "BOT",
+    "HUL",
+    "LIN",
+    "BOR"
+  ],
+  "corners": [],
+  "map_corners": [],
+  "driver_styles": {
+    "NOR": {
+      "color": "#f47600",
+      "linestyle": "solid"
+    },
+    "PIA": {
+      "color": "#f47600",
+      "linestyle": "dashed"
+    },
+    "LEC": {
+      "color": "#ed1131",
+      "linestyle": "solid"
+    },
+    "RUS": {
+      "color": "#00d7b6",
+      "linestyle": "dashed"
+    },
+    "VER": {
+      "color": "#4781d7",
+      "linestyle": "solid"
+    },
+    "ANT": {
+      "color": "#00d7b6",
+      "linestyle": "solid"
+    },
+    "HAM": {
+      "color": "#ed1131",
+      "linestyle": "dashed"
+    },
+    "GAS": {
+      "color": "#00a1e8",
+      "linestyle": "solid"
+    },
+    "HAD": {
+      "color": "#4781d7",
+      "linestyle": "dashed"
+    },
+    "COL": {
+      "color": "#00a1e8",
+      "linestyle": "dashed"
+    },
+    "OCO": {
+      "color": "#9c9fa2",
+      "linestyle": "solid"
+    },
+    "BEA": {
+      "color": "#9c9fa2",
+      "linestyle": "dashed"
+    },
+    "SAI": {
+      "color": "#1868db",
+      "linestyle": "dashed"
+    },
+    "LAW": {
+      "color": "#6c98ff",
+      "linestyle": "solid"
+    },
+    "ALO": {
+      "color": "#229971",
+      "linestyle": "solid"
+    },
+    "PER": {
+      "color": "#909090",
+      "linestyle": "solid"
+    },
+    "STR": {
+      "color": "#229971",
+      "linestyle": "dashed"
+    },
+    "ALB": {
+      "color": "#1868db",
+      "linestyle": "solid"
+    },
+    "BOT": {
+      "color": "#909090",
+      "linestyle": "dashed"
+    },
+    "HUL": {
+      "color": "#f50537",
+      "linestyle": "solid"
+    },
+    "LIN": {
+      "color": "#6c98ff",
+      "linestyle": "dashed"
+    },
+    "BOR": {
+      "color": "#f50537",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

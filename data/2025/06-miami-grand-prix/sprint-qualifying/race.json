@@ -1,0 +1,123 @@
+{
+  "format": 2,
+  "year": 2025,
+  "round": 6,
+  "event": "Miami Grand Prix",
+  "session": "Sprint Qualifying",
+  "total_laps": 16,
+  "order": [
+    "ANT",
+    "PIA",
+    "NOR",
+    "VER",
+    "RUS",
+    "LEC",
+    "HAM",
+    "ALB",
+    "HAD",
+    "ALO",
+    "HUL",
+    "OCO",
+    "GAS",
+    "LAW",
+    "SAI",
+    "STR",
+    "DOO",
+    "TSU",
+    "BOR",
+    "BEA"
+  ],
+  "corners": [],
+  "map_corners": [],
+  "driver_styles": {
+    "ANT": {
+      "color": "#27f4d2",
+      "linestyle": "solid"
+    },
+    "PIA": {
+      "color": "#ff8000",
+      "linestyle": "dashed"
+    },
+    "NOR": {
+      "color": "#ff8000",
+      "linestyle": "solid"
+    },
+    "VER": {
+      "color": "#3671c6",
+      "linestyle": "solid"
+    },
+    "RUS": {
+      "color": "#27f4d2",
+      "linestyle": "dashed"
+    },
+    "LEC": {
+      "color": "#e80020",
+      "linestyle": "solid"
+    },
+    "HAM": {
+      "color": "#e80020",
+      "linestyle": "dashed"
+    },
+    "ALB": {
+      "color": "#64c4ff",
+      "linestyle": "solid"
+    },
+    "HAD": {
+      "color": "#6692ff",
+      "linestyle": "dashed"
+    },
+    "ALO": {
+      "color": "#229971",
+      "linestyle": "solid"
+    },
+    "HUL": {
+      "color": "#52e252",
+      "linestyle": "solid"
+    },
+    "OCO": {
+      "color": "#b6babd",
+      "linestyle": "solid"
+    },
+    "GAS": {
+      "color": "#0093cc",
+      "linestyle": "solid"
+    },
+    "LAW": {
+      "color": "#6692ff",
+      "linestyle": "solid"
+    },
+    "SAI": {
+      "color": "#64c4ff",
+      "linestyle": "dashed"
+    },
+    "STR": {
+      "color": "#229971",
+      "linestyle": "dashed"
+    },
+    "DOO": {
+      "color": "#0093cc",
+      "linestyle": "dashed"
+    },
+    "TSU": {
+      "color": "#3671c6",
+      "linestyle": "dashed"
+    },
+    "BOR": {
+      "color": "#52e252",
+      "linestyle": "dashed"
+    },
+    "BEA": {
+      "color": "#b6babd",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "format": 2,
+  "year": 2025,
+  "round": 21,
+  "event": "S\u00e3o Paulo Grand Prix",
+  "session": "Sprint",
+  "total_laps": 24,
+  "order": [
+    "NOR",
+    "ANT",
+    "RUS",
+    "VER",
+    "LEC",
+    "ALO",
+    "HAM",
+    "GAS",
+    "STR",
+    "HAD",
+    "OCO",
+    "BEA",
+    "TSU",
+    "SAI",
+    "HUL",
+    "LAW",
+    "ALB",
+    "BOR",
+    "PIA",
+    "COL"
+  ],
+  "corners": [],
+  "map_corners": [],
+  "driver_styles": {
+    "NOR": {
+      "color": "#f47600",
+      "linestyle": "solid"
+    },
+    "ANT": {
+      "color": "#00d7b6",
+      "linestyle": "solid"
+    },
+    "RUS": {
+      "color": "#00d7b6",
+      "linestyle": "dashed"
+    },
+    "VER": {
+      "color": "#4781d7",
+      "linestyle": "solid"
+    },
+    "LEC": {
+      "color": "#ed1131",
+      "linestyle": "solid"
+    },
+    "ALO": {
+      "color": "#229971",
+      "linestyle": "solid"
+    },
+    "HAM": {
+      "color": "#ed1131",
+      "linestyle": "dashed"
+    },
+    "GAS": {
+      "color": "#00a1e8",
+      "linestyle": "solid"
+    },
+    "STR": {
+      "color": "#229971",
+      "linestyle": "dashed"
+    },
+    "HAD": {
+      "color": "#6c98ff",
+      "linestyle": "dashed"
+    },
+    "OCO": {
+      "color": "#9c9fa2",
+      "linestyle": "solid"
+    },
+    "BEA": {
+      "color": "#9c9fa2",
+      "linestyle": "dashed"
+    },
+    "TSU": {
+      "color": "#4781d7",
+      "linestyle": "dashed"
+    },
+    "SAI": {
+      "color": "#1868db",
+      "linestyle": "dashed"
+    },
+    "HUL": {
+      "color": "#01c00e",
+      "linestyle": "solid"
+    },
+    "LAW": {
+      "color": "#6c98ff",
+      "linestyle": "solid"
+    },
+    "ALB": {
+      "color": "#1868db",
+      "linestyle": "solid"
+    },
+    "BOR": {
+      "color": "#01c00e",
+      "linestyle": "dashed"
+    },
+    "PIA": {
+      "color": "#f47600",
+      "linestyle": "dashed"
+    },
+    "COL": {
+      "color": "#00a1e8",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

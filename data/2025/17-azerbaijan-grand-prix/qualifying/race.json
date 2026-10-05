@@ -1,0 +1,123 @@
+{
+  "format": 2,
+  "year": 2025,
+  "round": 17,
+  "event": "Azerbaijan Grand Prix",
+  "session": "Qualifying",
+  "total_laps": 26,
+  "order": [
+    "VER",
+    "SAI",
+    "LAW",
+    "ANT",
+    "RUS",
+    "TSU",
+    "NOR",
+    "HAD",
+    "PIA",
+    "LEC",
+    "ALO",
+    "HAM",
+    "BOR",
+    "STR",
+    "BEA",
+    "COL",
+    "HUL",
+    "GAS",
+    "ALB",
+    "OCO"
+  ],
+  "corners": [],
+  "map_corners": [],
+  "driver_styles": {
+    "VER": {
+      "color": "#4781d7",
+      "linestyle": "solid"
+    },
+    "SAI": {
+      "color": "#1868db",
+      "linestyle": "dashed"
+    },
+    "LAW": {
+      "color": "#6c98ff",
+      "linestyle": "solid"
+    },
+    "ANT": {
+      "color": "#00d7b6",
+      "linestyle": "solid"
+    },
+    "RUS": {
+      "color": "#00d7b6",
+      "linestyle": "dashed"
+    },
+    "TSU": {
+      "color": "#4781d7",
+      "linestyle": "dashed"
+    },
+    "NOR": {
+      "color": "#f47600",
+      "linestyle": "solid"
+    },
+    "HAD": {
+      "color": "#6c98ff",
+      "linestyle": "dashed"
+    },
+    "PIA": {
+      "color": "#f47600",
+      "linestyle": "dashed"
+    },
+    "LEC": {
+      "color": "#ed1131",
+      "linestyle": "solid"
+    },
+    "ALO": {
+      "color": "#229971",
+      "linestyle": "solid"
+    },
+    "HAM": {
+      "color": "#ed1131",
+      "linestyle": "dashed"
+    },
+    "BOR": {
+      "color": "#01c00e",
+      "linestyle": "dashed"
+    },
+    "STR": {
+      "color": "#229971",
+      "linestyle": "dashed"
+    },
+    "BEA": {
+      "color": "#9c9fa2",
+      "linestyle": "dashed"
+    },
+    "COL": {
+      "color": "#00a1e8",
+      "linestyle": "dashed"
+    },
+    "HUL": {
+      "color": "#01c00e",
+      "linestyle": "solid"
+    },
+    "GAS": {
+      "color": "#00a1e8",
+      "linestyle": "solid"
+    },
+    "ALB": {
+      "color": "#1868db",
+      "linestyle": "solid"
+    },
+    "OCO": {
+      "color": "#9c9fa2",
+      "linestyle": "solid"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

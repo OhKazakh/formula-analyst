@@ -1,0 +1,123 @@
+{
+  "format": 2,
+  "year": 2023,
+  "round": 20,
+  "event": "S\u00e3o Paulo Grand Prix",
+  "session": "Sprint Shootout",
+  "total_laps": 16,
+  "order": [
+    "NOR",
+    "VER",
+    "PER",
+    "RUS",
+    "HAM",
+    "TSU",
+    "LEC",
+    "RIC",
+    "SAI",
+    "PIA",
+    "MAG",
+    "HUL",
+    "GAS",
+    "BOT",
+    "ALO",
+    "OCO",
+    "STR",
+    "ZHO",
+    "ALB",
+    "SAR"
+  ],
+  "corners": [],
+  "map_corners": [],
+  "driver_styles": {
+    "NOR": {
+      "color": "#f58020",
+      "linestyle": "solid"
+    },
+    "VER": {
+      "color": "#3671c6",
+      "linestyle": "solid"
+    },
+    "PER": {
+      "color": "#3671c6",
+      "linestyle": "dashed"
+    },
+    "RUS": {
+      "color": "#6cd3bf",
+      "linestyle": "dashed"
+    },
+    "HAM": {
+      "color": "#6cd3bf",
+      "linestyle": "solid"
+    },
+    "TSU": {
+      "color": "#5e8faa",
+      "linestyle": "solid"
+    },
+    "LEC": {
+      "color": "#f91536",
+      "linestyle": "solid"
+    },
+    "RIC": {
+      "color": "#5e8faa",
+      "linestyle": "dashed"
+    },
+    "SAI": {
+      "color": "#f91536",
+      "linestyle": "dashed"
+    },
+    "PIA": {
+      "color": "#f58020",
+      "linestyle": "dashed"
+    },
+    "MAG": {
+      "color": "#b6babd",
+      "linestyle": "solid"
+    },
+    "HUL": {
+      "color": "#b6babd",
+      "linestyle": "dashed"
+    },
+    "GAS": {
+      "color": "#2293d1",
+      "linestyle": "solid"
+    },
+    "BOT": {
+      "color": "#c92d4b",
+      "linestyle": "dashed"
+    },
+    "ALO": {
+      "color": "#358c75",
+      "linestyle": "solid"
+    },
+    "OCO": {
+      "color": "#2293d1",
+      "linestyle": "dashed"
+    },
+    "STR": {
+      "color": "#358c75",
+      "linestyle": "dashed"
+    },
+    "ZHO": {
+      "color": "#c92d4b",
+      "linestyle": "solid"
+    },
+    "ALB": {
+      "color": "#37bedd",
+      "linestyle": "dashed"
+    },
+    "SAR": {
+      "color": "#37bedd",
+      "linestyle": "solid"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

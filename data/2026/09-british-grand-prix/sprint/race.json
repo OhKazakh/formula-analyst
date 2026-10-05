@@ -1,0 +1,133 @@
+{
+  "format": 2,
+  "year": 2026,
+  "round": 9,
+  "event": "British Grand Prix",
+  "session": "Sprint",
+  "total_laps": 17,
+  "order": [
+    "ANT",
+    "HAM",
+    "NOR",
+    "RUS",
+    "LEC",
+    "VER",
+    "PIA",
+    "LAW",
+    "HAD",
+    "LIN",
+    "GAS",
+    "COL",
+    "BOR",
+    "BEA",
+    "HUL",
+    "OCO",
+    "SAI",
+    "ALB",
+    "BOT",
+    "ALO",
+    "STR",
+    "PER"
+  ],
+  "corners": [],
+  "map_corners": [],
+  "driver_styles": {
+    "ANT": {
+      "color": "#00d7b6",
+      "linestyle": "solid"
+    },
+    "HAM": {
+      "color": "#ed1131",
+      "linestyle": "dashed"
+    },
+    "NOR": {
+      "color": "#f47600",
+      "linestyle": "solid"
+    },
+    "RUS": {
+      "color": "#00d7b6",
+      "linestyle": "dashed"
+    },
+    "LEC": {
+      "color": "#ed1131",
+      "linestyle": "solid"
+    },
+    "VER": {
+      "color": "#4781d7",
+      "linestyle": "solid"
+    },
+    "PIA": {
+      "color": "#f47600",
+      "linestyle": "dashed"
+    },
+    "LAW": {
+      "color": "#6c98ff",
+      "linestyle": "solid"
+    },
+    "HAD": {
+      "color": "#4781d7",
+      "linestyle": "dashed"
+    },
+    "LIN": {
+      "color": "#6c98ff",
+      "linestyle": "dashed"
+    },
+    "GAS": {
+      "color": "#00a1e8",
+      "linestyle": "solid"
+    },
+    "COL": {
+      "color": "#00a1e8",
+      "linestyle": "dashed"
+    },
+    "BOR": {
+      "color": "#f50537",
+      "linestyle": "dashed"
+    },
+    "BEA": {
+      "color": "#9c9fa2",
+      "linestyle": "dashed"
+    },
+    "HUL": {
+      "color": "#f50537",
+      "linestyle": "solid"
+    },
+    "OCO": {
+      "color": "#9c9fa2",
+      "linestyle": "solid"
+    },
+    "SAI": {
+      "color": "#1868db",
+      "linestyle": "dashed"
+    },
+    "ALB": {
+      "color": "#1868db",
+      "linestyle": "solid"
+    },
+    "BOT": {
+      "color": "#909090",
+      "linestyle": "dashed"
+    },
+    "ALO": {
+      "color": "#229971",
+      "linestyle": "solid"
+    },
+    "STR": {
+      "color": "#229971",
+      "linestyle": "dashed"
+    },
+    "PER": {
+      "color": "#909090",
+      "linestyle": "solid"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

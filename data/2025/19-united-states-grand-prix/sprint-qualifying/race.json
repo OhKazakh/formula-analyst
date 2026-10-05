@@ -1,0 +1,123 @@
+{
+  "format": 2,
+  "year": 2025,
+  "round": 19,
+  "event": "United States Grand Prix",
+  "session": "Sprint Qualifying",
+  "total_laps": 15,
+  "order": [
+    "VER",
+    "NOR",
+    "PIA",
+    "HUL",
+    "RUS",
+    "ALO",
+    "SAI",
+    "HAM",
+    "ALB",
+    "LEC",
+    "ANT",
+    "HAD",
+    "GAS",
+    "STR",
+    "LAW",
+    "BEA",
+    "COL",
+    "TSU",
+    "OCO",
+    "BOR"
+  ],
+  "corners": [],
+  "map_corners": [],
+  "driver_styles": {
+    "VER": {
+      "color": "#4781d7",
+      "linestyle": "solid"
+    },
+    "NOR": {
+      "color": "#f47600",
+      "linestyle": "solid"
+    },
+    "PIA": {
+      "color": "#f47600",
+      "linestyle": "dashed"
+    },
+    "HUL": {
+      "color": "#01c00e",
+      "linestyle": "solid"
+    },
+    "RUS": {
+      "color": "#00d7b6",
+      "linestyle": "dashed"
+    },
+    "ALO": {
+      "color": "#229971",
+      "linestyle": "solid"
+    },
+    "SAI": {
+      "color": "#1868db",
+      "linestyle": "dashed"
+    },
+    "HAM": {
+      "color": "#ed1131",
+      "linestyle": "dashed"
+    },
+    "ALB": {
+      "color": "#1868db",
+      "linestyle": "solid"
+    },
+    "LEC": {
+      "color": "#ed1131",
+      "linestyle": "solid"
+    },
+    "ANT": {
+      "color": "#00d7b6",
+      "linestyle": "solid"
+    },
+    "HAD": {
+      "color": "#6c98ff",
+      "linestyle": "dashed"
+    },
+    "GAS": {
+      "color": "#00a1e8",
+      "linestyle": "solid"
+    },
+    "STR": {
+      "color": "#229971",
+      "linestyle": "dashed"
+    },
+    "LAW": {
+      "color": "#6c98ff",
+      "linestyle": "solid"
+    },
+    "BEA": {
+      "color": "#9c9fa2",
+      "linestyle": "dashed"
+    },
+    "COL": {
+      "color": "#00a1e8",
+      "linestyle": "dashed"
+    },
+    "TSU": {
+      "color": "#4781d7",
+      "linestyle": "dashed"
+    },
+    "OCO": {
+      "color": "#9c9fa2",
+      "linestyle": "solid"
+    },
+    "BOR": {
+      "color": "#01c00e",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "format": 2,
+  "year": 2025,
+  "round": 3,
+  "event": "Japanese Grand Prix",
+  "session": "Qualifying",
+  "total_laps": 23,
+  "order": [
+    "VER",
+    "NOR",
+    "PIA",
+    "LEC",
+    "RUS",
+    "ANT",
+    "HAD",
+    "HAM",
+    "ALB",
+    "BEA",
+    "GAS",
+    "SAI",
+    "ALO",
+    "LAW",
+    "TSU",
+    "HUL",
+    "BOR",
+    "OCO",
+    "DOO",
+    "STR"
+  ],
+  "corners": [],
+  "map_corners": [],
+  "driver_styles": {
+    "VER": {
+      "color": "#3671c6",
+      "linestyle": "solid"
+    },
+    "NOR": {
+      "color": "#ff8000",
+      "linestyle": "solid"
+    },
+    "PIA": {
+      "color": "#ff8000",
+      "linestyle": "dashed"
+    },
+    "LEC": {
+      "color": "#e80020",
+      "linestyle": "solid"
+    },
+    "RUS": {
+      "color": "#27f4d2",
+      "linestyle": "dashed"
+    },
+    "ANT": {
+      "color": "#27f4d2",
+      "linestyle": "solid"
+    },
+    "HAD": {
+      "color": "#6692ff",
+      "linestyle": "dashed"
+    },
+    "HAM": {
+      "color": "#e80020",
+      "linestyle": "dashed"
+    },
+    "ALB": {
+      "color": "#64c4ff",
+      "linestyle": "solid"
+    },
+    "BEA": {
+      "color": "#b6babd",
+      "linestyle": "dashed"
+    },
+    "GAS": {
+      "color": "#0093cc",
+      "linestyle": "solid"
+    },
+    "SAI": {
+      "color": "#64c4ff",
+      "linestyle": "dashed"
+    },
+    "ALO": {
+      "color": "#229971",
+      "linestyle": "solid"
+    },
+    "LAW": {
+      "color": "#6692ff",
+      "linestyle": "solid"
+    },
+    "TSU": {
+      "color": "#3671c6",
+      "linestyle": "dashed"
+    },
+    "HUL": {
+      "color": "#52e252",
+      "linestyle": "solid"
+    },
+    "BOR": {
+      "color": "#52e252",
+      "linestyle": "dashed"
+    },
+    "OCO": {
+      "color": "#b6babd",
+      "linestyle": "solid"
+    },
+    "DOO": {
+      "color": "#0093cc",
+      "linestyle": "dashed"
+    },
+    "STR": {
+      "color": "#229971",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

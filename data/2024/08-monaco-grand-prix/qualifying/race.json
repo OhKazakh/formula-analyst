@@ -1,0 +1,123 @@
+{
+  "format": 2,
+  "year": 2024,
+  "round": 8,
+  "event": "Monaco Grand Prix",
+  "session": "Qualifying",
+  "total_laps": 30,
+  "order": [
+    "LEC",
+    "PIA",
+    "SAI",
+    "NOR",
+    "RUS",
+    "VER",
+    "HAM",
+    "TSU",
+    "ALB",
+    "GAS",
+    "OCO",
+    "RIC",
+    "STR",
+    "HUL",
+    "ALO",
+    "SAR",
+    "MAG",
+    "PER",
+    "BOT",
+    "ZHO"
+  ],
+  "corners": [],
+  "map_corners": [],
+  "driver_styles": {
+    "LEC": {
+      "color": "#e80020",
+      "linestyle": "solid"
+    },
+    "PIA": {
+      "color": "#ff8000",
+      "linestyle": "dashed"
+    },
+    "SAI": {
+      "color": "#e80020",
+      "linestyle": "dashed"
+    },
+    "NOR": {
+      "color": "#ff8000",
+      "linestyle": "solid"
+    },
+    "RUS": {
+      "color": "#27f4d2",
+      "linestyle": "dashed"
+    },
+    "VER": {
+      "color": "#3671c6",
+      "linestyle": "solid"
+    },
+    "HAM": {
+      "color": "#27f4d2",
+      "linestyle": "solid"
+    },
+    "TSU": {
+      "color": "#6692ff",
+      "linestyle": "solid"
+    },
+    "ALB": {
+      "color": "#64c4ff",
+      "linestyle": "dashed"
+    },
+    "GAS": {
+      "color": "#0093cc",
+      "linestyle": "solid"
+    },
+    "OCO": {
+      "color": "#0093cc",
+      "linestyle": "dashed"
+    },
+    "RIC": {
+      "color": "#6692ff",
+      "linestyle": "dashed"
+    },
+    "STR": {
+      "color": "#229971",
+      "linestyle": "dashed"
+    },
+    "HUL": {
+      "color": "#b6babd",
+      "linestyle": "dashed"
+    },
+    "ALO": {
+      "color": "#229971",
+      "linestyle": "solid"
+    },
+    "SAR": {
+      "color": "#64c4ff",
+      "linestyle": "solid"
+    },
+    "MAG": {
+      "color": "#b6babd",
+      "linestyle": "solid"
+    },
+    "PER": {
+      "color": "#3671c6",
+      "linestyle": "dashed"
+    },
+    "BOT": {
+      "color": "#52e252",
+      "linestyle": "dashed"
+    },
+    "ZHO": {
+      "color": "#52e252",
+      "linestyle": "solid"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

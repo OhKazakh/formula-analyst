@@ -1,0 +1,123 @@
+{
+  "format": 2,
+  "year": 2024,
+  "round": 2,
+  "event": "Saudi Arabian Grand Prix",
+  "session": "Qualifying",
+  "total_laps": 24,
+  "order": [
+    "VER",
+    "LEC",
+    "PER",
+    "ALO",
+    "PIA",
+    "NOR",
+    "RUS",
+    "HAM",
+    "TSU",
+    "STR",
+    "BEA",
+    "ALB",
+    "MAG",
+    "RIC",
+    "HUL",
+    "BOT",
+    "OCO",
+    "GAS",
+    "SAR",
+    "ZHO"
+  ],
+  "corners": [],
+  "map_corners": [],
+  "driver_styles": {
+    "VER": {
+      "color": "#3671c6",
+      "linestyle": "solid"
+    },
+    "LEC": {
+      "color": "#e8002d",
+      "linestyle": "solid"
+    },
+    "PER": {
+      "color": "#3671c6",
+      "linestyle": "dashed"
+    },
+    "ALO": {
+      "color": "#229971",
+      "linestyle": "solid"
+    },
+    "PIA": {
+      "color": "#ff8000",
+      "linestyle": "dashed"
+    },
+    "NOR": {
+      "color": "#ff8000",
+      "linestyle": "solid"
+    },
+    "RUS": {
+      "color": "#27f4d2",
+      "linestyle": "dashed"
+    },
+    "HAM": {
+      "color": "#27f4d2",
+      "linestyle": "solid"
+    },
+    "TSU": {
+      "color": "#6692ff",
+      "linestyle": "solid"
+    },
+    "STR": {
+      "color": "#229971",
+      "linestyle": "dashed"
+    },
+    "BEA": {
+      "color": "#e8002d",
+      "linestyle": "dashed"
+    },
+    "ALB": {
+      "color": "#64c4ff",
+      "linestyle": "dashed"
+    },
+    "MAG": {
+      "color": "#b6babd",
+      "linestyle": "solid"
+    },
+    "RIC": {
+      "color": "#6692ff",
+      "linestyle": "dashed"
+    },
+    "HUL": {
+      "color": "#b6babd",
+      "linestyle": "dashed"
+    },
+    "BOT": {
+      "color": "#52e252",
+      "linestyle": "dashed"
+    },
+    "OCO": {
+      "color": "#ff87bc",
+      "linestyle": "dashed"
+    },
+    "GAS": {
+      "color": "#ff87bc",
+      "linestyle": "solid"
+    },
+    "SAR": {
+      "color": "#64c4ff",
+      "linestyle": "solid"
+    },
+    "ZHO": {
+      "color": "#52e252",
+      "linestyle": "solid"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

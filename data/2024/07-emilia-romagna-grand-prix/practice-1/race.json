@@ -1,0 +1,123 @@
+{
+  "format": 2,
+  "year": 2024,
+  "round": 7,
+  "event": "Emilia Romagna Grand Prix",
+  "session": "Practice 1",
+  "total_laps": 31,
+  "order": [
+    "VER",
+    "SAR",
+    "RIC",
+    "NOR",
+    "GAS",
+    "PER",
+    "ALO",
+    "LEC",
+    "STR",
+    "TSU",
+    "ALB",
+    "ZHO",
+    "HUL",
+    "OCO",
+    "HAM",
+    "BEA",
+    "SAI",
+    "RUS",
+    "BOT",
+    "PIA"
+  ],
+  "corners": [],
+  "map_corners": [],
+  "driver_styles": {
+    "VER": {
+      "color": "#3671c6",
+      "linestyle": "solid"
+    },
+    "SAR": {
+      "color": "#64c4ff",
+      "linestyle": "solid"
+    },
+    "RIC": {
+      "color": "#6692ff",
+      "linestyle": "dashed"
+    },
+    "NOR": {
+      "color": "#ff8000",
+      "linestyle": "solid"
+    },
+    "GAS": {
+      "color": "#0093cc",
+      "linestyle": "solid"
+    },
+    "PER": {
+      "color": "#3671c6",
+      "linestyle": "dashed"
+    },
+    "ALO": {
+      "color": "#229971",
+      "linestyle": "solid"
+    },
+    "LEC": {
+      "color": "#e80020",
+      "linestyle": "solid"
+    },
+    "STR": {
+      "color": "#229971",
+      "linestyle": "dashed"
+    },
+    "TSU": {
+      "color": "#6692ff",
+      "linestyle": "solid"
+    },
+    "ALB": {
+      "color": "#64c4ff",
+      "linestyle": "dashed"
+    },
+    "ZHO": {
+      "color": "#52e252",
+      "linestyle": "solid"
+    },
+    "HUL": {
+      "color": "#b6babd",
+      "linestyle": "solid"
+    },
+    "OCO": {
+      "color": "#0093cc",
+      "linestyle": "dashed"
+    },
+    "HAM": {
+      "color": "#27f4d2",
+      "linestyle": "solid"
+    },
+    "BEA": {
+      "color": "#b6babd",
+      "linestyle": "dashed"
+    },
+    "SAI": {
+      "color": "#e80020",
+      "linestyle": "dashed"
+    },
+    "RUS": {
+      "color": "#27f4d2",
+      "linestyle": "dashed"
+    },
+    "BOT": {
+      "color": "#52e252",
+      "linestyle": "dashed"
+    },
+    "PIA": {
+      "color": "#ff8000",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

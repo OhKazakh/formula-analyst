@@ -1,0 +1,123 @@
+{
+  "format": 2,
+  "year": 2025,
+  "round": 1,
+  "event": "Australian Grand Prix",
+  "session": "Qualifying",
+  "total_laps": 22,
+  "order": [
+    "NOR",
+    "PIA",
+    "VER",
+    "RUS",
+    "TSU",
+    "ALB",
+    "LEC",
+    "HAM",
+    "GAS",
+    "SAI",
+    "HAD",
+    "ALO",
+    "STR",
+    "DOO",
+    "BOR",
+    "ANT",
+    "HUL",
+    "LAW",
+    "OCO",
+    "BEA"
+  ],
+  "corners": [],
+  "map_corners": [],
+  "driver_styles": {
+    "NOR": {
+      "color": "#ff8000",
+      "linestyle": "solid"
+    },
+    "PIA": {
+      "color": "#ff8000",
+      "linestyle": "dashed"
+    },
+    "VER": {
+      "color": "#3671c6",
+      "linestyle": "solid"
+    },
+    "RUS": {
+      "color": "#27f4d2",
+      "linestyle": "dashed"
+    },
+    "TSU": {
+      "color": "#6692ff",
+      "linestyle": "solid"
+    },
+    "ALB": {
+      "color": "#64c4ff",
+      "linestyle": "solid"
+    },
+    "LEC": {
+      "color": "#e80020",
+      "linestyle": "solid"
+    },
+    "HAM": {
+      "color": "#e80020",
+      "linestyle": "dashed"
+    },
+    "GAS": {
+      "color": "#0093cc",
+      "linestyle": "solid"
+    },
+    "SAI": {
+      "color": "#64c4ff",
+      "linestyle": "dashed"
+    },
+    "HAD": {
+      "color": "#6692ff",
+      "linestyle": "dashed"
+    },
+    "ALO": {
+      "color": "#229971",
+      "linestyle": "solid"
+    },
+    "STR": {
+      "color": "#229971",
+      "linestyle": "dashed"
+    },
+    "DOO": {
+      "color": "#0093cc",
+      "linestyle": "dashed"
+    },
+    "BOR": {
+      "color": "#52e252",
+      "linestyle": "dashed"
+    },
+    "ANT": {
+      "color": "#27f4d2",
+      "linestyle": "solid"
+    },
+    "HUL": {
+      "color": "#52e252",
+      "linestyle": "solid"
+    },
+    "LAW": {
+      "color": "#3671c6",
+      "linestyle": "dashed"
+    },
+    "OCO": {
+      "color": "#b6babd",
+      "linestyle": "solid"
+    },
+    "BEA": {
+      "color": "#b6babd",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

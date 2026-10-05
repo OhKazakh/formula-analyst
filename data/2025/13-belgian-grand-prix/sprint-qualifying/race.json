@@ -1,0 +1,123 @@
+{
+  "format": 2,
+  "year": 2025,
+  "round": 13,
+  "event": "Belgian Grand Prix",
+  "session": "Sprint Qualifying",
+  "total_laps": 12,
+  "order": [
+    "PIA",
+    "VER",
+    "NOR",
+    "LEC",
+    "OCO",
+    "SAI",
+    "BEA",
+    "GAS",
+    "HAD",
+    "BOR",
+    "LAW",
+    "TSU",
+    "RUS",
+    "ALO",
+    "STR",
+    "ALB",
+    "HUL",
+    "HAM",
+    "COL",
+    "ANT"
+  ],
+  "corners": [],
+  "map_corners": [],
+  "driver_styles": {
+    "PIA": {
+      "color": "#f47600",
+      "linestyle": "dashed"
+    },
+    "VER": {
+      "color": "#4781d7",
+      "linestyle": "solid"
+    },
+    "NOR": {
+      "color": "#f47600",
+      "linestyle": "solid"
+    },
+    "LEC": {
+      "color": "#ed1131",
+      "linestyle": "solid"
+    },
+    "OCO": {
+      "color": "#9c9fa2",
+      "linestyle": "solid"
+    },
+    "SAI": {
+      "color": "#1868db",
+      "linestyle": "dashed"
+    },
+    "BEA": {
+      "color": "#9c9fa2",
+      "linestyle": "dashed"
+    },
+    "GAS": {
+      "color": "#00a1e8",
+      "linestyle": "solid"
+    },
+    "HAD": {
+      "color": "#6c98ff",
+      "linestyle": "dashed"
+    },
+    "BOR": {
+      "color": "#01c00e",
+      "linestyle": "dashed"
+    },
+    "LAW": {
+      "color": "#6c98ff",
+      "linestyle": "solid"
+    },
+    "TSU": {
+      "color": "#4781d7",
+      "linestyle": "dashed"
+    },
+    "RUS": {
+      "color": "#00d7b6",
+      "linestyle": "dashed"
+    },
+    "ALO": {
+      "color": "#229971",
+      "linestyle": "solid"
+    },
+    "STR": {
+      "color": "#229971",
+      "linestyle": "dashed"
+    },
+    "ALB": {
+      "color": "#1868db",
+      "linestyle": "solid"
+    },
+    "HUL": {
+      "color": "#01c00e",
+      "linestyle": "solid"
+    },
+    "HAM": {
+      "color": "#ed1131",
+      "linestyle": "dashed"
+    },
+    "COL": {
+      "color": "#00a1e8",
+      "linestyle": "dashed"
+    },
+    "ANT": {
+      "color": "#00d7b6",
+      "linestyle": "solid"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}
