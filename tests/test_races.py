@@ -297,3 +297,15 @@ def test_stints_follow_tyre_sets_through_pit_lane_passes():
     )
 
     assert races.tyre_stints(laps)["Stint"].tolist() == [1.0, 1.0, 1.0, 1.0, 2.0, 2.0]
+
+
+def test_practice_order_puts_the_fastest_first():
+    laps = pd.DataFrame(
+        {
+            "Driver": ["AAA", "AAA", "BBB", "CCC"],
+            "LapTimeSeconds": [81.2, 79.0, 80.7, np.nan],
+            "IsPersonalBest": [True, False, True, False],
+        }
+    )
+
+    assert races.fastest_first(["AAA", "CCC", "BBB", "DDD"], laps) == ["BBB", "AAA", "CCC", "DDD"]

@@ -198,6 +198,8 @@ def load_live_race(year: int, event: str, session: str = RACE) -> Race:
 def race_from_session(session: Session, name: str = RACE) -> Race:
     laps = _lap_table(session, name in QUALIFYING)
     order = _finishing_order(session, laps)
+    if name in PRACTICE:
+        order = fastest_first(order, laps)
     if name == RACE:
         corners = _corners(session)
         track, map_corners = _track_map(session, corners)
@@ -235,6 +237,13 @@ def _finishing_order(session: Session, laps: pd.DataFrame) -> list[str]:
     except (DataNotLoadedError, KeyError):
         order = []
     return order + [driver for driver in laps["Driver"].unique() if driver not in order]
+
+
+# FastF1 has no classification for practice and lists drivers by car number instead.
+def fastest_first(order: list[str], laps: pd.DataFrame) -> list[str]:
+    best = laps[laps["IsPersonalBest"]].groupby("Driver")["LapTimeSeconds"].min()
+    timed = best.dropna().sort_values(kind="stable").index.tolist()
+    return timed + [driver for driver in order if driver not in timed]
 
 
 # Driving through the pit lane without new tyres, behind the safety car or for a penalty,
