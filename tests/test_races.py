@@ -127,16 +127,16 @@ def test_load_race_prefers_saved_copy(tmp_path, monkeypatch):
     races.save_race(make_race(), tmp_path)
     monkeypatch.setattr(races, "load_live_race", lambda *_: pytest.fail("downloaded a saved race"))
 
-    race = races.load_race(2024, "Italian Grand Prix", tmp_path)
+    race = races.load_race(2024, "Italian Grand Prix", root=tmp_path)
 
     assert race.event == "Italian Grand Prix"
 
 
 def test_load_race_downloads_unsaved_race(tmp_path, monkeypatch):
     downloaded = make_race(1, "Bahrain Grand Prix")
-    monkeypatch.setattr(races, "load_live_race", lambda year, event: downloaded)
+    monkeypatch.setattr(races, "load_live_race", lambda year, event, session: downloaded)
 
-    assert races.load_race(2024, "Bahrain Grand Prix", tmp_path) is downloaded
+    assert races.load_race(2024, "Bahrain Grand Prix", root=tmp_path) is downloaded
 
 
 def test_trace_returns_one_drivers_telemetry():
@@ -258,6 +258,31 @@ def test_round_trip_keeps_weather_messages_and_radio(tmp_path):
     pd.testing.assert_frame_equal(loaded.messages, messages)
     pd.testing.assert_frame_equal(loaded.radio, radio)
     assert races.bundle_format(path) == races.FORMAT_VERSION
+
+
+def test_other_sessions_are_saved_beside_the_race_and_borrow_its_circuit(tmp_path):
+    race = make_race()
+    race = races.Race(
+        **{**race.__dict__, "track": pd.DataFrame({"X": [0.0, 1.0], "Y": [0.0, 1.0]})}
+    )
+    qualifying = races.Race(
+        **{
+            **race.__dict__,
+            "session": "Qualifying",
+            "track": pd.DataFrame(columns=races.TRACK_COLUMNS),
+        }
+    )
+    races.save_race(race, tmp_path)
+    path = races.save_race(qualifying, tmp_path)
+
+    saved = races.saved_sessions(tmp_path)
+    loaded = races.load_race(race.year, race.event, "Qualifying", root=tmp_path)
+
+    assert path.name == "qualifying"
+    assert saved["Session"].tolist() == ["Qualifying", "Race"]
+    assert len(races.saved_races(tmp_path)) == 1
+    assert loaded.session == "Qualifying"
+    assert loaded.track["X"].tolist() == [0.0, 1.0]
 
 
 def test_stints_follow_tyre_sets_through_pit_lane_passes():

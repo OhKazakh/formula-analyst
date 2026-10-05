@@ -5,7 +5,7 @@ import json
 import os
 import re
 import unicodedata
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 import fastf1
@@ -71,6 +71,22 @@ CORNER_COLUMNS = ["Number", "Letter", "Distance"]
 TRACK_COLUMNS = ["X", "Y"]
 MAP_CORNER_COLUMNS = ["Label", "X", "Y"]
 SAVED_COLUMNS = ["Year", "Round", "EventName", "Path"]
+SESSION_COLUMNS = ["Year", "Round", "EventName", "Session", "Path"]
+RACE = "Race"
+SESSIONS = [
+    "Practice 1",
+    "Practice 2",
+    "Practice 3",
+    "Sprint Shootout",
+    "Sprint Qualifying",
+    "Sprint",
+    "Qualifying",
+    RACE,
+]
+PRACTICE = {"Practice 1", "Practice 2", "Practice 3"}
+QUALIFYING = {"Qualifying", "Sprint Qualifying", "Sprint Shootout"}
+RACES = {RACE, "Sprint"}
+LAST_FRIDAY_QUALIFYING = 2023
 COMPOUND_PLACEHOLDERS = ["nan", "None", ""]
 CORNER_LABEL_OFFSET = 50.0
 DRS_OPEN = 10
@@ -100,6 +116,7 @@ class Race:
     weather: pd.DataFrame = field(default_factory=lambda: pd.DataFrame(columns=WEATHER_COLUMNS))
     messages: pd.DataFrame = field(default_factory=lambda: pd.DataFrame(columns=MESSAGE_COLUMNS))
     radio: pd.DataFrame = field(default_factory=lambda: pd.DataFrame(columns=RADIO_COLUMNS))
+    session: str = RACE
 
     @property
     def drivers(self) -> list[str]:
@@ -138,33 +155,49 @@ def race_calendar(year: int) -> pd.DataFrame:
     return finished[["RoundNumber", "EventName", "Country", "EventDate"]].reset_index(drop=True)
 
 
-def load_race(year: int, event: str, root: Path = DATA_DIR) -> Race:
-    saved = saved_races(root)
-    match = saved[(saved["Year"] == year) & (saved["EventName"] == event)]
-    if not match.empty:
-        return read_race(match["Path"].iloc[0])
-    return load_live_race(year, event)
+def load_race(year: int, event: str, session: str = RACE, root: Path = DATA_DIR) -> Race:
+    saved = saved_sessions(root)
+    weekend = saved[(saved["Year"] == year) & (saved["EventName"] == event)]
+    match = weekend[weekend["Session"] == session]
+    saved_path = None if match.empty else match["Path"].iloc[0]
+    race = read_race(saved_path) if saved_path else load_live_race(year, event, session)
+    main = weekend[weekend["Session"] == RACE]
+    if session == RACE or not race.track.empty or main.empty:
+        return race
+    # Other sessions borrow the circuit from the race, and its colours for anyone missing.
+    circuit = read_race(main["Path"].iloc[0])
+    return replace(
+        race,
+        corners=circuit.corners,
+        track=circuit.track,
+        map_corners=circuit.map_corners,
+        driver_styles=circuit.driver_styles | race.driver_styles,
+    )
 
 
-def load_live_race(year: int, event: str) -> Race:
-    session = fastf1.get_session(year, event, "R")
-    session.load(weather=True, messages=True)
+def load_live_race(year: int, event: str, session: str = RACE) -> Race:
+    loaded = fastf1.get_session(year, event, session)
+    loaded.load(weather=True, messages=True)
+    name = f"{year} {event}" if session == RACE else f"{year} {event} {session.lower()}"
     try:
-        laps = session.laps
+        laps = loaded.laps
     except DataNotLoadedError as exc:
-        raise RaceDataUnavailable(
-            f"Lap timing data for the {year} {event} isn't available."
-        ) from exc
+        raise RaceDataUnavailable(f"Lap timing data for the {name} isn't available.") from exc
     if laps.empty:
-        raise RaceDataUnavailable(f"No laps were recorded for the {year} {event}.")
-    return race_from_session(session)
+        raise RaceDataUnavailable(f"No laps were recorded for the {name}.")
+    return race_from_session(loaded, session)
 
 
-def race_from_session(session: Session) -> Race:
-    laps = _lap_table(session)
+def race_from_session(session: Session, name: str = RACE) -> Race:
+    laps = _lap_table(session, name in QUALIFYING)
     order = _finishing_order(session, laps)
-    corners = _corners(session)
-    track, map_corners = _track_map(session, corners)
+    if name == RACE:
+        corners = _corners(session)
+        track, map_corners = _track_map(session, corners)
+    else:
+        corners = pd.DataFrame(columns=CORNER_COLUMNS)
+        track = pd.DataFrame(columns=TRACK_COLUMNS)
+        map_corners = pd.DataFrame(columns=MAP_CORNER_COLUMNS)
     return Race(
         year=int(session.event.year),
         round_number=int(session.event["RoundNumber"]),
@@ -172,7 +205,11 @@ def race_from_session(session: Session) -> Race:
         total_laps=int(session.total_laps or laps["LapNumber"].max()),
         order=order,
         laps=laps,
-        telemetry=_fastest_lap_telemetry(session, laps),
+        telemetry=(
+            pd.DataFrame(columns=TELEMETRY_COLUMNS)
+            if name in PRACTICE
+            else _fastest_lap_telemetry(session, laps)
+        ),
         corners=corners,
         driver_styles=_driver_styles(session, order),
         compound_colors=dict(fastf1.plotting.get_compound_mapping(session)),
@@ -181,6 +218,7 @@ def race_from_session(session: Session) -> Race:
         weather=_weather(session),
         messages=_messages(session),
         radio=_team_radio(session),
+        session=name,
     )
 
 
@@ -206,15 +244,21 @@ def tyre_stints(laps: pd.DataFrame) -> pd.DataFrame:
     return laps.assign(Stint=stints.where(ordered["Stint"].notna()).reindex(laps.index))
 
 
-def _lap_table(session: Session) -> pd.DataFrame:
+def _lap_table(session: Session, qualifying: bool = False) -> pd.DataFrame:
     laps = pd.DataFrame(session.laps, copy=True)
+    laps["Part"] = 0
+    laps["Deleted"] = laps["Deleted"].fillna(False).astype(bool)
+    if qualifying:
+        for part, rows in enumerate(session.laps.split_qualifying_sessions(), start=1):
+            if rows is not None:
+                laps.loc[rows.index, "Part"] = part
     laps["LapTimeSeconds"] = laps["LapTime"].dt.total_seconds()
     laps["Compound"] = clean_compounds(laps["Compound"])
     laps["IsAccurate"] = laps["IsAccurate"].astype(bool)
     laps["IsPersonalBest"] = laps["IsPersonalBest"].astype(bool)
     for number in (1, 2, 3):
         laps[f"Sector{number}"] = laps[f"Sector{number}Time"].dt.total_seconds()
-    return tyre_stints(laps[LAP_COLUMNS])
+    return tyre_stints(laps[LAP_COLUMNS + (["Part", "Deleted"] if qualifying else [])])
 
 
 def _fastest_lap_telemetry(session: Session, laps: pd.DataFrame) -> pd.DataFrame:
@@ -267,9 +311,13 @@ def _weather(session: Session) -> pd.DataFrame:
 
 
 def _session_seconds(session: Session, utc: pd.Series) -> np.ndarray:
-    if session.t0_date is None:
+    try:
+        start = session.t0_date
+    except DataNotLoadedError:
+        start = None
+    if start is None:
         return np.full(len(utc), np.nan)
-    return (pd.Series(utc) - session.t0_date).dt.total_seconds().to_numpy()
+    return (pd.Series(utc) - start).dt.total_seconds().to_numpy()
 
 
 def _messages(session: Session) -> pd.DataFrame:
@@ -388,7 +436,9 @@ def _driver_styles(session: Session, drivers: list[str]) -> Styles:
             style = fastf1.plotting.get_driver_style(
                 driver, ["color", "linestyle"], session, colormap="official"
             )
-        except (KeyError, ValueError):
+        # FastF1 trips over drivers listed without a team colour, like some first-practice
+        # stand-ins, and then fails for everyone in the session.
+        except (KeyError, ValueError, AttributeError):
             continue
         styles[driver] = {"color": style["color"], "linestyle": style["linestyle"]}
     return styles
@@ -403,8 +453,22 @@ def race_dir(root: Path, year: int, round_number: int, event: str) -> Path:
     return root / str(year) / f"{round_number:02d}-{slugify(event)}"
 
 
+# Until 2023, sprint weekends held qualifying on the Friday, straight after first practice.
+def weekend_order(names: list[str], year: int) -> list[str]:
+    order = list(SESSIONS)
+    if "Sprint" in names and year <= LAST_FRIDAY_QUALIFYING:
+        order.remove("Qualifying")
+        order.insert(order.index("Practice 1") + 1, "Qualifying")
+    return [name for name in order if name in names]
+
+
+def session_dir(root: Path, year: int, round_number: int, event: str, session: str) -> Path:
+    path = race_dir(root, year, round_number, event)
+    return path if session == RACE else path / slugify(session)
+
+
 def save_race(race: Race, root: Path = DATA_DIR) -> Path:
-    path = race_dir(root, race.year, race.round_number, race.event)
+    path = session_dir(root, race.year, race.round_number, race.event, race.session)
     path.mkdir(parents=True, exist_ok=True)
     race.laps.to_parquet(path / "laps.parquet", index=False)
     race.telemetry.to_parquet(path / "telemetry.parquet", index=False)
@@ -417,6 +481,7 @@ def save_race(race: Race, root: Path = DATA_DIR) -> Path:
         "year": race.year,
         "round": race.round_number,
         "event": race.event,
+        "session": race.session,
         "total_laps": race.total_laps,
         "order": race.order,
         "corners": race.corners.to_dict(orient="records"),
@@ -455,6 +520,7 @@ def read_race(path: Path) -> Race:
         weather=read_optional(path / "weather.parquet", WEATHER_COLUMNS),
         messages=read_optional(path / "messages.parquet", MESSAGE_COLUMNS),
         radio=read_optional(path / "radio.parquet", RADIO_COLUMNS),
+        session=meta.get("session", RACE),
     )
 
 
@@ -481,3 +547,26 @@ def saved_races(root: Path = DATA_DIR) -> pd.DataFrame:
         )
     saved = pd.DataFrame(rows, columns=SAVED_COLUMNS)
     return saved.sort_values(["Year", "Round"], ignore_index=True)
+
+
+def saved_sessions(root: Path = DATA_DIR) -> pd.DataFrame:
+    rows = []
+    for meta_path in [*root.glob("*/*/race.json"), *root.glob("*/*/*/race.json")]:
+        meta = json.loads(meta_path.read_text())
+        rows.append(
+            {
+                "Year": meta["year"],
+                "Round": meta["round"],
+                "EventName": meta["event"],
+                "Session": meta.get("session", RACE),
+                "Path": meta_path.parent,
+            }
+        )
+    saved = pd.DataFrame(rows, columns=SESSION_COLUMNS)
+    order = saved["Session"].map({name: index for index, name in enumerate(SESSIONS)})
+    return (
+        saved.assign(Order=order)
+        .sort_values(["Year", "Round", "Order"])
+        .drop(columns="Order")
+        .reset_index(drop=True)
+    )

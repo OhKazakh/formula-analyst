@@ -5,6 +5,7 @@ import gc
 from datetime import date
 
 import fastf1
+import pandas as pd
 from fastf1.exceptions import ErgastError, RateLimitExceededError
 
 from src import model, races, seasons, team_logos
@@ -33,6 +34,17 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--upgrade",
         action="store_true",
         help="Download saved races again if they were saved in an older format.",
+    )
+    parser.add_argument(
+        "--sessions",
+        action="store_true",
+        help="Also download practice, qualifying and sprint sessions.",
+    )
+    parser.add_argument(
+        "--session",
+        action="append",
+        choices=[name for name in races.SESSIONS if name != races.RACE],
+        help="Only download these sessions, e.g. 'Qualifying'. Repeatable.",
     )
     parser.add_argument(
         "--skip-model", action="store_true", help="Don't retrain the tyre model afterwards."
@@ -79,6 +91,50 @@ def sync_races(year: int, names: list[str] | None, force: bool, upgrade: bool = 
     return failures
 
 
+def weekend_sessions(schedule: pd.DataFrame, event: str) -> list[str]:
+    weekend = schedule[schedule["EventName"] == event].iloc[0]
+    now = pd.Timestamp.now(tz="UTC").tz_localize(None)
+    return [
+        weekend[f"Session{number}"]
+        for number in range(1, 6)
+        if weekend[f"Session{number}"] in races.SESSIONS
+        and weekend[f"Session{number}"] != races.RACE
+        and weekend[f"Session{number}DateUtc"] < now
+    ]
+
+
+def sync_sessions(
+    year: int, names: list[str] | None, force: bool, only: list[str] | None = None
+) -> int:
+    schedule = fastf1.get_event_schedule(year, include_testing=False)
+    if names:
+        events = [fastf1.get_event(year, name)["EventName"] for name in names]
+    else:
+        events = races.race_calendar(year)["EventName"].tolist()
+    saved = races.saved_sessions()
+    saved = saved[saved["Year"] == year]
+    already_saved = set(zip(saved["EventName"], saved["Session"], strict=True))
+
+    failures = 0
+    for event in events:
+        for session in weekend_sessions(schedule, event):
+            if only and session not in only:
+                continue
+            if (event, session) in already_saved and not force:
+                continue
+            try:
+                path = races.save_race(races.load_live_race(year, event, session))
+            except (RateLimitExceededError, ErgastError):
+                raise
+            except Exception as exc:
+                failures += 1
+                print(f"failed {year} {event} {session}: {exc}")
+                continue
+            print(f"saved  {path.relative_to(races.ROOT)}", flush=True)
+            gc.collect()
+    return failures
+
+
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     fastf1.set_log_level("ERROR")
@@ -89,6 +145,8 @@ def main(argv: list[str] | None = None) -> int:
         failures = (
             0 if args.results_only else sync_races(args.year, args.event, args.force, args.upgrade)
         )
+        if (args.sessions or args.session) and not args.results_only:
+            failures += sync_sessions(args.year, args.event, args.force, args.session)
         saved = seasons.load_season(args.year) if args.year in seasons.saved_seasons() else None
         season = seasons.fetch_season(
             args.year, saved.team_standings if saved is not None else None
