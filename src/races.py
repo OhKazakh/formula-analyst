@@ -192,6 +192,20 @@ def _finishing_order(session: Session, laps: pd.DataFrame) -> list[str]:
     return order + [driver for driver in laps["Driver"].unique() if driver not in order]
 
 
+# Driving through the pit lane without new tyres, behind the safety car or for a penalty,
+# starts a new stint in the timing data. Stints here follow tyre sets instead.
+def tyre_stints(laps: pd.DataFrame) -> pd.DataFrame:
+    ordered = laps.sort_values(["Driver", "LapNumber"])
+    by_driver = ordered.groupby("Driver")
+    previous = by_driver[["Stint", "Compound", "TyreLife"]].shift()
+    continued = (ordered["Compound"] == previous["Compound"]) & (
+        ordered["TyreLife"] == previous["TyreLife"] + 1
+    )
+    new_set = previous["Stint"].isna() | ((ordered["Stint"] != previous["Stint"]) & ~continued)
+    stints = new_set.astype(int).groupby(ordered["Driver"]).cumsum().astype(float)
+    return laps.assign(Stint=stints.where(ordered["Stint"].notna()).reindex(laps.index))
+
+
 def _lap_table(session: Session) -> pd.DataFrame:
     laps = pd.DataFrame(session.laps, copy=True)
     laps["LapTimeSeconds"] = laps["LapTime"].dt.total_seconds()
@@ -200,7 +214,7 @@ def _lap_table(session: Session) -> pd.DataFrame:
     laps["IsPersonalBest"] = laps["IsPersonalBest"].astype(bool)
     for number in (1, 2, 3):
         laps[f"Sector{number}"] = laps[f"Sector{number}Time"].dt.total_seconds()
-    return laps[LAP_COLUMNS]
+    return tyre_stints(laps[LAP_COLUMNS])
 
 
 def _fastest_lap_telemetry(session: Session, laps: pd.DataFrame) -> pd.DataFrame:
@@ -431,7 +445,7 @@ def read_race(path: Path) -> Race:
         event=meta["event"],
         total_laps=meta["total_laps"],
         order=meta["order"],
-        laps=pd.read_parquet(path / "laps.parquet"),
+        laps=tyre_stints(pd.read_parquet(path / "laps.parquet")),
         telemetry=pd.read_parquet(path / "telemetry.parquet"),
         corners=pd.DataFrame(meta["corners"], columns=CORNER_COLUMNS),
         driver_styles=meta["driver_styles"],

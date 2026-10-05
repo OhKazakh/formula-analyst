@@ -29,7 +29,7 @@ def pit_stops(laps: pd.DataFrame) -> pd.DataFrame:
             if index + 1 >= len(driver_laps):
                 continue
             in_lap, out_lap = driver_laps.loc[index], driver_laps.loc[index + 1]
-            if pd.isna(out_lap["PitOutTime"]):
+            if pd.isna(out_lap["PitOutTime"]) or out_lap["Stint"] == in_lap["Stint"]:
                 continue
             pit_lane = (out_lap["PitOutTime"] - in_lap["PitInTime"]).total_seconds()
             if not 0 < pit_lane <= MAX_PIT_LANE:

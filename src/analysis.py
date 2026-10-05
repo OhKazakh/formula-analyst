@@ -904,9 +904,18 @@ def race_summary(laps: pd.DataFrame, winner: str) -> RaceSummary:
         leaders = positions[positions["Position"] == 1].sort_values("LapNumber")["Driver"]
     led = leaders.value_counts()
 
+    ordered = laps.sort_values(["Driver", "LapNumber"])
+    next_stint = ordered.groupby("Driver")["Stint"].shift(-1)
+    stops = (
+        ordered["PitInTime"].notna()
+        & next_stint.notna()
+        & (next_stint != ordered["Stint"])
+        & ~red_flag.loc[ordered.index]
+    )
+
     return RaceSummary(
         fastest=fastest,
-        pit_stops=int((laps["PitInTime"].notna() & ~red_flag).sum()),
+        pit_stops=int(stops.sum()),
         safety_car_laps=int(safety_car.sum()),
         virtual_safety_car_laps=int((virtual & ~safety_car).sum()),
         red_flag=bool(red_flag.any()),

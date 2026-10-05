@@ -258,3 +258,17 @@ def test_round_trip_keeps_weather_messages_and_radio(tmp_path):
     pd.testing.assert_frame_equal(loaded.messages, messages)
     pd.testing.assert_frame_equal(loaded.radio, radio)
     assert races.bundle_format(path) == races.FORMAT_VERSION
+
+
+def test_stints_follow_tyre_sets_through_pit_lane_passes():
+    laps = pd.DataFrame(
+        {
+            "Driver": ["AAA"] * 6,
+            "LapNumber": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+            "Stint": [1.0, 2.0, 3.0, 3.0, 4.0, 4.0],
+            "Compound": ["MEDIUM", "MEDIUM", "MEDIUM", "MEDIUM", "HARD", "HARD"],
+            "TyreLife": [4.0, 5.0, 6.0, 7.0, 1.0, 2.0],
+        }
+    )
+
+    assert races.tyre_stints(laps)["Stint"].tolist() == [1.0, 1.0, 1.0, 1.0, 2.0, 2.0]

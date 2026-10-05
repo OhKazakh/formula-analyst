@@ -399,6 +399,7 @@ def summary_laps() -> pd.DataFrame:
         return {
             "Driver": driver,
             "LapNumber": float(number),
+            "Stint": 1.0 if number < 4 else 2.0,
             "LapTime": pd.Timedelta(milliseconds=int(seconds * 1000)),
             "IsPersonalBest": personal_best,
             "TrackStatus": status,
