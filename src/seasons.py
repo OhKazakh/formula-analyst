@@ -47,7 +47,7 @@ class Season:
         return str(names.get(round_number, f"Round {round_number}"))
 
 
-def fetch_season(year: int) -> Season:
+def fetch_season(year: int, saved: pd.DataFrame | None = None) -> Season:
     ergast = Ergast(result_type="pandas", auto_cast=True)
     sessions = [
         _results(ergast.get_race_results, year, "Race"),
@@ -60,7 +60,7 @@ def fetch_season(year: int) -> Season:
         year=year,
         schedule=_schedule(year),
         results=results,
-        team_standings=_team_standings(ergast, year, rounds),
+        team_standings=_team_standings(ergast, year, rounds, saved),
     )
 
 
@@ -96,10 +96,16 @@ def _results(fetch: Callable[..., ErgastMultiResponse], year: int, session: str)
 
 
 # Official standings rather than summed driver points, which miss penalties such as
-# Racing Point's 15-point deduction in 2020.
-def _team_standings(ergast: Ergast, year: int, rounds: list[int]) -> pd.DataFrame:
-    frames = []
-    for round_number in rounds:
+# Racing Point's 15-point deduction in 2020. Saved rounds are kept, apart from the latest,
+# which post-race penalties can still change.
+def _team_standings(
+    ergast: Ergast, year: int, rounds: list[int], saved: pd.DataFrame | None = None
+) -> pd.DataFrame:
+    kept = pd.DataFrame(columns=TEAM_COLUMNS) if saved is None else saved
+    if not kept.empty:
+        kept = kept[kept["Round"] < kept["Round"].max()]
+    frames = [kept] if not kept.empty else []
+    for round_number in [r for r in rounds if r not in set(kept["Round"])]:
         response = ergast.get_constructor_standings(season=year, round=round_number)
         if not response.content:
             continue

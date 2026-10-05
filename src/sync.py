@@ -89,7 +89,10 @@ def main(argv: list[str] | None = None) -> int:
         failures = (
             0 if args.results_only else sync_races(args.year, args.event, args.force, args.upgrade)
         )
-        season = seasons.fetch_season(args.year)
+        saved = seasons.load_season(args.year) if args.year in seasons.saved_seasons() else None
+        season = seasons.fetch_season(
+            args.year, saved.team_standings if saved is not None else None
+        )
         path = seasons.save_season(season)
     except (RateLimitExceededError, ErgastError) as exc:
         print(f"stopped: {exc}. Run the same command again later to continue.")

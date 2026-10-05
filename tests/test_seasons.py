@@ -68,6 +68,21 @@ def test_team_standings_keep_every_round_that_has_standings():
     assert standings["Position"].tolist() == [1, 2, 1, 2]
 
 
+def test_team_standings_only_fetch_rounds_not_saved_yet():
+    saved = seasons._team_standings(FakeErgast(), 2024, [1, 2])
+    calls = []
+
+    class CountingErgast(FakeErgast):
+        def get_constructor_standings(self, season: int, round: int):
+            calls.append(round)
+            return super().get_constructor_standings(season, round)
+
+    standings = seasons._team_standings(CountingErgast(), 2024, [1, 2], saved)
+
+    assert calls == [2]
+    assert standings["Round"].tolist() == [1, 1, 2, 2]
+
+
 def test_save_and_load_season_with_styles_from_races(tmp_path):
     season = seasons.Season(
         year=2024,
