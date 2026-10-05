@@ -11,8 +11,8 @@ def live_timing() -> bool:
 
 
 @st.cache_data(show_spinner=False)
-def bundled_races(bundle_version: str) -> pd.DataFrame:
-    return races.saved_races()
+def bundled_sessions(bundle_version: str) -> pd.DataFrame:
+    return races.saved_sessions()
 
 
 @st.cache_data(ttl="1d", show_spinner=False)
@@ -21,12 +21,14 @@ def calendar(year: int) -> pd.DataFrame:
 
 
 @st.cache_data(show_spinner=False, max_entries=16)
-def race(year: int, event: str, bundle_version: str) -> races.Race:
-    return races.load_race(year, event)
+def race(year: int, event: str, session: str, bundle_version: str) -> races.Race:
+    return races.load_race(year, event, session)
 
 
 @st.cache_data(show_spinner=False, max_entries=8)
-def replay_chart(year: int, event: str, bundle_version: str, _race: races.Race) -> go.Figure:
+def replay_chart(
+    year: int, event: str, session: str, bundle_version: str, _race: races.Race
+) -> go.Figure:
     traces = (_race.trace(driver) for driver in _race.drivers)
     reference = next((trace for trace in traces if not trace.empty), _race.telemetry)
     times = analysis.replay_times(_race.laps, _race.total_laps)

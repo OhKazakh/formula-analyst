@@ -54,7 +54,7 @@ def race_results(race: races.Race, season: seasons.Season | None) -> pd.DataFram
     if season is None or "Status" not in season.results:
         return None
     results = season.results
-    rows = results[(results["Round"] == race.round_number) & (results["Session"] == "Race")]
+    rows = results[(results["Round"] == race.round_number) & (results["Session"] == race.session)]
     return rows.set_index("Driver") if not rows.empty else None
 
 
@@ -236,7 +236,7 @@ def lap_by_lap(race: races.Race) -> None:
 
 def timing_tab(race: races.Race, season: seasons.Season | None) -> None:
     if "Time" not in race.laps.columns:
-        st.info("Lap timing isn't available for this race.")
+        st.info("Lap timing isn't available for this session.")
         return
     tower_section(race, season)
     st.divider()

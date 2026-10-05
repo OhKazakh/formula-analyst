@@ -42,45 +42,58 @@ def weather_by_lap(weather: pd.DataFrame, laps: pd.DataFrame) -> pd.DataFrame:
     return merged[columns].dropna(subset=["TrackTemp"]).reset_index(drop=True)
 
 
-def weather_summary(by_lap: pd.DataFrame) -> dict[str, float | list[int]]:
-    if by_lap.empty:
+# Laps line up across drivers only in a race, so other sessions are plotted against time.
+def weather_by_minute(weather: pd.DataFrame) -> pd.DataFrame:
+    columns = ["Minute", "AirTemp", "TrackTemp", "Humidity", "WindSpeed", "Rainfall"]
+    readings = weather.dropna(subset=["Time", "TrackTemp"]).sort_values("Time")
+    if readings.empty:
+        return pd.DataFrame(columns=columns)
+    minutes = (readings["Time"] // 60).astype(int)
+    return readings.assign(Minute=minutes)[columns].reset_index(drop=True)
+
+
+def weather_summary(frame: pd.DataFrame, x: str = "LapNumber") -> dict[str, float | list[int]]:
+    if frame.empty:
         return {}
-    rain = by_lap.loc[by_lap["Rainfall"].astype(bool), "LapNumber"].astype(int).tolist()
+    rain = frame.loc[frame["Rainfall"].astype(bool), x].astype(int).tolist()
     return {
-        "track_start": float(by_lap["TrackTemp"].iloc[0]),
-        "track_end": float(by_lap["TrackTemp"].iloc[-1]),
-        "air_start": float(by_lap["AirTemp"].iloc[0]),
-        "humidity": float(by_lap["Humidity"].median()),
-        "wind": float(by_lap["WindSpeed"].max()),
-        "rain_laps": rain,
+        "track_start": float(frame["TrackTemp"].iloc[0]),
+        "track_end": float(frame["TrackTemp"].iloc[-1]),
+        "air_start": float(frame["AirTemp"].iloc[0]),
+        "humidity": float(frame["Humidity"].median()),
+        "wind": float(frame["WindSpeed"].max()),
+        "rain": rain,
     }
 
 
-def weather_figure(by_lap: pd.DataFrame) -> go.Figure:
+def weather_figure(frame: pd.DataFrame, x: str = "LapNumber") -> go.Figure:
+    label = "Lap" if x == "LapNumber" else "Minute"
     figure = go.Figure()
-    for lap in by_lap.loc[by_lap["Rainfall"].astype(bool), "LapNumber"]:
-        figure.add_vrect(x0=lap - 0.5, x1=lap + 0.5, fillcolor=RAIN, line_width=0, layer="below")
+    for value in frame.loc[frame["Rainfall"].astype(bool), x]:
+        figure.add_vrect(
+            x0=value - 0.5, x1=value + 0.5, fillcolor=RAIN, line_width=0, layer="below"
+        )
     figure.add_trace(
         go.Scatter(
-            x=by_lap["LapNumber"],
-            y=by_lap["TrackTemp"],
+            x=frame[x],
+            y=frame["TrackTemp"],
             name="Track",
             mode="lines",
             line={"color": ACCENT, "width": 2.5},
-            hovertemplate="Lap %{x}<br>track %{y:.1f} °C<extra></extra>",
+            hovertemplate=f"{label} %{{x}}<br>track %{{y:.1f}} °C<extra></extra>",
         )
     )
     figure.add_trace(
         go.Scatter(
-            x=by_lap["LapNumber"],
-            y=by_lap["AirTemp"],
+            x=frame[x],
+            y=frame["AirTemp"],
             name="Air",
             mode="lines",
             line={"color": OUTLINE, "width": 2, "dash": "dash"},
-            hovertemplate="Lap %{x}<br>air %{y:.1f} °C<extra></extra>",
+            hovertemplate=f"{label} %{{x}}<br>air %{{y:.1f}} °C<extra></extra>",
         )
     )
-    figure.update_xaxes(title="Lap")
+    figure.update_xaxes(title=label if x == "LapNumber" else "Minutes into the session")
     figure.update_yaxes(title="Temperature (°C)")
     return finish(figure, 320)
 

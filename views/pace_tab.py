@@ -40,7 +40,7 @@ def driver_pace(race: races.Race, clean: pd.DataFrame) -> None:
     laps = source[source["Driver"].isin(drivers)].copy()
     if laps.empty:
         st.info(
-            "None of these drivers have representative laps in this race. "
+            "None of these drivers have representative laps in this session. "
             "Turn off “Representative laps only” to see every lap."
             if representative
             else "No laps to show for these drivers."
@@ -109,7 +109,7 @@ def lap_distribution(race: races.Race) -> None:
 def sectors_section(race: races.Race) -> None:
     st.subheader("Who was quickest in each sector?")
     if not sectors.has_sectors(race.laps):
-        st.info("Sector times aren't available for this race.")
+        st.info("Sector times aren't available for this session.")
         return
     best = sectors.theoretical_best(race.laps)
     leaders = sectors.sector_leaders(race.laps)
@@ -156,7 +156,7 @@ def speed_profile_section(race: races.Race) -> None:
     traces = {driver: race.trace(driver) for driver in race.drivers}
     profile = sectors.speed_profile(race.laps, traces, race.corners)
     if race.corners.empty or profile.empty:
-        st.info("Corner data isn't available for this race.")
+        st.info("Corner data isn't available for this session.")
         return
     fastest = profile.loc[profile["TopSpeed"].idxmax()]
     cornering = profile.loc[profile["CornerSpeed"].idxmax()]
@@ -171,6 +171,12 @@ def speed_profile_section(race: races.Race) -> None:
         "their minimum speed through every corner on their fastest lap. Cars further right "
         "trade cornering grip for straight-line speed."
     )
+
+
+def practice_pace_tab(race: races.Race, clean: pd.DataFrame) -> None:
+    driver_pace(race, clean)
+    st.divider()
+    lap_distribution(race)
 
 
 def pace_tab(race: races.Race, clean: pd.DataFrame) -> None:

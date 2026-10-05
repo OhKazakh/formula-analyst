@@ -169,24 +169,32 @@ def championship_section(race: races.Race, season: seasons.Season | None) -> Non
     )
 
 
-def weather_text(summary: dict) -> str:
+def weather_text(summary: dict, by_lap: bool = True) -> str:
     text = (
         f"Track {summary['track_start']:.0f} °C at the start and {summary['track_end']:.0f} °C "
         f"at the finish, air {summary['air_start']:.0f} °C, humidity {summary['humidity']:.0f}% "
         f"and wind up to {summary['wind']:.1f} m/s."
     )
-    rain = summary["rain_laps"]
-    return f"{text} Rain on {lap_ranges(rain)}." if rain else f"{text} No rain."
+    rain = summary["rain"]
+    if not rain:
+        return f"{text} No rain."
+    if by_lap:
+        return f"{text} Rain on {lap_ranges(rain)}."
+    return f"{text} It rained for {plural(len(rain), 'minute')}."
 
 
 def conditions_section(race: races.Race) -> None:
     st.subheader("What were the conditions?")
-    by_lap = conditions.weather_by_lap(race.weather, race.laps)
-    if by_lap.empty:
-        st.info("Weather data isn't available for this race.")
+    by_lap = race.session in races.RACES
+    if by_lap:
+        frame, x = conditions.weather_by_lap(race.weather, race.laps), "LapNumber"
+    else:
+        frame, x = conditions.weather_by_minute(race.weather), "Minute"
+    if frame.empty:
+        st.info("Weather data isn't available for this session.")
         return
-    st.markdown(weather_text(conditions.weather_summary(by_lap)))
-    show(conditions.weather_figure(by_lap))
+    st.markdown(weather_text(conditions.weather_summary(frame, x), by_lap))
+    show(conditions.weather_figure(frame, x))
 
 
 def decisions_text(counts: pd.Series) -> str:
@@ -234,7 +242,7 @@ def race_control_section(race: races.Race) -> None:
     st.subheader("What did race control decide?")
     table = conditions.race_control(race.messages)
     if table.empty:
-        st.info("Race control messages aren't available for this race.")
+        st.info("Race control messages aren't available for this session.")
         return
     counts = table["Type"].value_counts()
     st.markdown(decisions_text(counts))
@@ -279,7 +287,7 @@ def team_radio_section(race: races.Race) -> None:
     st.subheader("What was said on team radio?")
     clips = conditions.radio_by_lap(race.radio, race.laps)
     if clips.empty:
-        st.info("Team radio isn't available for this race.")
+        st.info("Team radio isn't available for this session.")
         return
     speakers = [driver for driver in race.drivers if driver in set(clips["Driver"])]
     options = [ALL_DRIVERS, *speakers]
@@ -321,14 +329,15 @@ def overview_tab(
     race: races.Race, summary: analysis.RaceSummary, season: seasons.Season | None
 ) -> None:
     if "Time" not in race.laps.columns:
-        st.info("Lap timing isn't available for this race.")
+        st.info("Lap timing isn't available for this session.")
         return
     highlight = running_order(race, summary)
     st.divider()
     gaps_section(race, highlight)
     st.divider()
-    championship_section(race, season)
-    st.divider()
+    if race.session == races.RACE:
+        championship_section(race, season)
+        st.divider()
     conditions_section(race)
     st.divider()
     race_control_section(race)

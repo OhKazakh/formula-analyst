@@ -4,22 +4,32 @@ from datetime import date
 import pandas as pd
 import streamlit as st
 
-from src import analysis, races, seasons
+from src import analysis, races, seasons, sessions
 from src.charts import FALLBACK_COLOR
 from views import data, logos, theme
+from views.conditions_tab import conditions_tab
 from views.links import requested, requested_int
+from views.long_runs_tab import long_runs_tab
 from views.overview_tab import overview_tab
-from views.pace_tab import pace_tab
+from views.pace_tab import pace_tab, practice_pace_tab
 from views.replay_tab import replay_tab
+from views.results_tab import practice_tab, qualifying_tab
+from views.sectors_tab import sectors_tab
 from views.state import keep_widget_state, pick_favourite
 from views.strategy_tab import strategy_tab
 from views.telemetry_tab import telemetry_tab
+from views.text import plural
 from views.timing_tab import timing_tab
 
 FIRST_SEASON = 2018
 DEFAULT_YEAR = 2024
 DEFAULT_EVENT = "Italian Grand Prix"
-TABS = ["Overview", "Timing", "Replay", "Pace", "Strategy", "Telemetry"]
+TABS = {
+    "race": ["Overview", "Timing", "Replay", "Pace", "Strategy", "Telemetry"],
+    "qualifying": ["Results", "Sectors", "Telemetry", "Conditions"],
+    "practice": ["Results", "Long runs", "Pace", "Sectors", "Conditions"],
+}
+SESSION_CHOICE = "session_choice"
 HEADER_STYLE = f"""<style>
 .race-podium {{ display: flex; flex-wrap: wrap; gap: 12px; }}
 .race-place {{
@@ -82,7 +92,7 @@ def flag(country: str | None) -> str:
 
 
 def season_events(year: int, bundled: pd.DataFrame, online: bool) -> list[str]:
-    offline_events = bundled.loc[bundled["Year"] == year, "EventName"].tolist()
+    offline_events = bundled.loc[bundled["Year"] == year, "EventName"].unique().tolist()
     if not online:
         return offline_events
     try:
@@ -110,8 +120,36 @@ def event_countries(year: int, bundle_version: str, online: bool) -> dict[str, s
     return {}
 
 
-def sidebar(bundle_version: str) -> tuple[int, str]:
-    bundled = data.bundled_races(bundle_version)
+def session_kind(session: str) -> str:
+    if session in races.RACES:
+        return "race"
+    return "qualifying" if session in races.QUALIFYING else "practice"
+
+
+def event_sessions(year: int, event: str, bundle_version: str) -> list[str]:
+    saved = data.bundled_sessions(bundle_version)
+    names = saved.loc[(saved["Year"] == year) & (saved["EventName"] == event), "Session"]
+    return races.weekend_order(names.tolist(), year) or [races.RACE]
+
+
+# The choice carries over to the next Grand Prix when it has the same session.
+def pick_session(year: int, event: str, names: list[str]) -> str:
+    wanted = st.session_state.get(SESSION_CHOICE)
+    if wanted is None:
+        wanted = {races.slugify(name): name for name in names}.get(requested("session"))
+    fallback = races.RACE if races.RACE in names else names[-1]
+    choice = st.sidebar.selectbox(
+        "Session",
+        names,
+        index=names.index(wanted if wanted in names else fallback),
+        key=f"session:{year}:{event}",
+    )
+    st.session_state[SESSION_CHOICE] = choice
+    return choice
+
+
+def sidebar(bundle_version: str) -> tuple[int, str, str]:
+    bundled = data.bundled_sessions(bundle_version)
     online = data.live_timing()
 
     years_available = set(bundled["Year"])
@@ -143,7 +181,7 @@ def sidebar(bundle_version: str) -> tuple[int, str]:
         key="race_event",
         format_func=lambda name: f"{flag(countries.get(name))} {name}".strip(),
     )
-    return year, event
+    return year, event, pick_session(year, event, event_sessions(year, event, bundle_version))
 
 
 def podium(race: races.Race, season: seasons.Season | None) -> list[tuple[str, str, str]]:
@@ -161,10 +199,36 @@ def podium(race: races.Race, season: seasons.Season | None) -> list[tuple[str, s
     ]
 
 
-def race_facts(summary: analysis.RaceSummary) -> list[str]:
-    def plural(count: int, word: str) -> str:
-        return f"{count} {word}" + ("" if count == 1 else "s")
+def lap_fact(label: str, driver: str, seconds: float) -> str:
+    return (
+        f'<span class="label">{label}</span> <b>{html.escape(driver)}</b> '
+        f"{analysis.format_seconds(seconds)}"
+    )
 
+
+def qualifying_facts(race: races.Race) -> list[str]:
+    results = sessions.qualifying_results(race.laps, race.order, race.session)
+    facts = []
+    if not results.empty and pd.notna(results["Best"].iloc[0]):
+        facts.append(lap_fact("Pole", results["Driver"].iloc[0], results["Best"].iloc[0]))
+    deleted = int(race.laps["Deleted"].sum()) if "Deleted" in race.laps else 0
+    if deleted:
+        facts.append(f"{plural(deleted, 'lap')} deleted")
+    facts.append("Red flag" if sessions.red_flags(race.laps) else "No red flag")
+    return facts
+
+
+def practice_facts(race: races.Race) -> list[str]:
+    results = sessions.practice_results(race.laps)
+    facts = []
+    if not results.empty:
+        facts.append(lap_fact("Fastest", results["Driver"].iloc[0], results["Best"].iloc[0]))
+    facts.append(f"{plural(len(race.laps), 'lap')} run")
+    facts.append("Red flag" if sessions.red_flags(race.laps) else "No red flag")
+    return facts
+
+
+def race_facts(summary: analysis.RaceSummary) -> list[str]:
     facts = []
     if summary.fastest is not None:
         fastest = summary.fastest
@@ -184,15 +248,19 @@ def race_facts(summary: analysis.RaceSummary) -> list[str]:
     return facts
 
 
-def header(race: races.Race, summary: analysis.RaceSummary, season: seasons.Season | None) -> None:
+def header(race: races.Race, facts: list[str], season: seasons.Season | None) -> None:
     st.title(f"{race.year} {race.event}")
     details = [f"Round {race.round_number}"]
     if season is not None:
         details[0] += f" of {int(season.schedule['Round'].max())}"
+    if race.session != races.RACE:
+        details.insert(0, race.session)
+    elif season is not None:
         when = season.schedule.loc[season.schedule["Round"] == race.round_number, "Date"]
         if not when.empty and pd.notna(when.iloc[0]):
             details.append(f"{when.iloc[0].day} {when.iloc[0]:%B %Y}")
-    details.append(f"{race.total_laps} laps")
+    if race.session in races.RACES:
+        details.append(f"{race.total_laps} laps")
     st.caption(" · ".join(details))
 
     places = []
@@ -206,66 +274,70 @@ def header(race: races.Race, summary: analysis.RaceSummary, season: seasons.Seas
             f"{html.escape(team)}</div>"
             "</div>"
         )
-    facts = "".join(f"<span>{fact}</span>" for fact in race_facts(summary))
+    facts = "".join(f"<span>{fact}</span>" for fact in facts)
     st.html(
         f'{HEADER_STYLE}<div class="race-podium">{"".join(places)}</div>'
         f'<div class="race-facts">{facts}</div>'
     )
 
 
-def requested_tab() -> str | None:
-    return {label.lower(): label for label in TABS}.get(requested("tab"))
+def requested_tab(labels: list[str]) -> str | None:
+    return {label.lower(): label for label in labels}.get(requested("tab"))
 
 
 def render() -> None:
     keep_widget_state()
     bundle_version = races.bundle_version()
-    year, event = sidebar(bundle_version)
+    year, event, session = sidebar(bundle_version)
+    title = event if session == races.RACE else f"{event} {session.lower()}"
 
-    with st.spinner("Loading timing data. The first load of a race takes about a minute."):
+    with st.spinner("Loading timing data. The first load of a session takes about a minute."):
         try:
-            race = data.race(year, event, bundle_version)
+            race = data.race(year, event, session, bundle_version)
         except races.RaceDataUnavailable as exc:
-            st.title(f"{year} {event}")
+            st.title(f"{year} {title}")
             st.error(str(exc))
             st.button("Try again")
             st.stop()
         except Exception as exc:
-            st.title(f"{year} {event}")
-            st.error(f"Couldn't load this race: {exc}")
+            st.title(f"{year} {title}")
+            st.error(f"Couldn't load this session: {exc}")
             st.button("Try again")
             st.stop()
 
     favourite = pick_favourite(race.drivers)
     season = bundled_season(year, bundle_version)
+    kind = session_kind(session)
     summary = analysis.race_summary(race.laps, race.order[0] if race.order else "")
-    header(race, summary, season)
+    if kind == "race":
+        facts = race_facts(summary)
+    else:
+        facts = qualifying_facts(race) if kind == "qualifying" else practice_facts(race)
+    header(race, facts, season)
 
     clean = analysis.representative_laps(race.laps)
-    overview, timing, replay, pace, strategy, telemetry = st.tabs(
-        TABS, default=requested_tab(), key="race_tab", on_change="rerun"
-    )
-    params = {
-        "season": str(year),
-        "race": races.slugify(event),
-        "tab": st.session_state.get("race_tab", TABS[0]).lower(),
-    }
+    labels = TABS[kind]
+    key = f"race_tab:{kind}"
+    tabs = st.tabs(labels, default=requested_tab(labels), key=key, on_change="rerun")
+    params = {"season": str(year), "race": races.slugify(event)}
+    if session != races.RACE:
+        params["session"] = races.slugify(session)
+    params["tab"] = st.session_state.get(key, labels[0]).lower()
     st.query_params.from_dict(params | ({"driver": favourite} if favourite else {}))
-    if overview.open:
-        with overview:
-            overview_tab(race, summary, season)
-    if timing.open:
-        with timing:
-            timing_tab(race, season)
-    if replay.open:
-        with replay:
-            replay_tab(race, bundle_version)
-    if pace.open:
-        with pace:
-            pace_tab(race, clean)
-    if strategy.open:
-        with strategy:
-            strategy_tab(race, clean, bundle_version)
-    if telemetry.open:
-        with telemetry:
-            telemetry_tab(race)
+
+    views = {
+        "Overview": lambda: overview_tab(race, summary, season),
+        "Timing": lambda: timing_tab(race, season),
+        "Replay": lambda: replay_tab(race, bundle_version),
+        "Pace": lambda: pace_tab(race, clean) if kind == "race" else practice_pace_tab(race, clean),
+        "Strategy": lambda: strategy_tab(race, clean, bundle_version),
+        "Telemetry": lambda: telemetry_tab(race),
+        "Results": lambda: qualifying_tab(race) if kind == "qualifying" else practice_tab(race),
+        "Long runs": lambda: long_runs_tab(race),
+        "Sectors": lambda: sectors_tab(race),
+        "Conditions": lambda: conditions_tab(race),
+    }
+    for label, tab in zip(labels, tabs, strict=True):
+        if tab.open:
+            with tab:
+                views[label]()

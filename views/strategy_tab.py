@@ -38,7 +38,7 @@ def pit_stops_section(race: races.Race) -> None:
     st.subheader("How long did the pit stops take?")
     stops = strategy.pit_stops(race.laps)
     if stops.empty:
-        st.info("No pit stops were recorded for this race.")
+        st.info("No pit stops were recorded in this session.")
         return
     quickest = stops.loc[stops["PitLane"].idxmin()]
     text = (
@@ -186,6 +186,9 @@ def describe(plan: strategy.Plan) -> str:
 
 def simulator_section(race: races.Race, bundle_version: str) -> None:
     st.subheader("What would the fastest strategy have been?")
+    if race.session != races.RACE:
+        st.info("Sprints are run without a pit stop, so there's no strategy to compare.")
+        return
     if race.year < degradation.FIRST_SEASON:
         st.info("The strategy simulator uses the tyre model, which covers 2019 onwards.")
         return

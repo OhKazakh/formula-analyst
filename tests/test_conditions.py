@@ -37,7 +37,7 @@ def test_weather_by_lap_takes_the_last_reading_before_each_lap_ends():
         "air_start": 30.0,
         "humidity": 45.0,
         "wind": 3.4,
-        "rain_laps": [3],
+        "rain": [3],
     }
 
 
