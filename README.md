@@ -1,6 +1,6 @@
 # Formula Analyst
 
-Race analysis dashboard built on [FastF1](https://github.com/theOehrly/Fast-F1) timing data. Pick a Grand Prix and see how the race played out, or follow a whole championship season. Every race from 2018 to the latest 2026 round is included.
+Race analysis dashboard built on [FastF1](https://github.com/theOehrly/Fast-F1) timing data. Pick a Grand Prix weekend and look at any of its sessions, from first practice to the race, or follow a whole championship season. Every weekend from 2018 to the latest 2026 round is included.
 
 **[Open the live app](https://formula-analyst.streamlit.app/)**
 
@@ -18,6 +18,14 @@ Every race opens with a summary: the podium with each team's badge, the fastest 
 - **Pace.** Lap times for any set of drivers, optionally limited to representative laps (no pit in/out laps, no laps under safety car or flags, no laps FastF1 marks as inaccurate) and fuel-corrected. Each team's lap time spread ordered by median pace, and each driver's lap time distribution coloured by tyre compound. The quickest driver in each sector and every driver's theoretical best lap, and top speed against corner speed, which shows who ran a low-drag setup and who ran more downforce.
 - **Strategy.** Every driver's stints, coloured by compound and ordered by finishing position. Every pit stop's time in the pit lane by team, how much a stop cost, and which undercuts worked. The degradation rate of each stint from a linear fit of fuel-corrected lap time against tyre age, summarised by compound. A machine learning model trained on every other race since 2019 predicts how much time each compound should lose at that circuit, shown against the race's actual laps. A strategy simulator uses it to rank every one- and two-stop plan and compares the fastest with the winner's strategy.
 - **Telemetry.** Two drivers' fastest laps channel by channel: speed, the gap between them, throttle, brake, gear, RPM and DRS against distance, with corner markers. Corner by corner minimum speeds and braking points, and the same laps on a track map coloured by speed, by gear or by who was quicker in each mini-sector.
+
+**Practice, qualifying and sprints**
+
+The Session picker in the sidebar opens any other session of the weekend.
+
+- **Qualifying** and sprint qualifying show each driver's best lap in every part, with the fastest of each part in purple, and a chart of the gaps to pole with the cut-off places marked. They also have the sector times and speed traps, the telemetry comparison of any two fastest laps, and the session's weather, race control messages and team radio.
+- **Practice** ranks every driver's fastest lap, with the tyre it was set on and the laps they ran. Long runs pick out the race simulations, with each run's average, best lap and how quickly it slowed. Lap times, sectors and conditions come from the same views as the race.
+- **Sprints** get the race's tabs, apart from the strategy simulator: sprints are run without a pit stop.
 
 **Championship**
 
@@ -47,6 +55,8 @@ Every view has its own link, so a race, a tab or a point in a championship can b
 | ![Strategy](docs/strategy.png) | ![Tyre model](docs/tyre-model.png) |
 | **Sectors** | **Race control** |
 | ![Sectors](docs/sectors.png) | ![Race control](docs/race-control.png) |
+| **Qualifying** | **Long runs in practice** |
+| ![Qualifying](docs/qualifying.png) | ![Long runs in practice](docs/long-runs.png) |
 | **Drivers' championship** | **Teams' championship** |
 | ![Drivers' championship](docs/championship.png) | ![Teams' championship](docs/teams.png) |
 
@@ -63,7 +73,7 @@ streamlit run app.py
 
 ## Race data
 
-Every race from 2018 to the latest 2026 round ships with the app in `data/` (about 40 MB), as compact Parquet files: the lap table with sector times and speed traps, each driver's fastest-lap telemetry, the track outline, the weather, race control messages and the list of team radio clips. The one exception is the 2018 Italian Grand Prix, whose tyre data FastF1 can't process. Each season also has its race and sprint results, with grid positions and finishing status, the official team standings after every round and its calendar. The radio audio itself isn't bundled; the browser streams it from the official timing service when a clip is played. The live timing service rejects requests from many hosting providers, Streamlit Community Cloud included, so the deployed app reads only this bundle.
+Every race weekend from 2018 to the latest 2026 round ships with the app in `data/` (about 90 MB), as compact Parquet files. Each race has the lap table with sector times and speed traps, each driver's fastest-lap telemetry, the track outline, the weather, race control messages and the list of team radio clips. Practice, qualifying and sprint sessions sit next to it in their own folders with the same files, except that practice skips the telemetry and every session shares the race's track outline. The one exception is the 2018 Italian Grand Prix, whose tyre data FastF1 can't process. Each season also has its race and sprint results, with grid positions and finishing status, the official team standings after every round and its calendar. The radio audio itself isn't bundled; the browser streams it from the official timing service when a clip is played. The live timing service rejects requests from many hosting providers, Streamlit Community Cloud included, so the deployed app reads only this bundle.
 
 When the live timing service is reachable, as it usually is on a home connection, the app also downloads races that aren't bundled. The first download of a race takes about a minute and is cached in `cache/`.
 
@@ -80,9 +90,11 @@ It defaults to the current season. Other forms:
 python -m src.sync 2023 --event Monza --event Silverstone --force
 python -m src.sync 2026 --results-only
 python -m src.sync 2022 --upgrade --skip-model
+python -m src.sync 2026 --sessions
+python -m src.sync 2025 --session Qualifying --session Sprint
 ```
 
-Saved races are skipped unless `--force` is passed, and `--results-only` updates the championship without downloading races. `--upgrade` downloads saved races again when they were saved in an older format, so they pick up data added since, and `--skip-model` leaves the tyre model as it is. The sync has to run on a connection the live timing service accepts; it rejects GitHub's servers as well as Streamlit's, so it can't run as a scheduled workflow. FastF1 allows 500 requests an hour, roughly 15 races; when a limit is reached the command stops and can be run again later to continue. Set `FORMULA_ANALYST_OFFLINE=1` to run the app the way it runs when deployed, with bundled races only.
+Saved races are skipped unless `--force` is passed, and `--results-only` updates the championship without downloading races. `--upgrade` downloads saved races again when they were saved in an older format, so they pick up data added since, and `--skip-model` leaves the tyre model as it is. `--sessions` also downloads practice, qualifying and sprint sessions, and `--session` limits that to the sessions named. The sync has to run on a connection the live timing service accepts; it rejects GitHub's servers as well as Streamlit's, so it can't run as a scheduled workflow. FastF1 allows 500 requests an hour, roughly 15 races or 40 other sessions; when a limit is reached the command stops and can be run again later to continue. Set `FORMULA_ANALYST_OFFLINE=1` to run the app the way it runs when deployed, with bundled races only.
 
 ## Development
 
@@ -99,7 +111,7 @@ The last command retrains the tyre model on the bundled races and writes its cur
 ```
 app.py                  page navigation
 views/race.py           race page: sidebar, header and tabs
-views/*_tab.py          one module per race tab
+views/*_tab.py          one module per tab, shared between sessions where they fit
 views/championship.py   championship page
 views/data.py           cached data loading for both pages
 views/theme.py          colours and styles shared by the pages
@@ -113,6 +125,7 @@ src/charts.py           chart styling shared by every figure
 src/telemetry.py        telemetry channels, lap delta, corner speeds and gear map
 src/strategy.py         pit stops, undercuts and the strategy simulator
 src/timing.py           timing screen at any lap, field spread and lap-by-lap times
+src/sessions.py         qualifying parts, practice results and long runs
 src/sectors.py          sector times, theoretical best laps and speed traps
 src/conditions.py       weather, race control messages, penalties, track limits and team radio
 src/championship.py     standings, title maths and championship charts
@@ -134,7 +147,7 @@ Everything in `src/` works on plain pandas DataFrames and has no Streamlit depen
 - **Fuel correction** subtracts `fuel_effect × laps remaining` from each lap time, normalising every lap to an empty tank. The default is 0.055 s per lap of fuel and can be changed in the app.
 - **Degradation** is the slope of a least-squares line through fuel-corrected lap time against tyre age, fitted per stint. Stints shorter than the configurable minimum (8 laps by default) are skipped.
 - A straight line is a simplification: tyre warm-up at the start of a stint and the drop-off at the end are averaged into one number.
-- **Tyre model.** For every dry stint from 2019 onwards, when the compounds were named soft, medium and hard, each representative lap's fuel-corrected time is compared with the median of the stint's first three laps. That gives the time lost since the stint began, which includes tyre wear and the track rubbering in. A gradient-boosted tree model (scikit-learn's `HistGradientBoostingRegressor`) predicts it from the compound, tyre age, the age of the set when the stint began, the circuit, the season and the race's median track temperature. It is trained on 126,886 laps from 6,491 stints in 162 races. Cross-validated in five folds grouped by race, so every race is predicted by a model that never saw it, it is off by 0.58 s a lap on average, against 0.63 s for a straight line per compound and 0.75 s for assuming no wear. Lap-to-lap variation from traffic and driving limits how close any model can get. Track temperature was a later addition and barely matters: it brought the error from 0.585 s to 0.582 s, lower on every random split tested, but it helped only about half of the races individually, so the effect is small. The curves shown for each race come from the fold that held it out.
+- **Tyre model.** For every dry stint from 2019 onwards, when the compounds were named soft, medium and hard, each representative lap's fuel-corrected time is compared with the median of the stint's first three laps. That gives the time lost since the stint began, which includes tyre wear and the track rubbering in. A gradient-boosted tree model (scikit-learn's `HistGradientBoostingRegressor`) predicts it from the compound, tyre age, the age of the set when the stint began, the circuit and the season. It is trained on 127,002 laps from 6,480 stints in 162 races. Cross-validated in five folds grouped by race, so every race is predicted by a model that never saw it, it is off by 0.58 s a lap on average, against 0.63 s for a straight line per compound and 0.75 s for assuming no wear. Lap-to-lap variation from traffic and driving limits how close any model can get. I also tried the race's median track temperature as a feature. At first it looked like a small gain, but that disappeared once stints followed tyre sets instead of pit lane visits: the error was 0.585 s with or without it, so the model leaves it out. The curves shown for each race come from the fold that held it out.
 - **Positions** are the order in which drivers completed each lap. They match FastF1's own position data.
 - **Gap to the leader** is the time between each driver and the leader crossing the timing line at the end of a lap. Safety car and virtual safety car laps are the leader's laps that ran under them.
 - **Pit stops.** Time in the pit lane runs from the pit entry line on the in-lap to the pit exit line on the out-lap, so it includes the drive through the lane and any penalty served in the box. The cost of a stop is the in-lap plus the out-lap minus two of the driver's typical green-flag laps, and the race's pit loss is the median of those.
@@ -143,6 +156,9 @@ Everything in `src/` works on plain pandas DataFrames and has no Streamlit depen
 - **Sectors.** A theoretical best adds up a driver's best first, second and third sectors from any accurate lap. Top speed is the highest speed trap reading of the race, and corner speed is the mean minimum speed through every corner on the driver's fastest lap.
 - **Corner by corner.** Each corner covers the track halfway to its neighbours. The minimum speed is the slowest point in that stretch, and the braking point is how far before the corner marker the driver last went on the brakes before the apex. Car data is sampled about four times a second, so short brake taps can be missed.
 - **Race control** messages are grouped by keyword into penalties, investigations, track limits, flags, safety car and DRS, and blue flags are left out.
+- **Stints follow tyre sets.** The timing data starts a new stint whenever a car passes through the pit lane, even without new tyres, as when the safety car led the field through the pit lane in the 2024 Miami sprint. A stint here only ends when the compound changes or the tyre age starts again, and only those visits count as pit stops.
+- **Qualifying parts** come from FastF1's split of the session into Q1, Q2 and Q3 (or SQ1 to SQ3). A driver's time in each part is their best lap that the stewards didn't delete, and the classification uses the time from the last part they reached.
+- **Long runs** are at least 5 unbroken green-flag laps of one stint, each within 2.5% of that stint's median lap and within 112% of the session's fastest, which leaves out cool-down and push laps. Fuel loads aren't public, so long-run pace is a guide rather than a ranking.
 - **Weather** for each lap is the last reading from the circuit's weather station before the leader completed it.
 - **Penalties and track limits** are read from race control's messages. Served penalties are left out, and each deleted lap time counts once for its driver.
 - **Timing screen.** Each car's state is taken when it completes the chosen lap, so lapped cars show their previous lap, and the order is the order on track. A car is out once it stops completing laps before the winner takes the flag. Best laps only count laps that stood, so deleted times are left out.
