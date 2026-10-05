@@ -5,13 +5,12 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
-import fastf1
 import pandas as pd
 from fastf1.ergast import Ergast
 from fastf1.ergast.interface import ErgastMultiResponse
 
 from src.charts import Styles
-from src.races import DATA_DIR, read_optional
+from src.races import DATA_DIR, event_schedule, read_optional
 
 RESULT_COLUMNS = [
     "Round",
@@ -126,7 +125,7 @@ def _team_standings(
 
 
 def _schedule(year: int) -> pd.DataFrame:
-    schedule = fastf1.get_event_schedule(year, include_testing=False)
+    schedule = event_schedule(year)
     return pd.DataFrame(
         {
             "Round": schedule["RoundNumber"].astype(int),

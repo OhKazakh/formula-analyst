@@ -52,6 +52,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def find_events(year: int, names: list[str]) -> list[str]:
+    return [
+        fastf1.get_event(year, name, backend=races.SCHEDULE_BACKEND)["EventName"] for name in names
+    ]
+
+
 def outdated_events(year: int) -> list[str]:
     saved = races.saved_races()
     saved = saved[saved["Year"] == year]
@@ -66,7 +72,7 @@ def sync_races(year: int, names: list[str] | None, force: bool, upgrade: bool = 
     if upgrade:
         events, force = outdated_events(year), True
     elif names:
-        events = [fastf1.get_event(year, name)["EventName"] for name in names]
+        events = find_events(year, names)
     else:
         events = races.race_calendar(year)["EventName"].tolist()
 
@@ -106,11 +112,8 @@ def weekend_sessions(schedule: pd.DataFrame, event: str) -> list[str]:
 def sync_sessions(
     year: int, names: list[str] | None, force: bool, only: list[str] | None = None
 ) -> int:
-    schedule = fastf1.get_event_schedule(year, include_testing=False)
-    if names:
-        events = [fastf1.get_event(year, name)["EventName"] for name in names]
-    else:
-        events = races.race_calendar(year)["EventName"].tolist()
+    schedule = races.event_schedule(year)
+    events = find_events(year, names) if names else races.race_calendar(year)["EventName"].tolist()
     saved = races.saved_sessions()
     saved = saved[saved["Year"] == year]
     already_saved = set(zip(saved["EventName"], saved["Session"], strict=True))

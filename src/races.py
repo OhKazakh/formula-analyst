@@ -28,6 +28,9 @@ DATA_DIR = ROOT / "data"
 OFFLINE_ENV = "FORMULA_ANALYST_OFFLINE"
 LIVE_TIMING = "https://livetiming.formula1.com"
 LIVE_TIMING_PROBE = f"{LIVE_TIMING}/static/StreamingStatus.json"
+# FastF1 quietly falls back to the live timing index when its own schedule can't be fetched,
+# and that index numbers rounds differently (it counts the cancelled 2023 Imola race).
+SCHEDULE_BACKEND = "fastf1"
 
 LAP_COLUMNS = [
     "Driver",
@@ -148,8 +151,12 @@ def live_timing_available(timeout: float = 5.0) -> bool:
     return response.ok
 
 
+def event_schedule(year: int) -> pd.DataFrame:
+    return fastf1.get_event_schedule(year, include_testing=False, backend=SCHEDULE_BACKEND)
+
+
 def race_calendar(year: int) -> pd.DataFrame:
-    schedule = fastf1.get_event_schedule(year, include_testing=False)
+    schedule = event_schedule(year)
     now = pd.Timestamp.now(tz="UTC").tz_localize(None)
     finished = schedule[schedule["Session5DateUtc"] < now]
     return finished[["RoundNumber", "EventName", "Country", "EventDate"]].reset_index(drop=True)
@@ -176,7 +183,7 @@ def load_race(year: int, event: str, session: str = RACE, root: Path = DATA_DIR)
 
 
 def load_live_race(year: int, event: str, session: str = RACE) -> Race:
-    loaded = fastf1.get_session(year, event, session)
+    loaded = fastf1.get_session(year, event, session, backend=SCHEDULE_BACKEND)
     loaded.load(weather=True, messages=True)
     name = f"{year} {event}" if session == RACE else f"{year} {event} {session.lower()}"
     try:
