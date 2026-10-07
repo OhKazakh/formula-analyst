@@ -22,3 +22,29 @@ jobs:
       - run: ruff check .
       - run: ruff format --check .
       - run: pytest
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker compose up --build --detach --wait
+      - name: Reach the app through Nginx, WebSocket included
+        run: |
+          curl --fail --silent --show-error http://localhost:8080/_stcore/health
+          curl --silent --include --http1.1 --max-time 5 \
+            --header "Connection: Upgrade" --header "Upgrade: websocket" \
+            --header "Origin: http://localhost:8080" \
+            --header "Sec-WebSocket-Version: 13" \
+            --header "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==" \
+            http://localhost:8080/_stcore/stream | head -1 | grep " 101 "
+      - name: Render the default page inside the image
+        run: |
+          docker compose exec -T app python - <<'EOF'
+          from streamlit.testing.v1 import AppTest
+
+          at = AppTest.from_file("/app/app.py", default_timeout=120).run()
+          assert not at.exception, at.exception
+          print(at.title[0].value)
+          EOF
+      - if: failure()
+        run: docker compose logs

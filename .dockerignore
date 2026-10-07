@@ -1,0 +1,10 @@
+# Only what the app needs at runtime goes into the image.
+*
+!app.py
+!requirements.txt
+!.streamlit/config.toml
+!src
+!views
+!static
+!data
+**/__pycache__

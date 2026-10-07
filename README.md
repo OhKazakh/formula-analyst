@@ -41,6 +41,12 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
+Or run it in Docker behind Nginx and open http://localhost:8080:
+
+```bash
+docker compose up --build
+```
+
 ## Data
 
 The live timing service blocks most hosting providers, so every session ships with the app as Parquet files in `data/`. After a race weekend, this adds the new sessions, updates the championship and retrains the tyre model:
