@@ -1,0 +1,123 @@
+{
+  "format": 2,
+  "year": 2021,
+  "round": 18,
+  "event": "Mexico City Grand Prix",
+  "session": "Practice 2",
+  "total_laps": 37,
+  "order": [
+    "VER",
+    "BOT",
+    "HAM",
+    "PER",
+    "SAI",
+    "GAS",
+    "LEC",
+    "TSU",
+    "VET",
+    "ALO",
+    "RAI",
+    "NOR",
+    "GIO",
+    "OCO",
+    "RIC",
+    "MSC",
+    "STR",
+    "LAT",
+    "MAZ",
+    "RUS"
+  ],
+  "corners": [],
+  "map_corners": [],
+  "driver_styles": {
+    "VER": {
+      "color": "#0600ef",
+      "linestyle": "dashed"
+    },
+    "BOT": {
+      "color": "#00d2be",
+      "linestyle": "dashed"
+    },
+    "HAM": {
+      "color": "#00d2be",
+      "linestyle": "solid"
+    },
+    "PER": {
+      "color": "#0600ef",
+      "linestyle": "solid"
+    },
+    "SAI": {
+      "color": "#dc0004",
+      "linestyle": "dashed"
+    },
+    "GAS": {
+      "color": "#2b4562",
+      "linestyle": "solid"
+    },
+    "LEC": {
+      "color": "#dc0004",
+      "linestyle": "solid"
+    },
+    "TSU": {
+      "color": "#2b4562",
+      "linestyle": "dashed"
+    },
+    "VET": {
+      "color": "#006f62",
+      "linestyle": "dashed"
+    },
+    "ALO": {
+      "color": "#0090ff",
+      "linestyle": "solid"
+    },
+    "RAI": {
+      "color": "#900000",
+      "linestyle": "solid"
+    },
+    "NOR": {
+      "color": "#ff9800",
+      "linestyle": "dashed"
+    },
+    "GIO": {
+      "color": "#900000",
+      "linestyle": "dashed"
+    },
+    "OCO": {
+      "color": "#0090ff",
+      "linestyle": "dashed"
+    },
+    "RIC": {
+      "color": "#ff9800",
+      "linestyle": "solid"
+    },
+    "MSC": {
+      "color": "#ffffff",
+      "linestyle": "solid"
+    },
+    "STR": {
+      "color": "#006f62",
+      "linestyle": "solid"
+    },
+    "LAT": {
+      "color": "#005aff",
+      "linestyle": "solid"
+    },
+    "MAZ": {
+      "color": "#ffffff",
+      "linestyle": "dashed"
+    },
+    "RUS": {
+      "color": "#005aff",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

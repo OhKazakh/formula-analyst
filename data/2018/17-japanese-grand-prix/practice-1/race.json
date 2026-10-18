@@ -1,0 +1,127 @@
+{
+  "format": 2,
+  "year": 2018,
+  "round": 17,
+  "event": "Japanese Grand Prix",
+  "session": "Practice 1",
+  "total_laps": 32,
+  "order": [
+    "HAM",
+    "BOT",
+    "RIC",
+    "RAI",
+    "VET",
+    "VER",
+    "OCO",
+    "GRO",
+    "LEC",
+    "ERI",
+    "GAS",
+    "SAI",
+    "PER",
+    "MAG",
+    "HUL",
+    "STR",
+    "HAR",
+    "ALO",
+    "SIR",
+    "NOR"
+  ],
+  "corners": [],
+  "map_corners": [],
+  "driver_styles": {
+    "HAM": {
+      "color": "#00d2be",
+      "linestyle": "solid"
+    },
+    "BOT": {
+      "color": "#00d2be",
+      "linestyle": "dashed"
+    },
+    "RIC": {
+      "color": "#1e41ff",
+      "linestyle": "solid"
+    },
+    "RAI": {
+      "color": "#dc0000",
+      "linestyle": "dashed"
+    },
+    "VET": {
+      "color": "#dc0000",
+      "linestyle": "solid"
+    },
+    "VER": {
+      "color": "#1e41ff",
+      "linestyle": "dashed"
+    },
+    "OCO": {
+      "color": "#f596c8",
+      "linestyle": "dashed"
+    },
+    "GRO": {
+      "color": "#828282",
+      "linestyle": "dashed"
+    },
+    "LEC": {
+      "color": "#9b0000",
+      "linestyle": "solid"
+    },
+    "ERI": {
+      "color": "#9b0000",
+      "linestyle": "dashed"
+    },
+    "GAS": {
+      "color": "#469bff",
+      "linestyle": "solid"
+    },
+    "SAI": {
+      "color": "#fff500",
+      "linestyle": "dashed"
+    },
+    "PER": {
+      "color": "#f596c8",
+      "linestyle": "solid"
+    },
+    "MAG": {
+      "color": "#828282",
+      "linestyle": "solid"
+    },
+    "HUL": {
+      "color": "#fff500",
+      "linestyle": "solid"
+    },
+    "STR": {
+      "color": "#ffffff",
+      "linestyle": "solid"
+    },
+    "HAR": {
+      "color": "#469bff",
+      "linestyle": "dashed"
+    },
+    "ALO": {
+      "color": "#ff8700",
+      "linestyle": "solid"
+    },
+    "SIR": {
+      "color": "#ffffff",
+      "linestyle": "dashed"
+    },
+    "NOR": {
+      "color": "#ff8700",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "HYPERSOFT": "#feb1c1",
+    "ULTRASOFT": "#b24ba7",
+    "SUPERSOFT": "#fc2b2a",
+    "SOFT": "#ffd318",
+    "MEDIUM": "#f0f0f0",
+    "HARD": "#00a2f5",
+    "SUPERHARD": "#fd7d3c",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

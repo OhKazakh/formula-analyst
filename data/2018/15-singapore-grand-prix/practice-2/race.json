@@ -1,0 +1,127 @@
+{
+  "format": 2,
+  "year": 2018,
+  "round": 15,
+  "event": "Singapore Grand Prix",
+  "session": "Practice 2",
+  "total_laps": 38,
+  "order": [
+    "RAI",
+    "HAM",
+    "VER",
+    "RIC",
+    "BOT",
+    "SAI",
+    "GRO",
+    "ALO",
+    "VET",
+    "HUL",
+    "PER",
+    "ERI",
+    "OCO",
+    "LEC",
+    "MAG",
+    "VAN",
+    "HAR",
+    "GAS",
+    "STR",
+    "SIR"
+  ],
+  "corners": [],
+  "map_corners": [],
+  "driver_styles": {
+    "RAI": {
+      "color": "#dc0000",
+      "linestyle": "dashed"
+    },
+    "HAM": {
+      "color": "#00d2be",
+      "linestyle": "solid"
+    },
+    "VER": {
+      "color": "#1e41ff",
+      "linestyle": "dashed"
+    },
+    "RIC": {
+      "color": "#1e41ff",
+      "linestyle": "solid"
+    },
+    "BOT": {
+      "color": "#00d2be",
+      "linestyle": "dashed"
+    },
+    "SAI": {
+      "color": "#fff500",
+      "linestyle": "dashed"
+    },
+    "GRO": {
+      "color": "#828282",
+      "linestyle": "dashed"
+    },
+    "ALO": {
+      "color": "#ff8700",
+      "linestyle": "solid"
+    },
+    "VET": {
+      "color": "#dc0000",
+      "linestyle": "solid"
+    },
+    "HUL": {
+      "color": "#fff500",
+      "linestyle": "solid"
+    },
+    "PER": {
+      "color": "#f596c8",
+      "linestyle": "solid"
+    },
+    "ERI": {
+      "color": "#9b0000",
+      "linestyle": "dashed"
+    },
+    "OCO": {
+      "color": "#f596c8",
+      "linestyle": "dashed"
+    },
+    "LEC": {
+      "color": "#9b0000",
+      "linestyle": "solid"
+    },
+    "MAG": {
+      "color": "#828282",
+      "linestyle": "solid"
+    },
+    "VAN": {
+      "color": "#ff8700",
+      "linestyle": "dashed"
+    },
+    "HAR": {
+      "color": "#469bff",
+      "linestyle": "dashed"
+    },
+    "GAS": {
+      "color": "#469bff",
+      "linestyle": "solid"
+    },
+    "STR": {
+      "color": "#ffffff",
+      "linestyle": "solid"
+    },
+    "SIR": {
+      "color": "#ffffff",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "HYPERSOFT": "#feb1c1",
+    "ULTRASOFT": "#b24ba7",
+    "SUPERSOFT": "#fc2b2a",
+    "SOFT": "#ffd318",
+    "MEDIUM": "#f0f0f0",
+    "HARD": "#00a2f5",
+    "SUPERHARD": "#fd7d3c",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

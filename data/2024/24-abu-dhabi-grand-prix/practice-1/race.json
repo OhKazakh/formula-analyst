@@ -1,0 +1,123 @@
+{
+  "format": 2,
+  "year": 2024,
+  "round": 24,
+  "event": "Abu Dhabi Grand Prix",
+  "session": "Practice 1",
+  "total_laps": 27,
+  "order": [
+    "LEC",
+    "NOR",
+    "HAM",
+    "RUS",
+    "GAS",
+    "HUL",
+    "COL",
+    "MAG",
+    "DRU",
+    "PER",
+    "ALO",
+    "LAW",
+    "BOT",
+    "HIR",
+    "HAD",
+    "ZHO",
+    "IWA",
+    "LEL",
+    "DOO",
+    "BRO"
+  ],
+  "corners": [],
+  "map_corners": [],
+  "driver_styles": {
+    "NOR": {
+      "color": "#ff8000",
+      "linestyle": "dashed"
+    },
+    "GAS": {
+      "color": "#0093cc",
+      "linestyle": "solid"
+    },
+    "PER": {
+      "color": "#3671c6",
+      "linestyle": "solid"
+    },
+    "ALO": {
+      "color": "#229971",
+      "linestyle": "solid"
+    },
+    "LEC": {
+      "color": "#e80020",
+      "linestyle": "solid"
+    },
+    "MAG": {
+      "color": "#b6babd",
+      "linestyle": "solid"
+    },
+    "ZHO": {
+      "color": "#52e252",
+      "linestyle": "solid"
+    },
+    "HUL": {
+      "color": "#b6babd",
+      "linestyle": "dashed"
+    },
+    "HIR": {
+      "color": "#ff8000",
+      "linestyle": "solid"
+    },
+    "LAW": {
+      "color": "#6692ff",
+      "linestyle": "solid"
+    },
+    "DRU": {
+      "color": "#229971",
+      "linestyle": "dashed"
+    },
+    "HAD": {
+      "color": "#3671c6",
+      "linestyle": "dashed"
+    },
+    "LEL": {
+      "color": "#e80020",
+      "linestyle": "dashed"
+    },
+    "IWA": {
+      "color": "#6692ff",
+      "linestyle": "dashed"
+    },
+    "COL": {
+      "color": "#64c4ff",
+      "linestyle": "solid"
+    },
+    "HAM": {
+      "color": "#27f4d2",
+      "linestyle": "solid"
+    },
+    "BRO": {
+      "color": "#64c4ff",
+      "linestyle": "dashed"
+    },
+    "DOO": {
+      "color": "#0093cc",
+      "linestyle": "dashed"
+    },
+    "RUS": {
+      "color": "#27f4d2",
+      "linestyle": "dashed"
+    },
+    "BOT": {
+      "color": "#52e252",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

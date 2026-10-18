@@ -1,0 +1,123 @@
+{
+  "format": 2,
+  "year": 2019,
+  "round": 13,
+  "event": "Belgian Grand Prix",
+  "session": "Practice 2",
+  "total_laps": 32,
+  "order": [
+    "LEC",
+    "VET",
+    "BOT",
+    "HAM",
+    "PER",
+    "VER",
+    "RAI",
+    "STR",
+    "RIC",
+    "ALB",
+    "SAI",
+    "GRO",
+    "HUL",
+    "KVY",
+    "NOR",
+    "GIO",
+    "GAS",
+    "MAG",
+    "RUS",
+    "KUB"
+  ],
+  "corners": [],
+  "map_corners": [],
+  "driver_styles": {
+    "LEC": {
+      "color": "#dc0000",
+      "linestyle": "solid"
+    },
+    "VET": {
+      "color": "#dc0000",
+      "linestyle": "dashed"
+    },
+    "BOT": {
+      "color": "#00d2be",
+      "linestyle": "dashed"
+    },
+    "HAM": {
+      "color": "#00d2be",
+      "linestyle": "solid"
+    },
+    "PER": {
+      "color": "#f596c8",
+      "linestyle": "solid"
+    },
+    "VER": {
+      "color": "#1e41ff",
+      "linestyle": "dashed"
+    },
+    "RAI": {
+      "color": "#9b0000",
+      "linestyle": "solid"
+    },
+    "STR": {
+      "color": "#f596c8",
+      "linestyle": "dashed"
+    },
+    "RIC": {
+      "color": "#fff500",
+      "linestyle": "dashed"
+    },
+    "ALB": {
+      "color": "#1e41ff",
+      "linestyle": "solid"
+    },
+    "SAI": {
+      "color": "#ff8700",
+      "linestyle": "dashed"
+    },
+    "GRO": {
+      "color": "#bd9e57",
+      "linestyle": "dashed"
+    },
+    "HUL": {
+      "color": "#fff500",
+      "linestyle": "solid"
+    },
+    "KVY": {
+      "color": "#469bff",
+      "linestyle": "dashed"
+    },
+    "NOR": {
+      "color": "#ff8700",
+      "linestyle": "solid"
+    },
+    "GIO": {
+      "color": "#9b0000",
+      "linestyle": "dashed"
+    },
+    "GAS": {
+      "color": "#469bff",
+      "linestyle": "solid"
+    },
+    "MAG": {
+      "color": "#bd9e57",
+      "linestyle": "solid"
+    },
+    "RUS": {
+      "color": "#ffffff",
+      "linestyle": "solid"
+    },
+    "KUB": {
+      "color": "#ffffff",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

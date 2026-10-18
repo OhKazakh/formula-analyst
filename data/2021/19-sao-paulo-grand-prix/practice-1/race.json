@@ -1,0 +1,123 @@
+{
+  "format": 2,
+  "year": 2021,
+  "round": 19,
+  "event": "S\u00e3o Paulo Grand Prix",
+  "session": "Practice 1",
+  "total_laps": 33,
+  "order": [
+    "HAM",
+    "VER",
+    "PER",
+    "BOT",
+    "GAS",
+    "SAI",
+    "LEC",
+    "OCO",
+    "ALO",
+    "STR",
+    "TSU",
+    "VET",
+    "RAI",
+    "GIO",
+    "NOR",
+    "MSC",
+    "LAT",
+    "RUS",
+    "RIC",
+    "MAZ"
+  ],
+  "corners": [],
+  "map_corners": [],
+  "driver_styles": {
+    "HAM": {
+      "color": "#00d2be",
+      "linestyle": "solid"
+    },
+    "VER": {
+      "color": "#0600ef",
+      "linestyle": "dashed"
+    },
+    "PER": {
+      "color": "#0600ef",
+      "linestyle": "solid"
+    },
+    "BOT": {
+      "color": "#00d2be",
+      "linestyle": "dashed"
+    },
+    "GAS": {
+      "color": "#2b4562",
+      "linestyle": "solid"
+    },
+    "SAI": {
+      "color": "#dc0004",
+      "linestyle": "dashed"
+    },
+    "LEC": {
+      "color": "#dc0004",
+      "linestyle": "solid"
+    },
+    "OCO": {
+      "color": "#0090ff",
+      "linestyle": "dashed"
+    },
+    "ALO": {
+      "color": "#0090ff",
+      "linestyle": "solid"
+    },
+    "STR": {
+      "color": "#006f62",
+      "linestyle": "solid"
+    },
+    "TSU": {
+      "color": "#2b4562",
+      "linestyle": "dashed"
+    },
+    "VET": {
+      "color": "#006f62",
+      "linestyle": "dashed"
+    },
+    "RAI": {
+      "color": "#900000",
+      "linestyle": "solid"
+    },
+    "GIO": {
+      "color": "#900000",
+      "linestyle": "dashed"
+    },
+    "NOR": {
+      "color": "#ff9800",
+      "linestyle": "dashed"
+    },
+    "MSC": {
+      "color": "#ffffff",
+      "linestyle": "solid"
+    },
+    "LAT": {
+      "color": "#005aff",
+      "linestyle": "solid"
+    },
+    "RUS": {
+      "color": "#005aff",
+      "linestyle": "dashed"
+    },
+    "RIC": {
+      "color": "#ff9800",
+      "linestyle": "solid"
+    },
+    "MAZ": {
+      "color": "#ffffff",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

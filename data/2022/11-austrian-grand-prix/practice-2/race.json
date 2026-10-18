@@ -1,0 +1,28 @@
+{
+  "format": 2,
+  "year": 2022,
+  "round": 11,
+  "event": "Austrian Grand Prix",
+  "session": "Practice 2",
+  "total_laps": 44,
+  "order": [
+    ""
+  ],
+  "corners": [],
+  "map_corners": [],
+  "driver_styles": {
+    "": {
+      "color": "#b12039",
+      "linestyle": "solid"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "format": 2,
+  "year": 2020,
+  "round": 4,
+  "event": "British Grand Prix",
+  "session": "Practice 2",
+  "total_laps": 35,
+  "order": [
+    "STR",
+    "ALB",
+    "BOT",
+    "LEC",
+    "HAM",
+    "SAI",
+    "HUL",
+    "GAS",
+    "RIC",
+    "RAI",
+    "NOR",
+    "OCO",
+    "GIO",
+    "VER",
+    "KVY",
+    "GRO",
+    "RUS",
+    "VET",
+    "MAG",
+    "LAT"
+  ],
+  "corners": [],
+  "map_corners": [],
+  "driver_styles": {},
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}

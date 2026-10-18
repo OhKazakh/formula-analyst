@@ -1,0 +1,123 @@
+{
+  "format": 2,
+  "year": 2021,
+  "round": 20,
+  "event": "Qatar Grand Prix",
+  "session": "Practice 1",
+  "total_laps": 28,
+  "order": [
+    "VER",
+    "GAS",
+    "BOT",
+    "HAM",
+    "TSU",
+    "SAI",
+    "LEC",
+    "PER",
+    "OCO",
+    "NOR",
+    "RIC",
+    "VET",
+    "LAT",
+    "GIO",
+    "RAI",
+    "RUS",
+    "ALO",
+    "MSC",
+    "STR",
+    "MAZ"
+  ],
+  "corners": [],
+  "map_corners": [],
+  "driver_styles": {
+    "VER": {
+      "color": "#0600ef",
+      "linestyle": "dashed"
+    },
+    "GAS": {
+      "color": "#2b4562",
+      "linestyle": "solid"
+    },
+    "BOT": {
+      "color": "#00d2be",
+      "linestyle": "dashed"
+    },
+    "HAM": {
+      "color": "#00d2be",
+      "linestyle": "solid"
+    },
+    "TSU": {
+      "color": "#2b4562",
+      "linestyle": "dashed"
+    },
+    "SAI": {
+      "color": "#dc0004",
+      "linestyle": "dashed"
+    },
+    "LEC": {
+      "color": "#dc0004",
+      "linestyle": "solid"
+    },
+    "PER": {
+      "color": "#0600ef",
+      "linestyle": "solid"
+    },
+    "OCO": {
+      "color": "#0090ff",
+      "linestyle": "dashed"
+    },
+    "NOR": {
+      "color": "#ff9800",
+      "linestyle": "dashed"
+    },
+    "RIC": {
+      "color": "#ff9800",
+      "linestyle": "solid"
+    },
+    "VET": {
+      "color": "#006f62",
+      "linestyle": "dashed"
+    },
+    "LAT": {
+      "color": "#005aff",
+      "linestyle": "solid"
+    },
+    "GIO": {
+      "color": "#900000",
+      "linestyle": "dashed"
+    },
+    "RAI": {
+      "color": "#900000",
+      "linestyle": "solid"
+    },
+    "RUS": {
+      "color": "#005aff",
+      "linestyle": "dashed"
+    },
+    "ALO": {
+      "color": "#0090ff",
+      "linestyle": "solid"
+    },
+    "MSC": {
+      "color": "#ffffff",
+      "linestyle": "solid"
+    },
+    "STR": {
+      "color": "#006f62",
+      "linestyle": "solid"
+    },
+    "MAZ": {
+      "color": "#ffffff",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}
