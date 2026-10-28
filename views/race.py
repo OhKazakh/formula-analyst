@@ -22,8 +22,6 @@ from views.text import plural
 from views.timing_tab import timing_tab
 
 FIRST_SEASON = 2018
-DEFAULT_YEAR = 2024
-DEFAULT_EVENT = "Italian Grand Prix"
 TABS = {
     "race": ["Overview", "Timing", "Replay", "Pace", "Strategy", "Telemetry"],
     "qualifying": ["Results", "Sectors", "Telemetry", "Conditions"],
@@ -101,6 +99,13 @@ def season_events(year: int, bundled: pd.DataFrame, online: bool) -> list[str]:
         return offline_events
 
 
+# The app opens on the most recent race, not a weekend still under way.
+def latest_race(year: int, bundled: pd.DataFrame, events: list[str]) -> str:
+    season = bundled[(bundled["Year"] == year) & (bundled["Session"] == races.RACE)]
+    raced = set(season["EventName"])
+    return next((event for event in reversed(events) if event in raced), events[-1])
+
+
 def bundled_season(year: int, bundle_version: str) -> seasons.Season | None:
     if year not in data.bundled_seasons(bundle_version):
         return None
@@ -160,10 +165,7 @@ def sidebar(bundle_version: str) -> tuple[int, str, str]:
         st.stop()
     years = sorted(years_available, reverse=True)
     requested_year = requested_int("season")
-    if requested_year in years:
-        default_year = years.index(requested_year)
-    else:
-        default_year = years.index(DEFAULT_YEAR) if DEFAULT_YEAR in years else 0
+    default_year = years.index(requested_year) if requested_year in years else 0
     year = st.sidebar.selectbox("Season", years, index=default_year, key="race_season")
 
     events = season_events(year, bundled, online)
@@ -172,7 +174,7 @@ def sidebar(bundle_version: str) -> tuple[int, str, str]:
         st.stop()
     countries = event_countries(year, bundle_version, online)
     requested_event = {races.slugify(name): name for name in events}.get(requested("race"))
-    fallback = DEFAULT_EVENT if DEFAULT_EVENT in events else events[-1]
+    fallback = latest_race(year, bundled, events)
     default = events.index(requested_event or fallback)
     event = st.sidebar.selectbox(
         "Grand Prix",
