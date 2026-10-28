@@ -49,7 +49,7 @@ docker compose up --build
 
 ## Data
 
-Every session ships with the app as Parquet files in `data/`. Formula 1 put its timing archive behind an F1 TV login in October 2026, so new sessions come from OpenF1, which is free. After a race weekend, this adds the new sessions, updates the championship and retrains the tyre model:
+Every session ships with the app as Parquet files in `data/`. Formula 1 put its timing archive behind an F1 TV login in October 2026, so new sessions come from OpenF1, which is free. A GitHub Actions job adds each race weekend on the Monday after it, updates the championship and retrains the tyre model. To run it by hand:
 
 ```bash
 pip install -r requirements-dev.txt

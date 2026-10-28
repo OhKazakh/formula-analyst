@@ -164,6 +164,7 @@ def main(argv: list[str] | None = None) -> int:
     fastf1.Cache.set_disabled()
 
     load = LOADERS[args.source]
+    races_before = len(races.saved_races())
     try:
         failures = (
             0
@@ -183,7 +184,9 @@ def main(argv: list[str] | None = None) -> int:
     print(f"saved  {path.relative_to(races.ROOT)} championship results", flush=True)
     if logos := team_logos.fetch_logos(args.year, season.results["Team"].unique().tolist()):
         print(f"saved  {args.year} team logos: {', '.join(logos)}", flush=True)
-    if not args.skip_model:
+    # The model only learns from races, so it's retrained when one was added or replaced.
+    replaced = args.force or args.upgrade or len(races.saved_races()) != races_before
+    if replaced and not args.skip_model:
         path = model.build()
         print(f"saved  {path.relative_to(races.ROOT)} tyre model", flush=True)
     return 1 if failures else 0

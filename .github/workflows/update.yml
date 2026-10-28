@@ -1,0 +1,48 @@
+name: Update data
+
+on:
+  schedule:
+    # The morning after a race weekend, and again midweek for late data and penalties.
+    - cron: "0 6 * * 1"
+    - cron: "0 6 * * 3"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - run: pip install -r requirements-dev.txt
+      # A session OpenF1 hasn't published yet fails here and is picked up by the next run.
+      - run: python -m src.sync --sessions
+        continue-on-error: true
+      - name: Commit new data
+        run: |
+          git add data
+          if git diff --cached --quiet; then
+            echo "No new data."
+            exit 0
+          fi
+          added=$(git diff --cached --name-only --diff-filter=A -- 'data/*/*/race.json' \
+            | xargs -r -n1 python -c "import json, sys; meta = json.load(open(sys.argv[1])); print(meta['year'], meta['event'])" \
+            | paste -sd ',' - | sed 's/,/, /g')
+          message="Update the $(date -u +%Y) championship"
+          if [ -n "$added" ]; then
+            message="Add the $added"
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "$message"
+          git push
