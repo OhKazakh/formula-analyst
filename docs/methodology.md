@@ -6,6 +6,7 @@ How the app works out the numbers it shows.
 
 - Every race weekend from 2018 to the latest 2026 round is bundled in `data/`. Each race has the lap table with sector times and speed traps, each driver's fastest-lap telemetry, the track outline, the weather, race control messages and the list of team radio clips. Practice, qualifying and sprint sessions sit next to it with the same files, except that practice skips the telemetry and every session shares the race's track outline.
 - The 2018 Italian Grand Prix has its qualifying but not the race, whose tyre data FastF1 can't process.
+- Formula 1 put its timing archive behind an F1 TV login in October 2026, so sessions from the 2026 Singapore Grand Prix on come from OpenF1, which records the same live timing feed, with the official classification from Jolpica. Rebuilt that way, the 2025 Italian Grand Prix matched FastF1's lap and sector times, tyre stints, pit laps and track status on every lap, and its qualifying results to the millisecond. OpenF1 has no track status of its own, so it is rebuilt from race control messages, which can arrive a few seconds before or after the change: a safety car can start or end a lap apart from FastF1's data. OpenF1 also misses some speed trap readings and has no finish-line speed trap.
 - Radio audio isn't bundled; the browser streams it from the official timing service when a clip is played.
 - Each season also has its race and sprint results, the official team standings after every round and its calendar, from the Jolpica F1 API.
 

@@ -27,7 +27,8 @@ DATA_DIR = ROOT / "data"
 
 OFFLINE_ENV = "FORMULA_ANALYST_OFFLINE"
 LIVE_TIMING = "https://livetiming.formula1.com"
-LIVE_TIMING_PROBE = f"{LIVE_TIMING}/static/StreamingStatus.json"
+# The archive itself needs an F1 TV login since October 2026, so probe a file inside it.
+LIVE_TIMING_PROBE = f"{LIVE_TIMING}/static/2024/Index.json"
 # FastF1 quietly falls back to the live timing index when its own schedule can't be fetched,
 # and that index numbers rounds differently (it counts the cancelled 2023 Imola race).
 SCHEDULE_BACKEND = "fastf1"

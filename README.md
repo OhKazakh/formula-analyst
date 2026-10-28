@@ -1,6 +1,6 @@
 # Formula Analyst
 
-A race analysis dashboard built on [FastF1](https://github.com/theOehrly/Fast-F1) timing data. It covers every Grand Prix weekend from 2018 to the latest 2026 round, from first practice to the race, and the championship around it.
+A race analysis dashboard built on [FastF1](https://github.com/theOehrly/Fast-F1) and [OpenF1](https://openf1.org) timing data. It covers every Grand Prix weekend from 2018 to the latest 2026 round, from first practice to the race, and the championship around it.
 
 **[Open the live app](https://formula-analyst.streamlit.app/)**
 
@@ -49,14 +49,14 @@ docker compose up --build
 
 ## Data
 
-The live timing service blocks most hosting providers, so every session ships with the app as Parquet files in `data/`. After a race weekend, this adds the new sessions, updates the championship and retrains the tyre model:
+Every session ships with the app as Parquet files in `data/`. Formula 1 put its timing archive behind an F1 TV login in October 2026, so new sessions come from OpenF1, which is free. After a race weekend, this adds the new sessions, updates the championship and retrains the tyre model:
 
 ```bash
 pip install -r requirements-dev.txt
 python -m src.sync --sessions
 ```
 
-It has to run on a connection the timing service accepts, such as a home one. `python -m src.sync --help` lists the other options.
+`python -m src.sync --help` lists the other options.
 
 ## Development
 
@@ -68,6 +68,6 @@ ruff check .
 
 ## Credits
 
-Timing data comes from FastF1, and results and standings from the [Jolpica F1 API](https://github.com/jolpica/jolpica-f1). Team logos are from formula1.com and belong to the teams. [Titillium Web](https://fonts.google.com/specimen/Titillium+Web) is used under the SIL Open Font License. This is an unofficial, non-commercial project and isn't affiliated with any racing series or its rights holders.
+Timing data comes from FastF1 up to October 2026 and from OpenF1 since, and results and standings from the [Jolpica F1 API](https://github.com/jolpica/jolpica-f1). Team logos are from formula1.com and belong to the teams. [Titillium Web](https://fonts.google.com/specimen/Titillium+Web) is used under the SIL Open Font License. This is an unofficial, non-commercial project and isn't affiliated with any racing series or its rights holders.
 
 Released under the [MIT License](LICENSE).

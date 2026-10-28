@@ -20,5 +20,6 @@ page = st.navigation(
 )
 page.run()
 st.sidebar.caption(
-    "Timing data via [FastF1](https://github.com/theOehrly/Fast-F1). Unofficial and non-commercial."
+    "Timing data via [FastF1](https://github.com/theOehrly/Fast-F1) and "
+    "[OpenF1](https://openf1.org). Unofficial and non-commercial."
 )
