@@ -6,28 +6,39 @@ from plotly.subplots import make_subplots
 
 from src.charts import FALLBACK_COLOR, OUTLINE, PLOTLY_DASHES, Styles
 
-RACE_POINTS = (25, 18)
+RACE_POINTS = (25, 18, 15, 12, 10, 8, 6, 4, 2, 1)
 FASTEST_LAP_SEASONS = range(2019, 2025)
 TEAM_COLUMNS = ["Position", "Team", "Points", "Wins"]
 
 
-def sprint_points(year: int) -> tuple[int, int]:
+def sprint_points(year: int) -> tuple[int, ...]:
     if year >= 2022:
-        return 8, 7
+        return 8, 7, 6, 5, 4, 3, 2, 1
     if year == 2021:
-        return 3, 2
-    return 0, 0
+        return 3, 2, 1
+    return ()
+
+
+def round_points(year: int, sprint: bool, places: slice, fastest_lap: bool = False) -> int:
+    race = sum(RACE_POINTS[places]) + (1 if fastest_lap and year in FASTEST_LAP_SEASONS else 0)
+    return race + (sum(sprint_points(year)[places]) if sprint else 0)
 
 
 # A team can score with both cars, so its best weekend is a one-two.
 def max_round_points(year: int, sprint: bool, cars: int = 1) -> int:
-    race = sum(RACE_POINTS[:cars]) + (1 if year in FASTEST_LAP_SEASONS else 0)
-    return race + (sum(sprint_points(year)[:cars]) if sprint else 0)
+    return round_points(year, sprint, slice(0, cars), fastest_lap=True)
 
 
 def remaining_points(schedule: pd.DataFrame, year: int, after_round: int, cars: int = 1) -> int:
     remaining = schedule[schedule["Round"] > after_round]
     return sum(max_round_points(year, bool(sprint), cars) for sprint in remaining["Sprint"])
+
+
+# The most a rival can still score while someone else takes the top places every round.
+def runner_up_points(schedule: pd.DataFrame, year: int, after_round: int, cars: int = 1) -> int:
+    remaining = schedule[schedule["Round"] > after_round]
+    places = slice(cars, 2 * cars)
+    return sum(round_points(year, bool(sprint), places) for sprint in remaining["Sprint"])
 
 
 def standings(results: pd.DataFrame, after_round: int) -> pd.DataFrame:
@@ -97,6 +108,95 @@ def title_contenders(table: pd.DataFrame, remaining: int) -> pd.DataFrame:
     leader = table["Points"].max()
     maximum = table["Points"] + remaining
     return table.assign(Maximum=maximum, CanWin=maximum >= leader)
+
+
+def title_outlook(
+    tables: dict[int, pd.DataFrame],
+    schedule: pd.DataFrame,
+    year: int,
+    after_round: int,
+    key: str,
+    cars: int = 1,
+) -> pd.DataFrame:
+    """Standings after a round, with what each entrant needs to win the title.
+
+    `tables` holds the standings after every round up to `after_round`, best first.
+    """
+    remaining = remaining_points(schedule, year, after_round, cars)
+    outlook = title_contenders(tables[after_round], remaining).reset_index(drop=True)
+    leader = outlook["Points"].iloc[0]
+    outlook["Gap"] = leader - outlook["Points"]
+    finished = schedule["Round"].max() <= after_round
+    contenders = int(outlook["CanWin"].sum())
+
+    status = ["In the fight" if can_win else "Out" for can_win in outlook["CanWin"]]
+    status[0] = "Champion" if finished or contenders == 1 else "Leader"
+    outlook["Status"] = ["" if finished and index else label for index, label in enumerate(status)]
+    # Points are whole numbers from here on, so finishing ahead takes one more than the gap.
+    outlook["Needed"] = (outlook["Gap"] // 1 + 1).where(outlook["Status"] == "In the fight")
+
+    chasing = runner_up_points(schedule, year, after_round, cars)
+    control, blockers = [], []
+    for index, points in enumerate(outlook["Points"]):
+        rivals = (outlook["Points"] + chasing).drop(index)
+        best = rivals.idxmax() if len(rivals) else None
+        blocked = best is not None and rivals[best] >= points + remaining
+        control.append(not blocked)
+        blockers.append(outlook.loc[best, key] if blocked else None)
+    outlook["InControl"] = control
+    outlook["Blocker"] = blockers
+    outlook["OutSince"] = outlook[key].map(_eliminated(tables, schedule, year, key, cars))
+    outlook["Clinch"] = None
+    clinched = _clinched(tables, schedule, year, outlook[key].iloc[0], key, cars)
+    outlook.loc[0, "Clinch"] = clinched or _earliest_clinch(
+        outlook, schedule, year, after_round, cars
+    )
+    return outlook
+
+
+def _eliminated(
+    tables: dict[int, pd.DataFrame], schedule: pd.DataFrame, year: int, key: str, cars: int
+) -> dict[str, int]:
+    out: dict[str, int] = {}
+    for round_number, table in sorted(tables.items()):
+        leader = table["Points"].max()
+        remaining = remaining_points(schedule, year, round_number, cars)
+        for name, points in zip(table[key], table["Points"], strict=True):
+            if name not in out and points + remaining < leader:
+                out[name] = round_number
+    return out
+
+
+def _clinched(
+    tables: dict[int, pd.DataFrame],
+    schedule: pd.DataFrame,
+    year: int,
+    champion: str,
+    key: str,
+    cars: int,
+) -> int | None:
+    for round_number, table in sorted(tables.items()):
+        remaining = remaining_points(schedule, year, round_number, cars)
+        rivals = table[table[key] != champion]["Points"]
+        points = table.loc[table[key] == champion, "Points"]
+        if not points.empty and (rivals.empty or rivals.max() + remaining < points.iloc[0]):
+            return round_number
+    return None
+
+
+# The soonest the leader could wrap it up: winning everything while the rest score nothing.
+def _earliest_clinch(
+    outlook: pd.DataFrame, schedule: pd.DataFrame, year: int, after_round: int, cars: int
+) -> int | None:
+    lead = outlook["Points"].iloc[0]
+    rival = outlook["Points"].iloc[1:].max() if len(outlook) > 1 else 0
+    gained = 0
+    upcoming = schedule[schedule["Round"] > after_round].sort_values("Round")
+    for round_number, sprint in zip(upcoming["Round"], upcoming["Sprint"], strict=True):
+        gained += max_round_points(year, bool(sprint), cars)
+        if lead + gained > rival + remaining_points(schedule, year, round_number, cars):
+            return int(round_number)
+    return None
 
 
 def points_by_round(results: pd.DataFrame, by: str = "Driver") -> pd.DataFrame:

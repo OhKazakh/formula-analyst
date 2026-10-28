@@ -169,3 +169,56 @@ def test_team_charts_add_up_both_cars(results):
     assert rounds.customdata[0][0] == "Race P1, P2"
     assert list(progression.data[0].y) == [43.0, 58.0]
     assert progression.data[0].line.color == "#ff0000"
+
+
+def standings_after(points: dict[str, float]) -> pd.DataFrame:
+    ranked = sorted(points.items(), key=lambda item: -item[1])
+    return pd.DataFrame(
+        {
+            "Position": range(1, len(ranked) + 1),
+            "Driver": [driver for driver, _ in ranked],
+            "Name": [f"Driver {driver}" for driver, _ in ranked],
+            "Team": "Team",
+            "Points": [float(score) for _, score in ranked],
+            "Wins": 0,
+        }
+    )
+
+
+FIVE_ROUNDS = pd.DataFrame({"Round": [1, 2, 3, 4, 5], "Sprint": [False] * 5})
+HISTORY = {
+    1: standings_after({"AAA": 25, "BBB": 18, "CCC": 15, "DDD": 0}),
+    2: standings_after({"AAA": 50, "BBB": 36, "CCC": 30, "DDD": 10}),
+    3: standings_after({"AAA": 70, "BBB": 60, "CCC": 40, "DDD": 10}),
+}
+
+
+def test_title_outlook_explains_what_each_driver_needs():
+    outlook = championship.title_outlook(HISTORY, FIVE_ROUNDS, 2025, 3, "Driver")
+
+    assert outlook["Status"].tolist() == ["Leader", "In the fight", "In the fight", "Out"]
+    assert outlook["Needed"].tolist()[1:3] == [11.0, 31.0]
+    # Two wins give BBB 110, more than AAA's 106 from two second places.
+    assert outlook["InControl"].tolist()[1:3] == [True, False]
+    assert outlook["Blocker"].iloc[2] == "AAA"
+    assert outlook["OutSince"].iloc[3] == 3
+    assert outlook["Clinch"].iloc[0] == 4
+
+
+def test_title_outlook_after_the_final_round():
+    history = HISTORY | {
+        4: standings_after({"AAA": 95, "BBB": 78, "CCC": 55, "DDD": 10}),
+        5: standings_after({"AAA": 113, "BBB": 103, "CCC": 70, "DDD": 10}),
+    }
+
+    outlook = championship.title_outlook(history, FIVE_ROUNDS, 2025, 5, "Driver")
+
+    assert outlook["Status"].tolist() == ["Champion", "", "", ""]
+    assert outlook["Clinch"].iloc[0] == 5
+
+
+def test_runner_up_points_leave_the_top_places_to_someone_else():
+    schedule = pd.DataFrame({"Round": [1, 2], "Sprint": [True, False]})
+
+    assert championship.runner_up_points(schedule, 2025, after_round=0) == 18 + 7 + 18
+    assert championship.runner_up_points(schedule, 2025, after_round=0, cars=2) == 27 + 11 + 27
