@@ -9,9 +9,11 @@ from src import championship, races, seasons
 from views import data, logos, theme
 from views.links import requested, requested_int
 from views.state import favourite, pick_favourite, with_favourite
+from views.teammates import teammates_view
+from views.text import surname
 
 PROGRESSION_DRIVERS = 6
-VIEWS = ["Drivers", "Teams"]
+VIEWS = ["Drivers", "Teams", "Teammates"]
 # The timing screen's colours: purple for the best, green for still in it.
 PILLS = {
     "Champion": ("#5300A6", "#FFFFFF"),
@@ -43,15 +45,6 @@ def short_event(season: seasons.Season, round_number: int) -> str:
 def ordinal(place: int) -> str:
     suffix = "th" if 10 <= place % 100 <= 20 else {1: "st", 2: "nd", 3: "rd"}.get(place % 10, "th")
     return f"{place}{suffix}"
-
-
-def surname(name: str) -> str:
-    words = name.split()
-    start = len(words) - 1
-    # Keep particles such as "de" in "de Vries".
-    while start > 0 and words[start - 1][:1].islower():
-        start -= 1
-    return " ".join(words[start:])
 
 
 # Teams take plural verbs, as in "Mercedes lead".
@@ -558,7 +551,7 @@ def render() -> None:
     liked = pick_favourite(drivers)
     colors = championship.team_colors(season.results, season.driver_styles)
 
-    drivers_tab, teams_tab = st.tabs(
+    drivers_tab, teams_tab, teammates_tab = st.tabs(
         VIEWS, default=requested_view(), key="championship_view", on_change="rerun"
     )
     params = {
@@ -573,3 +566,6 @@ def render() -> None:
     if teams_tab.open:
         with teams_tab:
             teams_view(season, after, colors)
+    if teammates_tab.open:
+        with teammates_tab:
+            teammates_view(season, after, colors, bundle_version)

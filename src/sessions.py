@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -59,6 +62,13 @@ def qualifying_results(laps: pd.DataFrame, order: list[str], session: str) -> pd
         for _, row in table.iterrows()
     ]
     return table
+
+
+def saved_qualifying(path: Path) -> pd.DataFrame:
+    """The classification of a bundled Grand Prix qualifying session."""
+    laps = pd.read_parquet(path / "laps.parquet")
+    order = json.loads((path / "race.json").read_text())["order"]
+    return qualifying_results(laps, order, "Qualifying")
 
 
 def practice_results(laps: pd.DataFrame) -> pd.DataFrame:

@@ -19,14 +19,8 @@ def model_dir(root: Path = races.DATA_DIR) -> Path:
     return root / MODEL_DIR
 
 
-def _session(path: Path) -> tuple[pd.DataFrame, list[str]]:
-    laps = pd.read_parquet(path / "laps.parquet")
-    return laps, json.loads((path / "race.json").read_text())["order"]
-
-
 def qualifying_features(path: Path) -> pd.DataFrame:
-    laps, order = _session(path)
-    table = sessions.qualifying_results(laps, order, "Qualifying")
+    table = sessions.saved_qualifying(path)
     pole = table["Best"].iloc[0] if len(table) else np.nan
     return pd.DataFrame(
         {
@@ -42,7 +36,7 @@ def long_run_pace(paths: list[Path]) -> pd.Series:
     """Each driver's quickest long run of the weekend, in percent off the quickest one."""
     gaps = []
     for path in paths:
-        laps, _ = _session(path)
+        laps = pd.read_parquet(path / "laps.parquet")
         runs = sessions.long_runs(races.tyre_stints(laps))
         if runs.empty:
             continue

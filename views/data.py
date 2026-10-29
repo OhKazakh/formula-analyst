@@ -2,7 +2,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-from src import analysis, degradation, predictions, races, seasons
+from src import analysis, degradation, predictions, races, seasons, teammates
 
 
 @st.cache_data(ttl="1h", show_spinner=False)
@@ -51,6 +51,11 @@ def bundled_seasons(bundle_version: str) -> list[int]:
 @st.cache_data(show_spinner=False, max_entries=8)
 def season(year: int, bundle_version: str) -> seasons.Season:
     return seasons.load_season(year)
+
+
+@st.cache_data(show_spinner=False, max_entries=8)
+def season_qualifying(year: int, bundle_version: str) -> pd.DataFrame:
+    return teammates.season_qualifying(year)
 
 
 @st.cache_data(show_spinner=False)

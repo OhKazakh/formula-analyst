@@ -16,3 +16,12 @@ def lap_ranges(laps: list[int]) -> str:
             ranges.append(str(lap) if start == lap else f"{start}–{lap}")
             start = None
     return ("lap " if len(laps) == 1 else "laps ") + listing(ranges)
+
+
+def surname(name: str) -> str:
+    words = name.split()
+    start = len(words) - 1
+    # Keep particles such as "de" in "de Vries".
+    while start > 0 and words[start - 1][:1].islower():
+        start -= 1
+    return " ".join(words[start:])
