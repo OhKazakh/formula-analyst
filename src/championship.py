@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -182,6 +183,55 @@ def clinch_next(
     if any(-gain >= swing for gain in gains.values()):
         return None
     return gains
+
+
+SIMULATIONS = 10_000
+REPLAYED_RACES = 10
+
+
+def title_chances(
+    results: pd.DataFrame,
+    standings: pd.DataFrame,
+    schedule: pd.DataFrame,
+    year: int,
+    after_round: int,
+    key: str,
+    simulations: int = SIMULATIONS,
+) -> pd.Series:
+    """The share of simulated ends to the season in which each entrant takes the title.
+
+    Every remaining race replays the points of one of the last ten races, picked at random, and
+    every remaining sprint those of a recent sprint, so form and retirements come with them.
+    Empty until ten races have been run, as a few races give too little to pick from.
+    """
+    played = results[results["Round"] <= after_round]
+    run = played[played["Session"] == "Race"]
+    if run["Round"].nunique() < REPLAYED_RACES:
+        return pd.Series(dtype=float)
+    entrants = standings[key].tolist()
+    # Whoever missed the latest race, such as a replaced driver, scores nothing from here.
+    racing = standings[key].isin(run.loc[run["Round"] == run["Round"].max(), key]).to_numpy()
+    upcoming = schedule[schedule["Round"] > after_round]
+    total = np.repeat(standings["Points"].to_numpy(float)[:, None], simulations, axis=1)
+    # A fixed seed keeps the numbers still when the page reruns.
+    rng = np.random.default_rng(year * 100 + after_round)
+    for session, count in (("Race", len(upcoming)), ("Sprint", int(upcoming["Sprint"].sum()))):
+        rounds = played[played["Session"] == session]
+        if rounds.empty:
+            continue
+        points = (
+            rounds.pivot_table(index=key, columns="Round", values="Points", aggfunc="sum")
+            .reindex(entrants)
+            .fillna(0)
+            .iloc[:, -REPLAYED_RACES:]
+            .to_numpy()
+        )
+        points[~racing] = 0
+        for _ in range(count):
+            total += points[:, rng.integers(points.shape[1], size=simulations)]
+    # A tie goes to whoever is ahead now, which is roughly what countback would do.
+    winners = total.argmax(axis=0)
+    return pd.Series(np.bincount(winners, minlength=len(entrants)) / simulations, index=entrants)
 
 
 def best_finish(points: float, races: int) -> int | None:

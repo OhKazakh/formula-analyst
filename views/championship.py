@@ -77,6 +77,7 @@ class TitleRace:
     remaining: int
     rounds: int
     gains: dict[int, float] | None
+    chances: pd.Series
 
     @property
     def teams(self) -> bool:
@@ -114,6 +115,14 @@ def title_race_for(
     outlook: pd.DataFrame, season: seasons.Season, after: int, key: str, cars: int
 ) -> TitleRace:
     remaining = championship.remaining_points(season.schedule, season.year, after, cars)
+    # Odds only mean something while the title is open.
+    chances = (
+        championship.title_chances(
+            season.results, outlook, season.schedule, season.year, after, key
+        )
+        if outlook["Status"].iloc[0] == "Leader"
+        else pd.Series(dtype=float)
+    )
     return TitleRace(
         outlook=outlook,
         season=season,
@@ -122,6 +131,7 @@ def title_race_for(
         remaining=remaining,
         rounds=int((season.schedule["Round"] > after).sum()),
         gains=championship.clinch_next(outlook, season.schedule, season.year, after, cars),
+        chances=chances,
     )
 
 
@@ -227,6 +237,29 @@ def outlook_line(row, race: TitleRace) -> str:
     return f"{row.Gap:g} points behind" if row.Gap else ""
 
 
+def chance(row, race: TitleRace) -> str:
+    """The simulated chance, kept off 0% and 100% while the maths still allows either."""
+    if row.Status not in ("Leader", "In the fight"):
+        return ""
+    share = race.chances[getattr(row, race.key)]
+    if share < 0.005:
+        return "<1%"
+    if share > 0.995:
+        return ">99%"
+    return f"{share:.0%}"
+
+
+def chances_note(race: TitleRace) -> str:
+    if race.chances.empty:
+        return ""
+    return (
+        f" Chances come from playing out the rest of the season {championship.SIMULATIONS:,} "
+        f"times, replaying one of the last {championship.REPLAYED_RACES} races at random for "
+        "each race left, and a recent sprint for each sprint. They follow current form but "
+        "can't see upgrades coming."
+    )
+
+
 def title_paths(race: TitleRace) -> list[str]:
     outlook = race.outlook
     if outlook["Status"].iloc[0] != "Leader":
@@ -314,31 +347,55 @@ def outlook_table(race: TitleRace, colors: dict[str, str]) -> pd.DataFrame:
         "Pos": outlook["Position"],
         "Badge": [logos.badge(team, colors.get(team), season.year) for team in outlook["Team"]],
     }
-    if not race.teams:
+    # A driver's team is already in the badge, which leaves room for the explanation.
+    if race.teams:
+        columns["Team"] = outlook["Team"]
+    else:
         columns["Driver"] = outlook["Name"]
     columns |= {
-        "Team": outlook["Team"],
         "Points": outlook["Points"],
         "Gap": ["–" if not gap else f"{gap:g}" for gap in outlook["Gap"]],
         "Wins": outlook["Wins"],
         "Title": [pill(status) for status in outlook["Status"]],
-        "What it takes": [outlook_line(row, race) for row in outlook.itertuples()],
     }
+    if not race.chances.empty:
+        columns["Chance"] = [chance(row, race) for row in outlook.itertuples()]
+    columns["What it takes"] = [outlook_line(row, race) for row in outlook.itertuples()]
     return pd.DataFrame(columns)
 
 
-# Pixel widths keep the whole table, explanation included, inside a laptop-wide page.
-def table_config() -> dict:
+# Pixel widths keep the whole table, explanation included, on a 1440-pixel laptop screen with
+# the sidebar open; the explanation gets whatever the other columns leave.
+TABLE_WIDTH = 980
+WIDTHS = {
+    "Pos": 40,
+    "Badge": 40,
+    "Driver": 144,
+    "Team": 116,
+    "Points": 56,
+    "Gap": 50,
+    "Wins": 48,
+    "Title": PILL_WIDTH + 8,
+    "Chance": 60,
+}
+
+
+def table_config(columns: list[str]) -> dict:
+    explanation = TABLE_WIDTH - sum(WIDTHS.get(column, 0) for column in columns)
     return {
-        "Pos": st.column_config.NumberColumn(width=44),
-        "Badge": st.column_config.ImageColumn(" ", width=44),
-        "Driver": st.column_config.TextColumn(width=150),
-        "Team": st.column_config.TextColumn(width=110),
-        "Points": st.column_config.Column(width=60),
-        "Gap": st.column_config.Column(width=55),
-        "Wins": st.column_config.Column(width=50),
-        "Title": st.column_config.ImageColumn("Title", width=PILL_WIDTH + 8),
-        "What it takes": st.column_config.TextColumn(width=400),
+        "Pos": st.column_config.NumberColumn(width=WIDTHS["Pos"]),
+        "Badge": st.column_config.ImageColumn(" ", width=WIDTHS["Badge"]),
+        "Driver": st.column_config.TextColumn(width=WIDTHS["Driver"]),
+        "Team": st.column_config.TextColumn(width=WIDTHS["Team"]),
+        "Points": st.column_config.Column(width=WIDTHS["Points"]),
+        "Gap": st.column_config.Column(width=WIDTHS["Gap"]),
+        "Wins": st.column_config.Column(width=WIDTHS["Wins"]),
+        "Title": st.column_config.ImageColumn("Title", width=WIDTHS["Title"]),
+        "Chance": st.column_config.TextColumn(
+            width=WIDTHS["Chance"],
+            help="How often the title ends up here when the rest of the season is played out",
+        ),
+        "What it takes": st.column_config.TextColumn(width=explanation),
     }
 
 
@@ -350,7 +407,7 @@ def show_outlook(race: TitleRace, colors: dict[str, str], marked: pd.Series) -> 
         hide_index=True,
         width="stretch",
         height=35 * (len(table) + 1) + 3,
-        column_config=table_config(),
+        column_config=table_config(list(table.columns)),
     )
     paths = title_paths(race)
     if paths:
@@ -373,7 +430,7 @@ def drivers_view(season: seasons.Season, after: int, colors: dict[str, str]) -> 
     st.caption(
         "Points left assume a win and, where it exists, the fastest-lap point at every remaining "
         "race, plus a win in every remaining sprint. A tie on points goes to whoever has more "
-        "wins."
+        "wins." + chances_note(race)
     )
 
     st.subheader("Points progression")
@@ -438,7 +495,7 @@ def teams_view(season: seasons.Season, after: int, colors: dict[str, str]) -> No
     penalties = championship.penalties(season.team_standings, season.results, after)
     if penalties:
         caption += " " + penalties_text(penalties)
-    st.caption(caption)
+    st.caption(caption + chances_note(race))
 
     st.subheader("Points progression")
     teams = table["Team"].tolist()

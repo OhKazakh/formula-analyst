@@ -237,3 +237,49 @@ def test_title_outlook_spells_out_the_margins():
 @pytest.mark.parametrize(("points", "races", "place"), [(1, 5, None), (10, 5, 9), (2, 1, 9)])
 def test_best_finish_that_stays_under_a_points_limit(points, races, place):
     assert championship.best_finish(points, races) == place
+
+
+def replays(finishes: dict[int, list[str]]) -> pd.DataFrame:
+    return pd.DataFrame(
+        [
+            result(round_number, driver, place, float(championship.RACE_POINTS[place - 1]))
+            for round_number, drivers in finishes.items()
+            for place, driver in enumerate(drivers, start=1)
+        ]
+    )
+
+
+def test_title_chances_replay_recent_races():
+    # BBB has beaten AAA by 7 points in each of the last ten races and trails by 5.
+    results = replays({round_number: ["BBB", "AAA"] for round_number in range(1, 11)})
+    table = pd.DataFrame({"Driver": ["AAA", "BBB"], "Points": [100.0, 95.0]})
+    schedule = pd.DataFrame({"Round": range(1, 12), "Sprint": False})
+
+    chances = championship.title_chances(results, table, schedule, 2025, 10, "Driver")
+    finished = championship.title_chances(results, table, schedule[:-1], 2025, 10, "Driver")
+
+    assert chances.to_dict() == {"AAA": 0.0, "BBB": 1.0}
+    assert finished.to_dict() == {"AAA": 1.0, "BBB": 0.0}
+
+
+def test_title_chances_leave_out_drivers_who_stopped_racing():
+    # CCC won nine of the last ten races but missed the latest one.
+    finishes = {round_number: ["CCC", "BBB", "AAA"] for round_number in range(1, 10)}
+    results = replays(finishes | {10: ["BBB", "AAA"]})
+    table = pd.DataFrame({"Driver": ["AAA", "CCC", "BBB"], "Points": [100.0, 99.0, 95.0]})
+    schedule = pd.DataFrame({"Round": range(1, 12), "Sprint": False})
+
+    chances = championship.title_chances(results, table, schedule, 2025, 10, "Driver")
+
+    assert chances["CCC"] == 0
+    # AAA stays ahead when a race CCC won is replayed, BBB when the latest one is.
+    assert chances["AAA"] == pytest.approx(0.9, abs=0.02)
+    assert chances.sum() == pytest.approx(1)
+    assert chances.equals(championship.title_chances(results, table, schedule, 2025, 10, "Driver"))
+
+
+def test_title_chances_wait_for_ten_races(results):
+    table = championship.standings(results, 2)
+    schedule = pd.DataFrame({"Round": range(1, 6), "Sprint": False})
+
+    assert championship.title_chances(results, table, schedule, 2025, 2, "Driver").empty
