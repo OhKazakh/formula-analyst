@@ -1,4 +1,6 @@
 import base64
+import math
+from dataclasses import dataclass
 
 import pandas as pd
 import streamlit as st
@@ -38,75 +40,247 @@ def short_event(season: seasons.Season, round_number: int) -> str:
     return season.event_name(int(round_number)).removesuffix(" Grand Prix") + " GP"
 
 
-def outlook_line(row, outlook: pd.DataFrame, season: seasons.Season, key: str) -> str:
-    remaining = int(outlook["Maximum"].iloc[0] - outlook["Points"].iloc[0])
-    leader = outlook[key].iloc[0]
+def ordinal(place: int) -> str:
+    suffix = "th" if 10 <= place % 100 <= 20 else {1: "st", 2: "nd", 3: "rd"}.get(place % 10, "th")
+    return f"{place}{suffix}"
+
+
+def surname(name: str) -> str:
+    words = name.split()
+    start = len(words) - 1
+    # Keep particles such as "de" in "de Vries".
+    while start > 0 and words[start - 1][:1].islower():
+        start -= 1
+    return " ".join(words[start:])
+
+
+# Teams take plural verbs, as in "Mercedes lead".
+PLURALS = {
+    "is": "are",
+    "leads": "lead",
+    "needs": "need",
+    "gains": "gain",
+    "outscores": "outscore",
+    "doesn't": "don't",
+    "drops": "drop",
+}
+
+
+@dataclass(frozen=True)
+class TitleRace:
+    """What the rest of the season holds, shared by every line about the title."""
+
+    outlook: pd.DataFrame
+    season: seasons.Season
+    after: int
+    key: str
+    remaining: int
+    rounds: int
+    gains: dict[int, float] | None
+
+    @property
+    def teams(self) -> bool:
+        return self.key == "Team"
+
+    def verb(self, singular: str) -> str:
+        return PLURALS.get(singular, singular) if self.teams else singular
+
+    def called(self, index: int) -> str:
+        row = self.outlook.loc[index]
+        return row["Team"] if self.teams else surname(row["Name"])
+
+    def full(self, index: int) -> str:
+        return self.outlook.loc[index, "Team" if self.teams else "Name"]
+
+    @property
+    def next_event(self) -> str:
+        upcoming = self.season.schedule[self.season.schedule["Round"] > self.after]["Round"]
+        return short_event(self.season, int(upcoming.min()))
+
+    @property
+    def last_races(self) -> str:
+        return "the last race" if self.rounds == 1 else f"the last {self.rounds} races"
+
+    @property
+    def sweep(self) -> str:
+        """Taking everything that's left: "winning all 5", or a one-two in every race."""
+        which = {1: "the last race", 2: "both"}.get(self.rounds, f"all {self.rounds}")
+        if self.teams:
+            return "a one-two in the last race" if self.rounds == 1 else f"one-twos in {which}"
+        return f"winning {which}"
+
+
+def title_race_for(
+    outlook: pd.DataFrame, season: seasons.Season, after: int, key: str, cars: int
+) -> TitleRace:
+    remaining = championship.remaining_points(season.schedule, season.year, after, cars)
+    return TitleRace(
+        outlook=outlook,
+        season=season,
+        after=after,
+        key=key,
+        remaining=remaining,
+        rounds=int((season.schedule["Round"] > after).sum()),
+        gains=championship.clinch_next(outlook, season.schedule, season.year, after, cars),
+    )
+
+
+def points(value: float, unit: str = "point") -> str:
+    return f"{value:g} {unit}{'' if value == 1 else 's'}"
+
+
+def leader_line(race: TitleRace) -> str:
+    """The table's short version of what settles the title at the next round."""
+    must = {index: math.floor(-gain) + 1 for index, gain in race.gains.items() if gain <= 0}
+    unless = {index: math.ceil(gain) for index, gain in race.gains.items() if gain > 0}
+    codes = race.outlook[race.key]
+    if must:
+        index = max(must, key=must.get)
+        return f"Clinches at the {race.next_event} by beating {codes[index]} by {must[index]}+"
+    index = min(unless, key=unless.get)
+    return f"Clinches at the {race.next_event} unless {codes[index]} gains {unless[index]}+"
+
+
+def leader_condition(race: TitleRace) -> str:
+    """What settles the title at the next round, spelled out."""
+    me = race.called(race.outlook.index[0])
+    must = {index: math.floor(-gain) + 1 for index, gain in race.gains.items() if gain <= 0}
+    unless = {index: math.ceil(gain) for index, gain in race.gains.items() if gain > 0}
+    win = championship.RACE_POINTS[0]
+    clauses = [
+        f"{me} {race.verb('outscores')} {race.called(index)} there by {amount} or more"
+        for index, amount in must.items()
+    ]
+    if clauses:
+        doesnt = race.verb("doesn't")
+        clauses += [
+            f"{race.called(index)} {doesnt} gain {amount} or more points on {me}"
+            for index, amount in unless.items()
+        ]
+        return f"The title is settled at the {race.next_event} if " + _join(clauses, "and") + "."
+    threats = []
+    for number, (index, amount) in enumerate(sorted(unless.items(), key=lambda item: item[1])):
+        rival = race.called(index)
+        threat = f"{rival} {race.verb('gains')} {amount} or more"
+        if not number:
+            threat += f" points on {me} there"
+        if not race.teams and amount <= win:
+            place = championship.best_finish(win - amount, 1)
+            finish = f"{ordinal(place)} or lower" if place else "out of the points"
+            threat += f" (a {rival} win with {me} {finish})"
+        threats.append(threat)
+    return f"The title is settled at the {race.next_event} unless " + _join(threats, "or") + "."
+
+
+def _join(parts: list[str], word: str) -> str:
+    return parts[0] if len(parts) == 1 else ", ".join(parts[:-1]) + f" {word} " + parts[-1]
+
+
+def allowance(race: TitleRace, allowed: float) -> str:
+    """How little the leader may score, with a finishing place that fits."""
+    leader = race.called(race.outlook.index[0])
+    if allowed <= 0:
+        return f"{leader} not scoring another point"
+    text = f"{leader} scoring {points(allowed)} or fewer"
+    if race.teams:
+        return text
+    place = championship.best_finish(allowed, race.rounds)
+    if place:
+        return f"{text}, such as finishing {ordinal(place)} or lower every time"
+    if allowed == 1:
+        return f"{text}, a single 10th place at most"
+    return f"{text}, such as 10th place in {allowed:g} of them"
+
+
+def outlook_line(row, race: TitleRace) -> str:
+    leader = race.outlook[race.key].iloc[0]
     if row.Status == "Champion":
-        return f"Clinched at the {short_event(season, row.Clinch)}" if pd.notna(row.Clinch) else ""
+        return (
+            f"Clinched at the {short_event(race.season, row.Clinch)}"
+            if pd.notna(row.Clinch)
+            else ""
+        )
     if row.Status == "Leader":
-        lead = row.Points - outlook["Points"].iloc[1]
-        when = f" · could clinch at the {short_event(season, row.Clinch)}"
+        if race.gains:
+            return leader_line(race)
+        lead = row.Points - race.outlook["Points"].iloc[1]
+        when = f" · earliest clinch: {short_event(race.season, row.Clinch)}"
         return f"Leads by {lead:g}" + (when if pd.notna(row.Clinch) else "")
+    order = race.sweep[0].upper() + race.sweep[1:]
     if row.Status == "In the fight":
-        hands = "in their own hands" if row.InControl else "needs help"
-        return f"Must outscore {leader} by {row.Needed:g}+ · {hands}"
+        if row.InControl:
+            return f"Outscore {leader} by {row.Needed:g}+ · {race.sweep} is enough"
+        if row.Allowed < 0:
+            return f"Only a tie: {race.sweep}, {leader} scoreless"
+        if row.Allowed == 0:
+            return f"{order} with {leader} scoreless"
+        return f"{order}, {leader} on {points(row.Allowed, 'pt')} or fewer"
     if row.Status == "Out":
         since = (
-            f"Out since the {short_event(season, row.OutSince)}: " if pd.notna(row.OutSince) else ""
+            f"Out since the {short_event(race.season, row.OutSince)}"
+            if pd.notna(row.OutSince)
+            else "Out"
         )
-        return f"{since}{row.Gap:g} behind, {remaining} left"
+        return (
+            f"{since}: {row.Short:g} behind even {race.sweep.replace('one-twos', 'with one-twos')}"
+        )
     return f"{row.Gap:g} points behind" if row.Gap else ""
 
 
-def title_paths(
-    outlook: pd.DataFrame, season: seasons.Season, after: int, teams: bool = False
-) -> list[str]:
+def title_paths(race: TitleRace) -> list[str]:
+    outlook = race.outlook
     if outlook["Status"].iloc[0] != "Leader":
         return []
-    name, key = ("Team", "Team") if teams else ("Name", "Driver")
-    # Teams take plural verbs, as in "Mercedes lead".
-    leads, is_ = ("lead", "are") if teams else ("leads", "is")
-    rounds = int((season.schedule["Round"] > after).sum())
-    remaining = int(outlook["Maximum"].iloc[0] - outlook["Points"].iloc[0])
-    sweep = "a one-two in every remaining race" if teams else "winning every remaining race"
-    behind = "taking third and fourth" if teams else "finishing second"
-    even = (
-        "even with a one-two in every remaining race"
-        if teams
-        else "even if they won every remaining race"
-    )
-    leader = outlook.iloc[0]
-    lead = leader["Points"] - outlook["Points"].iloc[1]
-    paths = [
-        f"**{leader[name]}** {leads} by {lead:g} with {remaining} points left. The title is "
-        "settled once no one can catch that lead"
-        + (
-            f", at the {short_event(season, leader['Clinch'])} at the earliest."
-            if pd.notna(leader["Clinch"])
-            else "."
+    first = outlook.index[0]
+    me = race.called(first)
+    lead = outlook["Points"].iloc[0] - outlook["Points"].iloc[1]
+    leads = race.verb("leads")
+    if lead:
+        opening = f"**{race.full(first)}** {leads} by {lead:g} with {race.remaining} points left."
+    else:
+        second = race.called(outlook.index[1])
+        opening = (
+            f"**{race.full(first)}** {leads} on wins, level on points with {second}, with "
+            f"{race.remaining} points left."
         )
-    ]
-    fighting = outlook[outlook["Status"] == "In the fight"]
-    for row in fighting[fighting["InControl"]].itertuples():
+    clinch = outlook["Clinch"].iloc[0]
+    if race.gains:
+        opening += " " + leader_condition(race)
+    elif pd.notna(clinch):
+        opening += (
+            f" The earliest it can be settled is the {short_event(race.season, clinch)}, with "
+            f"{me} winning every race until then and the rest scoring nothing."
+        )
+    paths = [opening]
+    for index, row in outlook[outlook["Status"] == "In the fight"].iterrows():
+        rival = race.called(index)
+        behind = f"{row['Gap']:g} behind" if row["Gap"] else "level on points"
+        give = "has" if race.rounds == 1 else "have"
+        text = (
+            f"**{race.full(index)}** {race.verb('is')} {behind}, so {race.verb('needs')} "
+            f"{points(row['Needed'])} more than {me} from {race.last_races}, which {give} "
+            f"{race.remaining} to give."
+        )
+        if row["InControl"]:
+            text += f" {race.sweep.capitalize()} is enough whatever {me} {race.verb('does')}."
+        elif row["Allowed"] < 0:
+            text += (
+                f" The best possible is a tie on points, {race.sweep} with {me} not scoring "
+                "again, and then the one with more wins takes it."
+            )
+        else:
+            text += f" That takes {race.sweep} with {allowance(race, row['Allowed'])}."
+            text += f" Each point {rival} {race.verb('drops')} lowers that by one."
+        if pd.notna(row["Blocker"]) and row["Blocker"] != outlook[race.key].iloc[0]:
+            blocker = outlook.index[outlook[race.key] == row["Blocker"]][0]
+            text += f" {race.called(blocker)} also has to finish behind {rival} from here."
+        paths.append(text)
+    if (outlook["Status"] == "Out").any():
+        everyone = "Every other team is" if race.teams else "Everyone else is"
         paths.append(
-            f"**{getattr(row, name)}** {is_} {row.Gap:g} behind and must outscore "
-            f"{leader[name]} by {row.Needed:g} or more over the last {rounds} rounds. "
-            f"{sweep.capitalize()} would be enough whatever the others do."
+            f"{everyone} out: even {race.sweep} would leave them behind {me}, by the amount in "
+            "the table."
         )
-    helped = fighting[~fighting["InControl"]]
-    for blocker, group in helped.groupby("Blocker", sort=False):
-        rival = outlook.loc[outlook[key] == blocker, name]
-        rival = rival.iloc[0] if not rival.empty else blocker
-        names = [f"**{getattr(row, name)}** ({row.Gap:g} behind)" for row in group.itertuples()]
-        who = names[0] if len(names) == 1 else ", ".join(names[:-1]) + " and " + names[-1]
-        paths.append(
-            f"{who} can only win if {rival} {'drop' if teams else 'drops'} points: {even}, "
-            f"{rival} would still be ahead by {behind} every time."
-        )
-    out = int((outlook["Status"] == "Out").sum())
-    if out:
-        everyone = "Every other team is" if teams else "Everyone else is"
-        paths.append(f"{everyone} out: even {sweep} would leave them behind {leader[name]}.")
     return paths
 
 
@@ -134,14 +308,13 @@ def title_race(
     )
 
 
-def outlook_table(
-    outlook: pd.DataFrame, colors: dict[str, str], season: seasons.Season, key: str
-) -> pd.DataFrame:
+def outlook_table(race: TitleRace, colors: dict[str, str]) -> pd.DataFrame:
+    outlook, season = race.outlook, race.season
     columns = {
         "Pos": outlook["Position"],
         "Badge": [logos.badge(team, colors.get(team), season.year) for team in outlook["Team"]],
     }
-    if key == "Driver":
+    if not race.teams:
         columns["Driver"] = outlook["Name"]
     columns |= {
         "Team": outlook["Team"],
@@ -149,7 +322,7 @@ def outlook_table(
         "Gap": ["–" if not gap else f"{gap:g}" for gap in outlook["Gap"]],
         "Wins": outlook["Wins"],
         "Title": [pill(status) for status in outlook["Status"]],
-        "What it takes": [outlook_line(row, outlook, season, key) for row in outlook.itertuples()],
+        "What it takes": [outlook_line(row, race) for row in outlook.itertuples()],
     }
     return pd.DataFrame(columns)
 
@@ -159,25 +332,18 @@ def table_config() -> dict:
     return {
         "Pos": st.column_config.NumberColumn(width=44),
         "Badge": st.column_config.ImageColumn(" ", width=44),
-        "Driver": st.column_config.TextColumn(width=160),
-        "Team": st.column_config.TextColumn(width=120),
+        "Driver": st.column_config.TextColumn(width=150),
+        "Team": st.column_config.TextColumn(width=110),
         "Points": st.column_config.Column(width=60),
         "Gap": st.column_config.Column(width=55),
         "Wins": st.column_config.Column(width=50),
         "Title": st.column_config.ImageColumn("Title", width=PILL_WIDTH + 8),
-        "What it takes": st.column_config.TextColumn(width=360),
+        "What it takes": st.column_config.TextColumn(width=400),
     }
 
 
-def show_outlook(
-    outlook: pd.DataFrame,
-    colors: dict[str, str],
-    season: seasons.Season,
-    after: int,
-    key: str,
-    marked: pd.Series,
-) -> None:
-    table = outlook_table(outlook, colors, season, key)
+def show_outlook(race: TitleRace, colors: dict[str, str], marked: pd.Series) -> None:
+    table = outlook_table(race, colors)
     st.dataframe(
         # A styled table shows six decimals unless told otherwise; half points stay visible.
         theme.favourite_rows(table, marked).format({"Points": "{:g}"}),
@@ -186,7 +352,7 @@ def show_outlook(
         height=35 * (len(table) + 1) + 3,
         column_config=table_config(),
     )
-    paths = title_paths(outlook, season, after, teams=key == "Team")
+    paths = title_paths(race)
     if paths:
         st.markdown("\n".join(f"- {path}" for path in paths))
 
@@ -202,12 +368,12 @@ def drivers_view(season: seasons.Season, after: int, colors: dict[str, str]) -> 
     remaining = championship.remaining_points(season.schedule, season.year, after)
     finished = after == season.schedule["Round"].max()
     st.markdown(title_race(outlook, remaining, finished))
-    show_outlook(outlook, colors, season, after, "Driver", outlook["Driver"].eq(favourite()))
+    race = title_race_for(outlook, season, after, "Driver", cars=1)
+    show_outlook(race, colors, outlook["Driver"].eq(favourite()))
     st.caption(
         "Points left assume a win and, where it exists, the fastest-lap point at every remaining "
         "race, plus a win in every remaining sprint. A tie on points goes to whoever has more "
-        "wins. In their own hands means winning every remaining race would be enough whatever "
-        "the others do."
+        "wins."
     )
 
     st.subheader("Points progression")
@@ -263,7 +429,8 @@ def teams_view(season: seasons.Season, after: int, colors: dict[str, str]) -> No
     )
     finished = after == season.schedule["Round"].max()
     st.markdown(title_race(outlook, remaining, finished, teams=True))
-    show_outlook(outlook, colors, season, after, "Team", pd.Series(False, index=outlook.index))
+    race = title_race_for(outlook, season, after, "Team", cars=2)
+    show_outlook(race, colors, pd.Series(False, index=outlook.index))
     caption = (
         "The official standings. Points left assume a one-two and, where it exists, the "
         "fastest-lap point at every remaining race, plus a one-two in every remaining sprint."

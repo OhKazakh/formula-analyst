@@ -222,3 +222,18 @@ def test_runner_up_points_leave_the_top_places_to_someone_else():
 
     assert championship.runner_up_points(schedule, 2025, after_round=0) == 18 + 7 + 18
     assert championship.runner_up_points(schedule, 2025, after_round=0, cars=2) == 27 + 11 + 27
+
+
+def test_title_outlook_spells_out_the_margins():
+    outlook = championship.title_outlook(HISTORY, FIVE_ROUNDS, 2025, 3, "Driver")
+
+    # Winning both remaining races, BBB still needs AAA on 39 points or fewer.
+    assert outlook["Allowed"].tolist()[1:3] == [39.0, 19.0]
+    assert outlook["Short"].iloc[3] == 10.0
+    # AAA settles it next time out by beating BBB by 16 or more, unless CCC gains 5 or more.
+    assert championship.clinch_next(outlook, FIVE_ROUNDS, 2025, 3) == {1: -15.0, 2: 5.0}
+
+
+@pytest.mark.parametrize(("points", "races", "place"), [(1, 5, None), (10, 5, 9), (2, 1, 9)])
+def test_best_finish_that_stays_under_a_points_limit(points, races, place):
+    assert championship.best_finish(points, races) == place

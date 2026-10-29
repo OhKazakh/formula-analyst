@@ -133,7 +133,12 @@ def title_outlook(
     status[0] = "Champion" if finished or contenders == 1 else "Leader"
     outlook["Status"] = ["" if finished and index else label for index, label in enumerate(status)]
     # Points are whole numbers from here on, so finishing ahead takes one more than the gap.
-    outlook["Needed"] = (outlook["Gap"] // 1 + 1).where(outlook["Status"] == "In the fight")
+    fighting = outlook["Status"] == "In the fight"
+    outlook["Needed"] = (outlook["Gap"] // 1 + 1).where(fighting)
+    # The most the leader can still score if this rival wins everything that's left.
+    outlook["Allowed"] = (remaining - outlook["Needed"]).where(fighting)
+    # How far behind even winning everything leaves those who are out.
+    outlook["Short"] = (leader - outlook["Maximum"]).where(outlook["Status"] == "Out")
 
     chasing = runner_up_points(schedule, year, after_round, cars)
     control, blockers = [], []
@@ -152,6 +157,39 @@ def title_outlook(
         outlook, schedule, year, after_round, cars
     )
     return outlook
+
+
+def clinch_next(
+    outlook: pd.DataFrame, schedule: pd.DataFrame, year: int, after_round: int, cars: int = 1
+) -> dict[int, float] | None:
+    """Whether the leader can clinch at the next round, and what each rival must gain there.
+
+    Maps each rival still in the fight to the points it has to gain on the leader at the next
+    round to keep the title open; zero or less means the leader has to outscore it instead.
+    None when the next round can't settle it.
+    """
+    upcoming = schedule[schedule["Round"] > after_round].sort_values("Round")
+    if upcoming.empty or outlook["Status"].iloc[0] != "Leader":
+        return None
+    next_round, sprint = int(upcoming["Round"].iloc[0]), bool(upcoming["Sprint"].iloc[0])
+    swing = max_round_points(year, sprint, cars)
+    after_next = remaining_points(schedule, year, next_round, cars)
+    gains = {
+        index: float(gap - after_next)
+        for index, gap in outlook.loc[outlook["Status"] == "In the fight", "Gap"].items()
+    }
+    # The leader can outscore a rival there by at most a full round's points.
+    if any(-gain >= swing for gain in gains.values()):
+        return None
+    return gains
+
+
+def best_finish(points: float, races: int) -> int | None:
+    """The best place someone could take in each of `races` races and score `points` at most."""
+    for place, score in enumerate(RACE_POINTS, start=1):
+        if score * races <= points:
+            return place
+    return None
 
 
 def _eliminated(
