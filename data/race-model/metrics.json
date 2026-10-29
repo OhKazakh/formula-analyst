@@ -1,0 +1,14 @@
+{
+  "races": 191,
+  "folds": 5,
+  "model": {
+    "winner": 0.529,
+    "podium": 0.67,
+    "position_error": 3.39
+  },
+  "qualifying": {
+    "winner": 0.555,
+    "podium": 0.672,
+    "position_error": 3.45
+  }
+}

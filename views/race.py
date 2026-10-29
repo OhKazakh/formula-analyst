@@ -12,6 +12,7 @@ from views.links import requested, requested_int
 from views.long_runs_tab import long_runs_tab
 from views.overview_tab import overview_tab
 from views.pace_tab import pace_tab, practice_pace_tab
+from views.prediction_tab import prediction_tab
 from views.replay_tab import replay_tab
 from views.results_tab import practice_tab, qualifying_tab
 from views.sectors_tab import sectors_tab
@@ -318,7 +319,8 @@ def render() -> None:
     header(race, facts, season)
 
     clean = analysis.representative_laps(race.laps)
-    labels = TABS[kind]
+    # Predictions are for Grand Prix races only, not sprints.
+    labels = TABS[kind] + (["Prediction"] if session == races.RACE else [])
     key = f"race_tab:{kind}"
     tabs = st.tabs(labels, default=requested_tab(labels), key=key, on_change="rerun")
     params = {"season": str(year), "race": races.slugify(event)}
@@ -334,10 +336,13 @@ def render() -> None:
         "Pace": lambda: pace_tab(race, clean) if kind == "race" else practice_pace_tab(race, clean),
         "Strategy": lambda: strategy_tab(race, clean, bundle_version),
         "Telemetry": lambda: telemetry_tab(race),
-        "Results": lambda: qualifying_tab(race) if kind == "qualifying" else practice_tab(race),
+        "Results": lambda: (
+            qualifying_tab(race, bundle_version) if kind == "qualifying" else practice_tab(race)
+        ),
         "Long runs": lambda: long_runs_tab(race),
         "Sectors": lambda: sectors_tab(race),
         "Conditions": lambda: conditions_tab(race),
+        "Prediction": lambda: prediction_tab(race, bundle_version),
     }
     for label, tab in zip(labels, tabs, strict=True):
         if tab.open:

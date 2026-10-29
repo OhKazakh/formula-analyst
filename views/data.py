@@ -2,7 +2,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-from src import analysis, degradation, races, seasons
+from src import analysis, degradation, predictions, races, seasons
 
 
 @st.cache_data(ttl="1h", show_spinner=False)
@@ -61,6 +61,16 @@ def tyre_curves(bundle_version: str) -> pd.DataFrame:
 @st.cache_data(show_spinner=False)
 def tyre_metrics(bundle_version: str) -> dict | None:
     return degradation.load_metrics()
+
+
+@st.cache_data(show_spinner=False)
+def race_predictions(bundle_version: str) -> pd.DataFrame:
+    return predictions.load_predictions()
+
+
+@st.cache_data(show_spinner=False)
+def prediction_metrics(bundle_version: str) -> dict:
+    return predictions.load_metrics()
 
 
 def show(figure: go.Figure) -> None:

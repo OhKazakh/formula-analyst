@@ -4,6 +4,7 @@ import streamlit as st
 from src import analysis, races, sessions
 from views import logos, theme, tyres
 from views.data import show
+from views.prediction_tab import upcoming_prediction
 from views.state import favourite
 
 BADGE = st.column_config.ImageColumn(" ", width=44)
@@ -41,7 +42,7 @@ def fastest_cells(table: pd.DataFrame, columns: list[str], times: pd.DataFrame):
     return table.style.apply(colours, axis=None)
 
 
-def qualifying_tab(race: races.Race) -> None:
+def qualifying_tab(race: races.Race, bundle_version: str) -> None:
     sprint = race.session != "Qualifying"
     st.subheader("Who took pole for the sprint?" if sprint else "Who took pole?")
     results = sessions.qualifying_results(race.laps, race.order, race.session)
@@ -85,6 +86,8 @@ def qualifying_tab(race: races.Race) -> None:
         "deleted by the stewards, with the fastest in each part in purple. The gap is to pole, "
         "from the last part each driver reached. Grid penalties aren't applied."
     )
+    if not sprint:
+        upcoming_prediction(race, bundle_version)
 
 
 def practice_tab(race: races.Race) -> None:

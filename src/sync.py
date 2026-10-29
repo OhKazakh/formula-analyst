@@ -8,7 +8,7 @@ import fastf1
 import pandas as pd
 from fastf1.exceptions import ErgastError, RateLimitExceededError
 
-from src import model, openf1, races, seasons, team_logos
+from src import model, openf1, race_model, races, seasons, team_logos
 
 # Formula 1's own archive needs an F1 TV login since October 2026; OpenF1 is free.
 LOADERS = {"openf1": openf1.load_session, "fastf1": races.load_live_race}
@@ -56,7 +56,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Where timing data comes from. FastF1 needs an F1 TV login. Defaults to OpenF1.",
     )
     parser.add_argument(
-        "--skip-model", action="store_true", help="Don't retrain the tyre model afterwards."
+        "--skip-model", action="store_true", help="Don't retrain the models afterwards."
     )
     return parser.parse_args(argv)
 
@@ -165,6 +165,7 @@ def main(argv: list[str] | None = None) -> int:
 
     load = LOADERS[args.source]
     races_before = len(races.saved_races())
+    sessions_before = len(races.saved_sessions())
     try:
         failures = (
             0
@@ -189,6 +190,11 @@ def main(argv: list[str] | None = None) -> int:
     if replaced and not args.skip_model:
         path = model.build()
         print(f"saved  {path.relative_to(races.ROOT)} tyre model", flush=True)
+    # Race predictions also use qualifying and practice, so a new session is enough.
+    added = replaced or len(races.saved_sessions()) != sessions_before
+    if added and not args.skip_model:
+        path = race_model.build()
+        print(f"saved  {path.relative_to(races.ROOT)} race predictions", flush=True)
     return 1 if failures else 0
 
 
