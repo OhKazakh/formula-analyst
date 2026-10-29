@@ -2,7 +2,9 @@ name: Update data
 
 on:
   schedule:
-    # The morning after a race weekend, and again midweek for late data and penalties.
+    # Saturday night for qualifying and the race prediction, the morning after a race weekend,
+    # and midweek for late data and penalties.
+    - cron: "0 23 * * 6"
     - cron: "0 6 * * 1"
     - cron: "0 6 * * 3"
   workflow_dispatch:
@@ -35,13 +37,7 @@ jobs:
             echo "No new data."
             exit 0
           fi
-          added=$(git diff --cached --name-only --diff-filter=A -- 'data/*/*/race.json' \
-            | xargs -r -n1 python -c "import json, sys; meta = json.load(open(sys.argv[1])); print(meta['year'], meta['event'])" \
-            | paste -sd ',' - | sed 's/,/, /g')
-          message="Update the $(date -u +%Y) championship"
-          if [ -n "$added" ]; then
-            message="Add the $added"
-          fi
+          message=$(git diff --cached --name-only --diff-filter=A -- data | python -m src.changes)
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "$message"
