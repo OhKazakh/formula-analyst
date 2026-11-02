@@ -1,0 +1,301 @@
+{
+  "format": 2,
+  "year": 2026,
+  "round": 19,
+  "event": "Mexico City Grand Prix",
+  "session": "Race",
+  "total_laps": 71,
+  "order": [
+    "VER",
+    "HAM",
+    "ANT",
+    "LEC",
+    "NOR",
+    "RUS",
+    "PIA",
+    "COL",
+    "LAW",
+    "GAS",
+    "BOR",
+    "HAD",
+    "HIR",
+    "ALB",
+    "SAI",
+    "HUL",
+    "PER",
+    "LIN",
+    "BEA",
+    "BOT",
+    "STR",
+    "ALO"
+  ],
+  "corners": [
+    {
+      "Number": 1,
+      "Letter": "",
+      "Distance": 1179.4863932252629
+    },
+    {
+      "Number": 2,
+      "Letter": "",
+      "Distance": 1253.2491224288021
+    },
+    {
+      "Number": 3,
+      "Letter": "",
+      "Distance": 1308.3639187562073
+    },
+    {
+      "Number": 4,
+      "Letter": "",
+      "Distance": 2003.1588946787338
+    },
+    {
+      "Number": 5,
+      "Letter": "",
+      "Distance": 2076.1209594826937
+    },
+    {
+      "Number": 6,
+      "Letter": "",
+      "Distance": 2203.912201586877
+    },
+    {
+      "Number": 7,
+      "Letter": "",
+      "Distance": 2544.2588841335355
+    },
+    {
+      "Number": 8,
+      "Letter": "",
+      "Distance": 2652.009277379932
+    },
+    {
+      "Number": 9,
+      "Letter": "",
+      "Distance": 2727.8658211631887
+    },
+    {
+      "Number": 10,
+      "Letter": "",
+      "Distance": 2913.156236949934
+    },
+    {
+      "Number": 11,
+      "Letter": "",
+      "Distance": 3019.214830902999
+    },
+    {
+      "Number": 12,
+      "Letter": "",
+      "Distance": 3575.1822633642873
+    },
+    {
+      "Number": 13,
+      "Letter": "",
+      "Distance": 3748.3660882611666
+    },
+    {
+      "Number": 14,
+      "Letter": "",
+      "Distance": 3817.6225273400246
+    },
+    {
+      "Number": 15,
+      "Letter": "",
+      "Distance": 3861.280405349975
+    },
+    {
+      "Number": 16,
+      "Letter": "",
+      "Distance": 3923.361966443156
+    },
+    {
+      "Number": 17,
+      "Letter": "",
+      "Distance": 4042.9716660817758
+    }
+  ],
+  "map_corners": [
+    {
+      "Label": "1",
+      "X": 993.6,
+      "Y": 673.2
+    },
+    {
+      "Label": "2",
+      "X": 986.3,
+      "Y": 531.9
+    },
+    {
+      "Label": "3",
+      "X": 1096.3,
+      "Y": 605.8
+    },
+    {
+      "Label": "4",
+      "X": 1141.2,
+      "Y": -154.2
+    },
+    {
+      "Label": "5",
+      "X": 1279.4,
+      "Y": -100.7
+    },
+    {
+      "Label": "6",
+      "X": 1206.7,
+      "Y": -296.9
+    },
+    {
+      "Label": "7",
+      "X": 1039.4,
+      "Y": 64.8
+    },
+    {
+      "Label": "8",
+      "X": 890.4,
+      "Y": -12.5
+    },
+    {
+      "Label": "9",
+      "X": 835.9,
+      "Y": 108.1
+    },
+    {
+      "Label": "10",
+      "X": 659.6,
+      "Y": -54.6
+    },
+    {
+      "Label": "11",
+      "X": 585.7,
+      "Y": 84.2
+    },
+    {
+      "Label": "12",
+      "X": 48.7,
+      "Y": -203.3
+    },
+    {
+      "Label": "13",
+      "X": -89.0,
+      "Y": 5.3
+    },
+    {
+      "Label": "14",
+      "X": -67.5,
+      "Y": -131.2
+    },
+    {
+      "Label": "15",
+      "X": -163.1,
+      "Y": -70.7
+    },
+    {
+      "Label": "16",
+      "X": -225.3,
+      "Y": -175.2
+    },
+    {
+      "Label": "17",
+      "X": -262.4,
+      "Y": -0.7
+    }
+  ],
+  "driver_styles": {
+    "VER": {
+      "color": "#4781d7",
+      "linestyle": "solid"
+    },
+    "HAM": {
+      "color": "#ed1131",
+      "linestyle": "solid"
+    },
+    "ANT": {
+      "color": "#00d7b6",
+      "linestyle": "solid"
+    },
+    "LEC": {
+      "color": "#ed1131",
+      "linestyle": "dashed"
+    },
+    "NOR": {
+      "color": "#f47600",
+      "linestyle": "solid"
+    },
+    "RUS": {
+      "color": "#00d7b6",
+      "linestyle": "dashed"
+    },
+    "PIA": {
+      "color": "#f47600",
+      "linestyle": "dashed"
+    },
+    "COL": {
+      "color": "#00a1e8",
+      "linestyle": "solid"
+    },
+    "LAW": {
+      "color": "#6c98ff",
+      "linestyle": "solid"
+    },
+    "GAS": {
+      "color": "#00a1e8",
+      "linestyle": "dashed"
+    },
+    "BOR": {
+      "color": "#f50537",
+      "linestyle": "solid"
+    },
+    "HAD": {
+      "color": "#4781d7",
+      "linestyle": "dashed"
+    },
+    "ALB": {
+      "color": "#1868db",
+      "linestyle": "solid"
+    },
+    "SAI": {
+      "color": "#1868db",
+      "linestyle": "dashed"
+    },
+    "HUL": {
+      "color": "#f50537",
+      "linestyle": "dashed"
+    },
+    "PER": {
+      "color": "#909090",
+      "linestyle": "solid"
+    },
+    "LIN": {
+      "color": "#6c98ff",
+      "linestyle": "dashed"
+    },
+    "BEA": {
+      "color": "#9c9fa2",
+      "linestyle": "solid"
+    },
+    "BOT": {
+      "color": "#909090",
+      "linestyle": "dashed"
+    },
+    "STR": {
+      "color": "#229971",
+      "linestyle": "solid"
+    },
+    "ALO": {
+      "color": "#229971",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}
