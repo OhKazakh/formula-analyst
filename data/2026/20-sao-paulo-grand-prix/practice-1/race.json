@@ -1,0 +1,133 @@
+{
+  "format": 2,
+  "year": 2026,
+  "round": 20,
+  "event": "S\u00e3o Paulo Grand Prix",
+  "session": "Practice 1",
+  "total_laps": 34,
+  "order": [
+    "NOR",
+    "ANT",
+    "VER",
+    "HAM",
+    "RUS",
+    "HAD",
+    "MIN",
+    "BOR",
+    "COL",
+    "LAW",
+    "FOR",
+    "BEA",
+    "ALO",
+    "LIN",
+    "BOT",
+    "ALB",
+    "BRO",
+    "CAM",
+    "STR",
+    "HER",
+    "BEG",
+    "SLA"
+  ],
+  "corners": [],
+  "map_corners": [],
+  "driver_styles": {
+    "NOR": {
+      "color": "#f47600",
+      "linestyle": "solid"
+    },
+    "ANT": {
+      "color": "#00d7b6",
+      "linestyle": "solid"
+    },
+    "VER": {
+      "color": "#4781d7",
+      "linestyle": "solid"
+    },
+    "HAM": {
+      "color": "#ed1131",
+      "linestyle": "solid"
+    },
+    "RUS": {
+      "color": "#00d7b6",
+      "linestyle": "dashed"
+    },
+    "HAD": {
+      "color": "#4781d7",
+      "linestyle": "dashed"
+    },
+    "MIN": {
+      "color": "#00a1e8",
+      "linestyle": "solid"
+    },
+    "BOR": {
+      "color": "#f50537",
+      "linestyle": "solid"
+    },
+    "COL": {
+      "color": "#00a1e8",
+      "linestyle": "dashed"
+    },
+    "LAW": {
+      "color": "#6c98ff",
+      "linestyle": "solid"
+    },
+    "FOR": {
+      "color": "#f47600",
+      "linestyle": "dashed"
+    },
+    "BEA": {
+      "color": "#9c9fa2",
+      "linestyle": "solid"
+    },
+    "ALO": {
+      "color": "#229971",
+      "linestyle": "solid"
+    },
+    "LIN": {
+      "color": "#6c98ff",
+      "linestyle": "dashed"
+    },
+    "BOT": {
+      "color": "#909090",
+      "linestyle": "solid"
+    },
+    "ALB": {
+      "color": "#1868db",
+      "linestyle": "solid"
+    },
+    "BRO": {
+      "color": "#1868db",
+      "linestyle": "dashed"
+    },
+    "CAM": {
+      "color": "#9c9fa2",
+      "linestyle": "dashed"
+    },
+    "STR": {
+      "color": "#229971",
+      "linestyle": "dashed"
+    },
+    "HER": {
+      "color": "#909090",
+      "linestyle": "dashed"
+    },
+    "BEG": {
+      "color": "#ed1131",
+      "linestyle": "dashed"
+    },
+    "SLA": {
+      "color": "#f50537",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}
