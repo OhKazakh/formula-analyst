@@ -4,6 +4,7 @@ import io
 from dataclasses import dataclass
 from pathlib import Path
 
+import numpy as np
 import requests
 from PIL import Image
 
@@ -11,7 +12,6 @@ from src.races import DATA_DIR
 
 LOGO_DIR = "team-logos"
 SIZE = 96
-STYLES = ("mark", "tile")
 # formula1.com has white marks for recent seasons and colour logos on a white tile before that.
 MARK_URL = (
     "https://media.formula1.com/image/upload/c_lfill,w_{size}/f_png/q_auto/v1740000001/"
@@ -21,6 +21,13 @@ TILE_URL = (
     "https://media.formula1.com/content/dam/fom-website/teams/{year}/{slug}-logo.png"
     ".transform/2col/image.png"
 )
+LUMINANCE = np.array([0.2126, 0.7152, 0.0722])
+# How light a colour logo's pixel can be and still turn solid white, and where it fades into the
+# white card behind it.
+INK, CARD = 0.55, 0.92
+# Aston Martin's colour logo is white wings on its own green card. On a logo that dark, the light
+# parts are the mark.
+DARK_LOGO = 0.4
 
 
 @dataclass(frozen=True)
@@ -64,15 +71,38 @@ def logo_dir(root: Path = DATA_DIR) -> Path:
     return root / LOGO_DIR
 
 
-def saved_logo(year: int, name: str, root: Path = DATA_DIR) -> tuple[Path, str] | None:
+def saved_logo(year: int, name: str, root: Path = DATA_DIR) -> Path | None:
     team = team_for(name)
     if team is None:
         return None
-    for style in STYLES:
-        path = logo_dir(root) / str(year) / f"{team.key}.{style}.png"
-        if path.exists():
-            return path, style
-    return None
+    path = logo_dir(root) / str(year) / f"{team.key}.mark.png"
+    return path if path.exists() else None
+
+
+def white_mark(image: Image.Image) -> Image.Image:
+    """A colour logo redrawn in white, like the marks formula1.com has for recent seasons."""
+    rgba = np.asarray(image.convert("RGBA"), dtype=float) / 255
+    alpha = rgba[..., 3]
+    luminance = rgba[..., :3] @ LUMINANCE
+    if np.average(luminance, weights=alpha) < DARK_LOGO:
+        card = np.median(luminance[alpha > 0.5])
+        ink = (luminance - card) / (CARD - card)
+    else:
+        ink = (CARD - luminance) / (CARD - INK)
+    mark = np.ones_like(rgba)
+    mark[..., 3] = alpha * np.clip(ink, 0, 1)
+    return Image.fromarray((mark * 255).round().astype(np.uint8))
+
+
+def _fill_frame(mark: Image.Image) -> Image.Image:
+    """Trims a mark to what's drawn and centres it, so a small logo that sat on a big card fills
+    the badge like the newer marks do."""
+    drawn = mark.getchannel("A").point(lambda alpha: 255 if alpha > 16 else 0).getbbox()
+    mark = mark.crop(drawn)
+    side = max(mark.size)
+    square = Image.new("RGBA", (side, side))
+    square.paste(mark, ((side - mark.width) // 2, (side - mark.height) // 2))
+    return square.resize((SIZE, SIZE), Image.Resampling.LANCZOS)
 
 
 def _download(url: str) -> Image.Image | None:
@@ -100,14 +130,18 @@ def fetch_logos(year: int, names: list[str], root: Path = DATA_DIR) -> list[str]
     folder = logo_dir(root) / str(year)
     saved = []
     for team in {team for name in names if (team := team_for(name))}:
-        if any((folder / f"{team.key}.{style}.png").exists() for style in STYLES):
+        path = folder / f"{team.key}.mark.png"
+        if path.exists():
             continue
         found = _find(team, year) or _find(team, year + 1)
         if found is None:
             continue
         image, style = found
         image.thumbnail((SIZE, SIZE))
+        # Older seasons only have colour logos on a white tile, which glare on a dark page.
+        if style == "tile":
+            image = _fill_frame(white_mark(image))
         folder.mkdir(parents=True, exist_ok=True)
-        image.save(folder / f"{team.key}.{style}.png", optimize=True)
+        image.save(path, optimize=True)
         saved.append(team.key)
     return sorted(saved)

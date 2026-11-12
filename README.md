@@ -69,6 +69,6 @@ ruff check .
 
 ## Credits
 
-Timing data comes from FastF1 up to October 2026 and from OpenF1 since, and results and standings from the [Jolpica F1 API](https://github.com/jolpica/jolpica-f1). Team logos are from formula1.com and belong to the teams. [Titillium Web](https://fonts.google.com/specimen/Titillium+Web) is used under the SIL Open Font License. This is an unofficial, non-commercial project and isn't affiliated with any racing series or its rights holders.
+Timing data comes from FastF1 up to October 2026 and from OpenF1 since, and results and standings from the [Jolpica F1 API](https://github.com/jolpica/jolpica-f1). Team logos are from formula1.com and belong to the teams; those from before 2024 are redrawn in white to match the newer ones. [Titillium Web](https://fonts.google.com/specimen/Titillium+Web) is used under the SIL Open Font License. This is an unofficial, non-commercial project and isn't affiliated with any racing series or its rights holders.
 
 Released under the [MIT License](LICENSE).

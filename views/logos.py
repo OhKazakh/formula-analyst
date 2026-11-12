@@ -41,15 +41,12 @@ def ink(color: str) -> str:
 
 
 @cache
-def _logo(year: int, team: str) -> tuple[str, str] | None:
-    found = team_logos.saved_logo(year, team)
-    if found is None:
-        return None
-    path, style = found
-    return base64.b64encode(path.read_bytes()).decode(), style
+def _logo(year: int, team: str) -> str | None:
+    path = team_logos.saved_logo(year, team)
+    return base64.b64encode(path.read_bytes()).decode() if path else None
 
 
-def _image(data: str, size: float, offset: float = 0, extra: str = "") -> str:
+def _image(data: str, size: float, offset: float, extra: str = "") -> str:
     return (
         f'<image href="data:image/png;base64,{data}" x="{offset:g}" y="{offset:g}" '
         f'width="{size:g}" height="{size:g}"{extra}/>'
@@ -65,14 +62,12 @@ def badge_svg(team: str, color: str | None, year: int | None = None) -> str:
         f'fill="{fill}"{outline}/>'
     )
     logo = _logo(year, team) if year else None
-    if logo and logo[1] == "tile":
-        body = _image(logo[0], SIZE)
-    elif logo:
+    if logo:
         dark = foreground == DARK_INK
         body = (
             (DARK_MARK if dark else "")
             + square
-            + _image(logo[0], SIZE - 6, 3, ' filter="url(#ink)"' if dark else "")
+            + _image(logo, SIZE - 6, 3, ' filter="url(#ink)"' if dark else "")
         )
     else:
         letters = initials(team)

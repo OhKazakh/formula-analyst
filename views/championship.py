@@ -24,9 +24,10 @@ PILLS = {
 PILL_WIDTH = 96
 
 
-def pill(status: str) -> str | None:
+def pill(status: str) -> str:
+    # An empty cell, where None would print "None".
     if status not in PILLS:
-        return None
+        return ""
     fill, ink = PILLS[status]
     svg = (
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{PILL_WIDTH}" height="22" '

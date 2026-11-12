@@ -25,11 +25,12 @@ def test_teams_without_a_mark_get_initials(team, letters):
 
 
 def test_badges_use_the_seasons_official_logo():
-    mark = logos.badge_svg("Mercedes", "#27F4D2", 2026)
-    tile = logos.badge_svg("Racing Point", "#F596C8", 2020)
+    recent = logos.badge_svg("Mercedes", "#27F4D2", 2026)
+    older = logos.badge_svg("Racing Point", "#F596C8", 2020)
 
-    assert "<image" in mark and 'filter="url(#ink)"' in mark
-    assert "<image" in tile and "<rect" not in tile
+    # Both draw a white mark on the team colour, turned dark on pale colours like these.
+    for badge in (recent, older):
+        assert "<rect" in badge and "<image" in badge and 'filter="url(#ink)"' in badge
     assert ">FI</text>" in logos.badge_svg("Force India", "#F596C8", 2018)
 
 
