@@ -51,8 +51,10 @@ def remember_tab(key: str, label: str) -> None:
     st.session_state[f"shared:{key}"] = label
 
 
-def driver_code(value: str) -> str:
+def driver_code(value: object) -> str:
     """A driver code from a link or cookie, or nothing: it ends up inside a script."""
+    if not isinstance(value, str):
+        return ""
     value = value.strip().upper()
     return value if re.fullmatch(r"[A-Z0-9]{2,4}", value) else ""
 
