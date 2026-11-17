@@ -226,21 +226,34 @@ def test_lap_profile_spends_longer_in_slow_sections():
     assert np.interp(0.5, *analysis.lap_profile(trace)) < 0.4
 
 
-def test_replay_times_span_the_race():
-    times = analysis.replay_times(replay_laps(), total_laps=2)
+def test_replay_data_gives_each_car_its_laps_from_the_start():
+    retired = pd.DataFrame(
+        {
+            "Driver": ["CCC"],
+            "LapNumber": [1.0],
+            "LapStartTime": pd.to_timedelta([0], unit="s"),
+            "Time": pd.to_timedelta([90], unit="s"),
+        }
+    )
+    laps = pd.concat([replay_laps(), retired], ignore_index=True)
+    laps["Compound"] = ["SOFT", None, "HARD", None, "MEDIUM"]
+    laps["Stint"] = 1.0
+    corners = pd.DataFrame({"Label": ["1"], "X": [100.0], "Y": [0.0]})
 
-    assert (times[0], times[-1], len(times)) == (0.0, 240.0, 2 * analysis.REPLAY_FRAMES_PER_LAP)
+    replay = analysis.replay_data(
+        laps, SQUARE, corners, ["AAA", "BBB", "CCC", "DDD"], {}, total_laps=2
+    )
 
-
-def test_race_positions_interpolate_within_laps():
-    positions = analysis.race_positions(replay_laps(), np.array([50.0, 150.0, 210.0]))
-    progress = positions.pivot(index="Frame", columns="Driver", values="Progress")
-    running = positions.pivot(index="Frame", columns="Driver", values="Running")
-
-    np.testing.assert_allclose(progress["AAA"], [0.5, 1.5, 2.0])
-    np.testing.assert_allclose(progress["BBB"], [50 / 120, 1.25, 1.75])
-    assert running["AAA"].tolist() == [True, True, False]
-    assert running["BBB"].tolist() == [True, True, True]
+    cars = {car["code"]: car for car in replay["cars"]}
+    assert list(cars) == ["AAA", "BBB", "CCC"]
+    assert cars["AAA"]["laps"] == [[1, 0.0, 100.0, "SOFT"], [2, 100.0, 200.0, "SOFT"]]
+    # A lap without a compound takes its stint's.
+    assert cars["BBB"]["laps"][1] == [2, 120.0, 240.0, "HARD"]
+    # CCC stopped before the winner took the flag.
+    assert [cars[code]["out"] for code in cars] == [False, False, True]
+    assert replay["end"] == 240.0
+    assert replay["corners"] == [[100, 0, "1"]]
+    assert replay["profile"][0][-1] == replay["profile"][1][-1] == 1.0
 
 
 def test_track_points_follow_the_outline():
@@ -248,20 +261,6 @@ def test_track_points_follow_the_outline():
 
     np.testing.assert_allclose(x, [0.0, 100.0, 100.0, 50.0])
     np.testing.assert_allclose(y, [0.0, 0.0, 100.0, 0.0])
-
-
-def test_replay_figure_frames_slider_and_finish_order():
-    times = np.array([50.0, 150.0, 250.0])
-    positions = analysis.race_positions(replay_laps(), times)
-    corners = pd.DataFrame({"Label": ["1"], "X": [100.0], "Y": [0.0]})
-
-    figure = analysis.replay_figure(SQUARE, corners, positions, ["AAA", "BBB"], {}, total_laps=2)
-
-    assert [step.label for step in figure.layout.sliders[0].steps] == ["1", "2"]
-    assert (figure.data[3].xaxis, figure.data[3].yaxis) == ("x2", "y2")
-    last = figure.frames[-1]
-    assert np.isnan(last.data[0].x).all()
-    assert last.data[1].text[0].endswith(" 1  AAA<br> 2  BBB")
 
 
 def test_lap_positions_rank_drivers_by_crossing_time():
@@ -357,13 +356,6 @@ def test_distinct_colors_shade_the_second_teammate():
 
 def test_format_seconds():
     assert analysis.format_seconds(83.226) == "1:23.226"
-
-
-def test_replay_height_follows_the_track_shape():
-    wide = pd.DataFrame({"X": [0.0, 1000.0, 1000.0, 0.0], "Y": [0.0, 0.0, 300.0, 300.0]})
-
-    assert analysis.replay_height(SQUARE) == analysis.REPLAY_HEIGHT_RANGE[1]
-    assert analysis.replay_height(wide) < analysis.replay_height(SQUARE)
 
 
 def test_lap_distribution_groups_points_by_compound():

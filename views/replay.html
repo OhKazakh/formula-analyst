@@ -1,0 +1,341 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+@font-face { font-family: "Titillium Web"; font-weight: 400; src: url("app/static/fonts/TitilliumWeb-Regular.woff2") format("woff2"); }
+@font-face { font-family: "Titillium Web"; font-weight: 600; src: url("app/static/fonts/TitilliumWeb-SemiBold.woff2") format("woff2"); }
+@font-face { font-family: "Titillium Web"; font-weight: 700; src: url("app/static/fonts/TitilliumWeb-Bold.woff2") format("woff2"); }
+:root {
+  --text: #15151E; --muted: #606066; --surface: #F7F4F1; --border: #E0DEDC;
+  --track: rgba(128, 128, 128, 0.35); --favourite: rgba(225, 6, 0, 0.12); --red: #E10600;
+}
+:root.dark { --text: #FFFFFF; --muted: #AAAAAA; --surface: #1C1C25; --border: #47464C; }
+html, body { margin: 0; background: transparent; color: var(--text); font-family: "Titillium Web", system-ui, sans-serif; }
+.replay { display: flex; gap: 16px; height: /*HEIGHT*/px; }
+.stage { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+canvas { flex: 1; min-height: 0; width: 100%; display: block; }
+.controls { display: flex; align-items: center; gap: 10px; padding-top: 10px; flex-wrap: wrap; }
+.speeds { display: flex; gap: 4px; }
+button {
+  font: inherit; font-size: 13px; font-weight: 600; height: 30px; padding: 0 12px; cursor: pointer;
+  border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--muted);
+}
+button:hover { color: var(--text); }
+button.on { background: var(--red); border-color: var(--red); color: #FFFFFF; }
+button:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+.play { width: 36px; padding: 0; background: var(--red); border-color: var(--red); color: #FFFFFF; }
+.play svg { display: block; margin: auto; }
+input[type=range] { flex: 1; min-width: 140px; accent-color: var(--red); }
+.clock { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; min-width: 64px; text-align: right; }
+.tower {
+  width: 236px; flex: none; display: flex; flex-direction: column; box-sizing: border-box;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 8px;
+}
+.tower header { display: flex; justify-content: space-between; align-items: center; padding: 0 4px 8px; }
+.lap { font-weight: 700; font-size: 15px; }
+.lap span { color: var(--muted); font-weight: 400; }
+.mode { display: flex; gap: 2px; }
+.mode button { height: 22px; padding: 0 8px; font-size: 11px; }
+.rows { overflow-y: auto; }
+.row {
+  display: grid; grid-template-columns: 20px 4px 1fr auto 18px; align-items: center; gap: 7px;
+  height: 21px; padding: 0 4px; border-radius: 6px; font-size: 13px;
+}
+.row.favourite { background: var(--favourite); }
+.row.out { opacity: 0.45; }
+.pos { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+.bar { height: 14px; border-radius: 2px; }
+.code { font-weight: 700; letter-spacing: 0.02em; }
+.gap { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; font-size: 12px; }
+.tyre {
+  width: 14px; height: 14px; border-radius: 50%; border: 2px solid; background: #15151E;
+  font-size: 8px; font-weight: 700; line-height: 14px; text-align: center;
+}
+@media (max-width: 640px) {
+  .replay { flex-direction: column; }
+  .stage { flex: none; height: 380px; }
+  .tower { width: auto; flex: 1; min-height: 0; }
+}
+</style>
+</head>
+<body>
+<div class="replay">
+  <div class="stage">
+    <canvas id="map" aria-label="Track map with every car's position"></canvas>
+    <div class="controls">
+      <button class="play" id="play" aria-label="Play"></button>
+      <div class="speeds" id="speeds" role="group" aria-label="Playback speed"></div>
+      <input type="range" id="scrub" min="0" max="1000" value="0" aria-label="Race time">
+      <span class="clock" id="clock"></span>
+    </div>
+  </div>
+  <aside class="tower" aria-label="Timing tower">
+    <header>
+      <div class="lap" id="lap"></div>
+      <div class="mode" id="mode" role="group" aria-label="Gaps">
+        <button data-mode="interval" class="on">Interval</button><button data-mode="leader">Leader</button>
+      </div>
+    </header>
+    <div class="rows" id="rows"></div>
+  </aside>
+</div>
+<script>
+const DATA = /*DATA*/;
+// 1x plays a race minute every second; real time is one second a second.
+const SPEEDS = [["0.5×", 30], ["1×", 60], ["2×", 120], ["4×", 240], ["Real time", 1]];
+const LETTERS = {SOFT: "S", MEDIUM: "M", HARD: "H", INTERMEDIATE: "I", WET: "W", HYPERSOFT: "HS",
+  ULTRASOFT: "US", SUPERSOFT: "SS", SUPERHARD: "SH"};
+const PLAY = '<svg width="12" height="14" viewBox="0 0 12 14"><path d="M1 1l10 6-10 6z" fill="currentColor"/></svg>';
+const PAUSE = '<svg width="12" height="14" viewBox="0 0 12 14"><path d="M1 1h3.5v12H1zM7.5 1H11v12H7.5z" fill="currentColor"/></svg>';
+
+// Follow the app's theme, read from the page around this frame, or the system's if that fails.
+function pageIsDark() {
+  try {
+    const page = window.parent.document;
+    const app = page.querySelector(".stApp") || page.body;
+    const [r, g, b] = getComputedStyle(app).backgroundColor.match(/\d+/g).map(Number);
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b < 128;
+  } catch (error) {
+    return matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+}
+function applyTheme() {
+  const dark = pageIsDark();
+  if (dark !== document.documentElement.classList.contains("dark")) {
+    document.documentElement.classList.toggle("dark", dark);
+    dirty = true;
+  }
+}
+const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+const [profileTime, profileDistance] = DATA.profile;
+function interp(x, xs, ys) {
+  if (x <= xs[0]) return ys[0];
+  if (x >= xs[xs.length - 1]) return ys[ys.length - 1];
+  let lo = 0, hi = xs.length - 1;
+  while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (xs[mid] <= x) lo = mid; else hi = mid; }
+  const span = xs[hi] - xs[lo];
+  return span ? ys[lo] + (ys[hi] - ys[lo]) * (x - xs[lo]) / span : ys[lo];
+}
+
+const cars = DATA.cars.map(car => {
+  const laps = car.laps.map(([number, start, end, compound]) => ({number, start, end, compound}));
+  const byNumber = {};
+  laps.forEach(lap => { byNumber[lap.number] = lap; });
+  return {...car, laps, byNumber, last: laps[laps.length - 1]};
+});
+
+// Where a car is at time t, in laps run: 2.5 is halfway round its third lap.
+function state(car, t) {
+  const {laps, last} = car;
+  if (t >= last.end) return {progress: last.number, running: false, lap: last};
+  let lo = 0, hi = laps.length - 1;
+  while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (laps[mid].start <= t) lo = mid; else hi = mid - 1; }
+  const lap = laps[lo];
+  const fraction = Math.max(0, Math.min(1, (t - lap.start) / Math.max(lap.end - lap.start, 1e-9)));
+  return {progress: lap.number - 1 + interp(fraction, profileTime, profileDistance), running: true, lap};
+}
+
+// When a car reached a point on track, so gaps are measured at the same place.
+function reached(car, progress) {
+  const lap = car.byNumber[Math.floor(progress) + 1] || (Number.isInteger(progress) && car.byNumber[progress]);
+  if (!lap) return null;
+  const into = progress - (lap.number - 1);
+  return lap.start + interp(into, profileDistance, profileTime) * (lap.end - lap.start);
+}
+
+const track = DATA.track;
+const along = [0];
+for (let i = 1; i < track.length; i++) {
+  along.push(along[i - 1] + Math.hypot(track[i][0] - track[i - 1][0], track[i][1] - track[i - 1][1]));
+}
+const length = along[along.length - 1];
+function pointAt(progress) {
+  const target = ((progress % 1) + 1) % 1 * length;
+  return [interp(target, along, track.map(p => p[0])), interp(target, along, track.map(p => p[1]))];
+}
+const xs = track.map(p => p[0]), ys = track.map(p => p[1]);
+const bounds = {minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys)};
+
+const canvas = document.getElementById("map");
+const context = canvas.getContext("2d");
+let view = {scale: 1, left: 0, top: 0};
+function resize() {
+  const ratio = window.devicePixelRatio || 1;
+  canvas.width = canvas.clientWidth * ratio;
+  canvas.height = canvas.clientHeight * ratio;
+  context.setTransform(ratio, 0, 0, ratio, 0, 0);
+  const pad = 28, width = canvas.clientWidth, height = canvas.clientHeight;
+  const scale = Math.min((width - 2 * pad) / (bounds.maxX - bounds.minX || 1),
+                         (height - 2 * pad) / (bounds.maxY - bounds.minY || 1));
+  view = {scale, left: (width - scale * (bounds.maxX - bounds.minX)) / 2,
+          top: (height - scale * (bounds.maxY - bounds.minY)) / 2};
+  dirty = true;
+}
+// Track coordinates point north, the canvas counts down from the top.
+const screen = ([x, y]) => [view.left + (x - bounds.minX) * view.scale, view.top + (bounds.maxY - y) * view.scale];
+
+function shape(kind, x, y, size) {
+  context.beginPath();
+  if (kind === "square") context.rect(x - size, y - size, 2 * size, 2 * size);
+  else if (kind === "diamond") {
+    context.moveTo(x, y - size * 1.3); context.lineTo(x + size * 1.3, y);
+    context.lineTo(x, y + size * 1.3); context.lineTo(x - size * 1.3, y); context.closePath();
+  } else if (kind === "x") {
+    context.moveTo(x - size, y - size); context.lineTo(x + size, y + size);
+    context.moveTo(x + size, y - size); context.lineTo(x - size, y + size);
+  } else context.arc(x, y, size, 0, 2 * Math.PI);
+}
+
+function drawMap(states) {
+  const width = canvas.clientWidth, height = canvas.clientHeight;
+  context.clearRect(0, 0, width, height);
+  context.lineJoin = context.lineCap = "round";
+  context.strokeStyle = css("--track");
+  context.lineWidth = 10;
+  context.beginPath();
+  track.forEach((point, i) => { const [x, y] = screen(point); i ? context.lineTo(x, y) : context.moveTo(x, y); });
+  context.stroke();
+
+  // The start and finish line, across the track.
+  const [x0, y0] = screen(track[0]), [x1, y1] = screen(track[Math.min(3, track.length - 1)]);
+  const angle = Math.atan2(y1 - y0, x1 - x0) + Math.PI / 2;
+  context.strokeStyle = css("--text");
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(x0 - 8 * Math.cos(angle), y0 - 8 * Math.sin(angle));
+  context.lineTo(x0 + 8 * Math.cos(angle), y0 + 8 * Math.sin(angle));
+  context.stroke();
+
+  context.font = "11px 'Titillium Web', sans-serif";
+  context.textAlign = "center";
+  context.fillStyle = css("--muted");
+  DATA.corners.forEach(([x, y, label]) => { const [px, py] = screen([x, y]); context.fillText(label, px, py + 4); });
+
+  // Leaders last, so they sit on top.
+  const shown = states.filter(item => item.state.running).reverse();
+  shown.forEach(({car}) => {
+    const [x, y] = screen(pointAt(car.now));
+    const favourite = car.code === DATA.favourite;
+    shape(car.shape, x, y, favourite ? 8 : 6);
+    context.fillStyle = car.color;
+    context.strokeStyle = favourite ? css("--text") : "rgba(128, 128, 128, 0.8)";
+    context.lineWidth = favourite ? 2.5 : 1;
+    if (car.shape === "x") { context.strokeStyle = car.color; context.lineWidth = 3; } else context.fill();
+    context.stroke();
+    context.font = `${favourite ? 700 : 600} 11px 'Titillium Web', sans-serif`;
+    context.fillStyle = css("--text");
+    context.fillText(car.code, x, y - 11);
+  });
+}
+
+function seconds(value) {
+  const total = Math.max(0, Math.floor(value));
+  const h = Math.floor(total / 3600), m = Math.floor(total / 60) % 60, s = total % 60;
+  return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+let mode = "interval";
+function gapText(car, ahead, item) {
+  if (!ahead) return mode === "leader" ? "Leader" : "Interval";
+  const behind = ahead.state.progress - item.state.progress;
+  if (behind >= 1) { const laps = Math.floor(behind); return `+${laps} lap${laps > 1 ? "s" : ""}`; }
+  const when = reached(ahead.car, item.state.progress);
+  if (when === null) return "";
+  const at = item.state.running ? time : car.last.end;
+  return `+${Math.max(0, at - when).toFixed(1)}`;
+}
+
+const grid = code => { const place = DATA.grid.indexOf(code); return place < 0 ? 99 : place; };
+function order(t) {
+  const states = cars.map(car => { const s = state(car, t); car.now = s.progress; return {car, state: s}; });
+  const out = item => item.car.out && !item.state.running;
+  const stopped = (a, b) => (!a.state.running && !b.state.running ? a.car.last.end - b.car.last.end : 0);
+  return states.sort((a, b) => (out(a) - out(b)) || (b.state.progress - a.state.progress)
+    || (a.state.running - b.state.running) || stopped(a, b) || (grid(a.car.code) - grid(b.car.code)));
+}
+
+const rows = document.getElementById("rows");
+function drawTower(states) {
+  const leader = states[0];
+  const lap = Math.min(DATA.laps, Math.floor(leader.state.progress) + 1);
+  const done = !leader.state.running && time > 0;
+  document.getElementById("lap").innerHTML = done
+    ? `Finish <span>· ${DATA.laps} laps</span>` : `Lap ${lap}<span>/${DATA.laps}</span>`;
+  rows.innerHTML = states.map((item, index) => {
+    const {car} = item;
+    const out = car.out && !item.state.running;
+    const reference = mode === "leader" ? states[0] : states[index - 1];
+    const gap = out ? "Out" : gapText(car, index ? reference : null, item);
+    const compound = item.state.lap.compound;
+    const colour = (DATA.compounds || {})[compound] || "#888888";
+    const tyre = compound
+      ? `<span class="tyre" style="border-color:${colour};color:${colour}" title="${compound.toLowerCase()}">${LETTERS[compound] || "?"}</span>`
+      : "<span></span>";
+    const classes = ["row", out ? "out" : "", car.code === DATA.favourite ? "favourite" : ""].join(" ");
+    return `<div class="${classes}"><span class="pos">${index + 1}</span>`
+      + `<span class="bar" style="background:${car.color}"></span><span class="code">${car.code}</span>`
+      + `<span class="gap">${gap}</span>${tyre}</div>`;
+  }).join("");
+}
+
+let time = 0, playing = false, speed = 60, last = null, dirty = true, towerAt = 0;
+const play = document.getElementById("play"), scrub = document.getElementById("scrub");
+function setPlaying(value) {
+  playing = value;
+  if (playing && time >= DATA.end) time = 0;
+  last = null;
+  play.innerHTML = playing ? PAUSE : PLAY;
+  play.setAttribute("aria-label", playing ? "Pause" : "Play");
+}
+play.addEventListener("click", () => setPlaying(!playing));
+scrub.addEventListener("input", () => { time = scrub.value / 1000 * DATA.end; dirty = true; });
+document.addEventListener("keydown", event => {
+  if (event.code === "Space") { event.preventDefault(); setPlaying(!playing); }
+});
+
+const speeds = document.getElementById("speeds");
+SPEEDS.forEach(([label, value]) => {
+  const button = document.createElement("button");
+  button.textContent = label;
+  button.className = value === speed ? "on" : "";
+  button.addEventListener("click", () => {
+    speed = value;
+    [...speeds.children].forEach(child => child.classList.toggle("on", child === button));
+  });
+  speeds.appendChild(button);
+});
+document.querySelectorAll("#mode button").forEach(button => button.addEventListener("click", () => {
+  mode = button.dataset.mode;
+  document.querySelectorAll("#mode button").forEach(other => other.classList.toggle("on", other === button));
+  dirty = true;
+}));
+
+function frame(now) {
+  if (playing) {
+    if (last !== null) time = Math.min(DATA.end, time + (now - last) / 1000 * speed);
+    last = now;
+    if (time >= DATA.end) setPlaying(false);
+    scrub.value = Math.round(time / DATA.end * 1000);
+    dirty = true;
+  }
+  if (dirty) {
+    const states = order(time);
+    drawMap(states);
+    // The tower only needs a few updates a second.
+    if (!playing || now - towerAt > 100) { drawTower(states); towerAt = now; }
+    document.getElementById("clock").textContent = seconds(time);
+    dirty = playing;
+  }
+  requestAnimationFrame(frame);
+}
+new ResizeObserver(resize).observe(canvas);
+applyTheme();
+setInterval(applyTheme, 2000);
+setPlaying(false);
+resize();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

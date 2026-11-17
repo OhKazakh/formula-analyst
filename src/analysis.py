@@ -7,7 +7,6 @@ import pandas as pd
 import plotly.graph_objects as go
 
 from src.charts import (
-    ACCENT,
     FALLBACK_COLOR,
     LABEL_OPACITY,
     NEUTRAL,
@@ -34,14 +33,7 @@ RED_FLAG = "5"
 VIRTUAL_SAFETY_CAR = ("6", "7")
 DEFAULT_FUEL_EFFECT = 0.055
 UNKNOWN_COMPOUND = "UNKNOWN"
-BUTTON = "#F7F4F1"
-BUTTON_TEXT = "#15151E"
-REPLAY_FRAMES_PER_LAP = 20
-REPLAY_MAX_FRAMES = 1500
-REPLAY_FRAME_MS = 60
-REPLAY_MAP_WIDTH = 720
-REPLAY_CONTROLS_HEIGHT = 110
-REPLAY_HEIGHT_RANGE = (440, 640)
+REPLAY_PROFILE_POINTS = 101
 LINEAR_PROFILE = (np.array([0.0, 1.0]), np.array([0.0, 1.0]))
 QUICK_LAP_THRESHOLD = 1.07
 MINI_SECTORS = 25
@@ -316,217 +308,80 @@ def lap_profile(trace: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
     return elapsed / elapsed[-1], (distance - distance[0]) / (distance[-1] - distance[0])
 
 
-def replay_times(laps: pd.DataFrame, total_laps: int) -> np.ndarray:
-    timed = laps.dropna(subset=["LapStartTime", "Time"])
-    start = timed.loc[timed["LapNumber"] == timed["LapNumber"].min(), "LapStartTime"].min()
-    end = timed["Time"].max()
-    frames = min(REPLAY_MAX_FRAMES, REPLAY_FRAMES_PER_LAP * total_laps)
-    return np.linspace(start.total_seconds(), end.total_seconds(), frames)
-
-
-def race_positions(
-    laps: pd.DataFrame, times: np.ndarray, profile: tuple[np.ndarray, np.ndarray] = LINEAR_PROFILE
-) -> pd.DataFrame:
-    frames = []
-    for driver, driver_laps in laps.dropna(subset=["LapStartTime", "Time"]).groupby("Driver"):
-        driver_laps = driver_laps.sort_values("LapNumber")
-        starts = driver_laps["LapStartTime"].dt.total_seconds().to_numpy()
-        ends = driver_laps["Time"].dt.total_seconds().to_numpy()
-        numbers = driver_laps["LapNumber"].to_numpy(dtype=float)
-        index = np.clip(np.searchsorted(starts, times, side="right") - 1, 0, len(starts) - 1)
-        duration = np.maximum(ends[index] - starts[index], 1e-9)
-        fraction = np.clip((times - starts[index]) / duration, 0.0, 1.0)
-        frames.append(
-            pd.DataFrame(
-                {
-                    "Frame": np.arange(len(times)),
-                    "Driver": driver,
-                    "Lap": numbers[index],
-                    "Progress": numbers[index] - 1 + np.interp(fraction, *profile),
-                    "Running": (times >= starts[0]) & (times <= ends[-1]),
-                    "Finish": ends[-1],
-                }
-            )
-        )
-    columns = ["Frame", "Driver", "Lap", "Progress", "Running", "Finish"]
-    if not frames:
-        return pd.DataFrame(columns=columns)
-    return pd.concat(frames, ignore_index=True)
-
-
-def _standings(frame: pd.DataFrame, lap: int, total_laps: int) -> str:
-    stopped = frame["Finish"].where(~frame["Running"].eq(True), np.inf)
-    ordered = frame.assign(Stopped=stopped).sort_values(
-        ["Progress", "Stopped"], ascending=[False, True], kind="stable"
-    )["Driver"]
-    lines = [f"{place:>2}  {driver}" for place, driver in enumerate(ordered, start=1)]
-    return f"<b>Lap {lap}/{total_laps}</b><br>" + "<br>".join(lines)
-
-
-def replay_height(track: pd.DataFrame) -> int:
-    width, height = np.ptp(track["X"].to_numpy()), np.ptp(track["Y"].to_numpy())
-    estimate = REPLAY_MAP_WIDTH * 1.12 * height / max(width, 1.0) + REPLAY_CONTROLS_HEIGHT
-    return int(np.clip(estimate, *REPLAY_HEIGHT_RANGE))
-
-
-def replay_figure(
+def replay_data(
+    laps: pd.DataFrame,
     track: pd.DataFrame,
     map_corners: pd.DataFrame,
-    positions: pd.DataFrame,
     drivers: list[str],
     styles: Styles,
-    total_laps: int,
-) -> go.Figure:
-    width = track["X"].max() - track["X"].min()
-    colors = [driver_style(styles, driver)[0] for driver in drivers]
-    symbols = [
-        TEAMMATE_SYMBOLS.get(driver_style(styles, driver)[1], "circle") for driver in drivers
-    ]
+    profile: tuple[np.ndarray, np.ndarray] = LINEAR_PROFILE,
+    total_laps: int = 0,
+    grid: list[str] | None = None,
+) -> dict:
+    """What the browser needs to replay a race: every lap's start and end, the tyres, the
+    track outline, and how a lap's time spreads over its distance.
 
-    frames, steps, previous_lap = [], [], 0
-    for number, frame in positions.groupby("Frame"):
-        frame = frame.set_index("Driver").reindex(drivers)
-        x, y = track_points(track, frame["Progress"].to_numpy())
-        hidden = ~frame["Running"].eq(True).to_numpy()
-        x[hidden] = np.nan
-        y[hidden] = np.nan
-        lap = int(min(frame["Lap"].max(), total_laps))
-        standings = _standings(frame.dropna(subset=["Progress"]).reset_index(), lap, total_laps)
-        frames.append(
-            go.Frame(
-                name=str(number),
-                traces=[2, 3],
-                data=[
-                    go.Scatter(x=np.round(x), y=np.round(y)),
-                    go.Scatter(text=[standings]),
+    Times are seconds from the start. The browser places each car within its lap from the
+    speed profile, so it can draw any moment, and works out gaps from the same numbers.
+    """
+    timed = laps.dropna(subset=["LapStartTime", "Time"]).sort_values(["Driver", "LapNumber"])
+    if timed.empty:
+        return {}
+    start = timed.loc[timed["LapNumber"] == timed["LapNumber"].min(), "LapStartTime"].min()
+    start = start.total_seconds()
+    ends = timed.groupby("Driver")["Time"].max().dt.total_seconds() - start
+    finished = timed.groupby("Driver")["LapNumber"].max() >= total_laps
+    # The winner takes the flag first; anyone whose last lap ended before that retired.
+    flag = ends[finished].min() if finished.any() else ends.max()
+    compounds = timed["Compound"] if "Compound" in timed else pd.Series(None, index=timed.index)
+    # Some laps miss their compound, but every lap of a stint is on the same set.
+    if "Stint" in timed:
+        compounds = compounds.groupby([timed["Driver"], timed["Stint"]]).transform("first")
+    cars = []
+    for driver in drivers:
+        rows = timed[timed["Driver"] == driver]
+        if rows.empty:
+            continue
+        color, dash = driver_style(styles, driver)
+        cars.append(
+            {
+                "code": driver,
+                "color": color,
+                "shape": TEAMMATE_SYMBOLS.get(dash, "circle"),
+                "out": bool(ends[driver] < flag - 1),
+                "laps": [
+                    [
+                        int(number),
+                        round(lap_start.total_seconds() - start, 3),
+                        round(lap_end.total_seconds() - start, 3),
+                        compound if isinstance(compound, str) else None,
+                    ]
+                    for number, lap_start, lap_end, compound in zip(
+                        rows["LapNumber"],
+                        rows["LapStartTime"],
+                        rows["Time"],
+                        compounds[rows.index],
+                        strict=True,
+                    )
                 ],
-            )
+            }
         )
-        if lap != previous_lap:
-            previous_lap = lap
-            steps.append(
-                {
-                    "method": "animate",
-                    "label": str(lap),
-                    "args": [
-                        [str(number)],
-                        {"mode": "immediate", "frame": {"duration": 0, "redraw": False}},
-                    ],
-                }
+    steps = np.linspace(0.0, 1.0, REPLAY_PROFILE_POINTS)
+    return {
+        "laps": total_laps,
+        "end": round(float(ends.max()), 3),
+        "track": np.round(track[["X", "Y"]].to_numpy(dtype=float)).astype(int).tolist(),
+        "corners": [
+            [round(float(x)), round(float(y)), str(label)]
+            for x, y, label in zip(
+                map_corners["X"], map_corners["Y"], map_corners["Label"], strict=True
             )
-
-    start = frames[0].data
-    figure = go.Figure(
-        data=[
-            go.Scatter(
-                x=track["X"],
-                y=track["Y"],
-                mode="lines",
-                line={"color": NEUTRAL, "width": 10},
-                hoverinfo="skip",
-            ),
-            corner_labels(map_corners, size=10),
-            go.Scatter(
-                x=start[0].x,
-                y=start[0].y,
-                text=drivers,
-                mode="markers+text",
-                textposition="top center",
-                textfont={"size": 10},
-                marker={
-                    "size": 13,
-                    "color": colors,
-                    "symbol": symbols,
-                    "line": {"width": 1, "color": OUTLINE},
-                },
-                hovertext=drivers,
-                hoverinfo="text",
-                cliponaxis=False,
-            ),
-            go.Scatter(
-                x=[0],
-                y=[1],
-                text=start[1].text,
-                mode="text",
-                textposition="bottom right",
-                textfont={"family": "monospace", "size": 11},
-                hoverinfo="skip",
-                xaxis="x2",
-                yaxis="y2",
-                cliponaxis=False,
-            ),
         ],
-        frames=frames,
-    )
-    figure.update_layout(
-        height=replay_height(track),
-        showlegend=False,
-        margin={"l": 10, "r": 10, "t": 10, "b": 10},
-        xaxis={
-            "visible": False,
-            "domain": [0, 0.82],
-            "range": [track["X"].min() - 0.04 * width, track["X"].max() + 0.04 * width],
-        },
-        yaxis={"visible": False, "scaleanchor": "x", "scaleratio": 1},
-        xaxis2={"visible": False, "domain": [0.84, 1], "range": [0, 1], "fixedrange": True},
-        yaxis2={"visible": False, "anchor": "x2", "range": [0, 1], "fixedrange": True},
-        # Plotly hard-codes a light fill for the active and hovered button, so the
-        # buttons stay light in both themes instead of following the text colour.
-        updatemenus=[
-            {
-                "type": "buttons",
-                "direction": "left",
-                "x": 0,
-                "y": 0,
-                "xanchor": "left",
-                "yanchor": "top",
-                "pad": {"t": 10},
-                "bgcolor": BUTTON,
-                "bordercolor": OUTLINE,
-                "font": {"color": BUTTON_TEXT},
-                "buttons": [
-                    {
-                        "label": "Play",
-                        "method": "animate",
-                        "args": [
-                            None,
-                            {
-                                "frame": {"duration": REPLAY_FRAME_MS, "redraw": False},
-                                "transition": {"duration": 0},
-                                "fromcurrent": True,
-                            },
-                        ],
-                    },
-                    {
-                        "label": "Pause",
-                        "method": "animate",
-                        "args": [
-                            [None],
-                            {"frame": {"duration": 0, "redraw": False}, "mode": "immediate"},
-                        ],
-                    },
-                ],
-            }
-        ],
-        sliders=[
-            {
-                "active": 0,
-                "x": 0.12,
-                "len": 0.88,
-                "y": 0,
-                "yanchor": "top",
-                "pad": {"t": 10},
-                "currentvalue": {"visible": False},
-                "ticklen": 0,
-                "minorticklen": 0,
-                "bgcolor": NEUTRAL,
-                "bordercolor": OUTLINE,
-                "activebgcolor": ACCENT,
-                "steps": steps,
-            }
-        ],
-    )
-    return figure
+        "profile": [steps.round(4).tolist(), np.interp(steps, *profile).round(4).tolist()],
+        "cars": cars,
+        # Everyone is level at the start, so the tower opens in grid order.
+        "grid": grid or [],
+    }
 
 
 def lap_positions(laps: pd.DataFrame) -> pd.DataFrame:

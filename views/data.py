@@ -26,21 +26,30 @@ def race(year: int, event: str, session: str, bundle_version: str) -> races.Race
 
 
 @st.cache_data(show_spinner=False, max_entries=8)
-def replay_chart(
+def replay_data(
     year: int, event: str, session: str, bundle_version: str, _race: races.Race
-) -> go.Figure:
+) -> dict:
     traces = (_race.trace(driver) for driver in _race.drivers)
     reference = next((trace for trace in traces if not trace.empty), _race.telemetry)
-    times = analysis.replay_times(_race.laps, _race.total_laps)
-    positions = analysis.race_positions(_race.laps, times, analysis.lap_profile(reference))
-    return analysis.replay_figure(
+    return analysis.replay_data(
+        _race.laps,
         _race.track,
         _race.map_corners,
-        positions,
         _race.drivers,
         _race.driver_styles,
+        analysis.lap_profile(reference),
         _race.total_laps,
+        starting_grid(_race, bundle_version),
     )
+
+
+def starting_grid(race: races.Race, bundle_version: str) -> list[str]:
+    if race.year not in seasons.saved_seasons() or race.session not in races.RACES:
+        return []
+    results = season(race.year, bundle_version).results
+    start = results[(results["Round"] == race.round_number) & (results["Session"] == race.session)]
+    # Grid 0 is a pit-lane start, behind everyone.
+    return start.sort_values("Grid", key=lambda grid: grid.replace(0, 99))["Driver"].tolist()
 
 
 @st.cache_data(show_spinner=False)
