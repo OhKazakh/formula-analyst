@@ -7,7 +7,15 @@ from views.state import favourite
 from views.text import plural
 
 BADGE = st.column_config.ImageColumn(" ", width=44)
-SMALL = st.column_config.NumberColumn(width=80)
+PLACE = st.column_config.NumberColumn(width=84)
+NAME = st.column_config.TextColumn(width=180)
+OUTCOME_WIDTH = 104
+# formula1.com's purple for spot on, green for places gained and red for places lost.
+OUTCOMES = {
+    "exact": ("#5300A6", "#FFFFFF"),
+    "better": ("#28973E", "#15151E"),
+    "worse": ("#E10600", "#FFFFFF"),
+}
 
 
 def weekend_predictions(race: races.Race, bundle_version: str) -> pd.DataFrame:
@@ -20,6 +28,33 @@ def badges(race: races.Race, table: pd.DataFrame) -> list[str]:
         logos.badge(str(team), race.driver_styles.get(driver, {}).get("color"), race.year)
         for driver, team in zip(table["Driver"], table["Team"], strict=True)
     ]
+
+
+def names(race: races.Race, bundle_version: str, drivers: pd.Series) -> list[str]:
+    known = {}
+    if race.year in data.bundled_seasons(bundle_version):
+        results = data.season(race.year, bundle_version).results
+        known = results.drop_duplicates("Driver", keep="last").set_index("Driver")["Name"]
+    return [known.get(driver, driver) for driver in drivers]
+
+
+def outcome(places: int) -> str:
+    """How the finish compared with the prediction, as a coloured pill."""
+    if not places:
+        return theme.pill("Spot on", *OUTCOMES["exact"], OUTCOME_WIDTH)
+    if places > 0:
+        return theme.pill(f"\u25b2 {plural(places, 'place')}", *OUTCOMES["better"], OUTCOME_WIDTH)
+    return theme.pill(f"\u25bc {plural(-places, 'place')}", *OUTCOMES["worse"], OUTCOME_WIDTH)
+
+
+def show_table(table: pd.DataFrame, marked: pd.Series, columns: dict) -> None:
+    st.dataframe(
+        theme.favourite_rows(table, marked),
+        hide_index=True,
+        width="content",
+        height=35 * (len(table) + 1) + 3,
+        column_config=columns,
+    )
 
 
 def model_record(bundle_version: str) -> str:
@@ -75,30 +110,35 @@ def prediction_tab(race: races.Race, bundle_version: str) -> None:
     )
     st.markdown(text)
 
-    beat = weekend["Predicted"] - weekend["Position"]
+    beat = (weekend["Predicted"] - weekend["Position"]).astype(int)
     table = pd.DataFrame(
         {
             "Finished": weekend["Position"].astype(int).to_numpy(),
             "Badge": badges(race, weekend),
-            "Driver": weekend["Driver"].to_numpy(),
+            "Driver": names(race, bundle_version, weekend["Driver"]),
             "Predicted": weekend["Predicted"].astype(int).to_numpy(),
             "Qualified": weekend["QualiPosition"].astype("Int64").to_numpy(),
-            "Against the prediction": [
-                "as predicted"
-                if not places
-                else f"{plural(int(abs(places)), 'place')} {'better' if places > 0 else 'worse'}"
-                for places in beat
-            ],
+            "Result": [outcome(places) for places in beat],
         }
     )
-    st.dataframe(
-        theme.favourite_rows(table, table["Driver"].eq(favourite())),
-        hide_index=True,
-        width="stretch",
-        height=35 * (len(table) + 1) + 3,
-        column_config={"Badge": BADGE, "Finished": SMALL, "Predicted": SMALL, "Qualified": SMALL},
+    show_table(
+        table,
+        weekend["Driver"].eq(favourite()).reset_index(drop=True),
+        {
+            "Finished": PLACE,
+            "Badge": BADGE,
+            "Driver": NAME,
+            "Predicted": PLACE,
+            "Qualified": PLACE,
+            "Result": st.column_config.ImageColumn(
+                "Against the prediction", width=OUTCOME_WIDTH + 52
+            ),
+        },
     )
-    st.caption(how_it_works(bundle_version))
+    st.caption(
+        "Green gained places on the prediction, red lost them, purple finished exactly where "
+        "predicted. " + how_it_works(bundle_version)
+    )
 
 
 def upcoming_prediction(race: races.Race, bundle_version: str) -> None:
@@ -117,15 +157,13 @@ def upcoming_prediction(race: races.Race, bundle_version: str) -> None:
         {
             "Predicted": weekend["Predicted"].astype(int).to_numpy(),
             "Badge": badges(race, weekend),
-            "Driver": weekend["Driver"].to_numpy(),
+            "Driver": names(race, bundle_version, weekend["Driver"]),
             "Qualified": weekend["QualiPosition"].astype("Int64").to_numpy(),
         }
     )
-    st.dataframe(
-        theme.favourite_rows(table, table["Driver"].eq(favourite())),
-        hide_index=True,
-        width="stretch",
-        height=35 * (len(table) + 1) + 3,
-        column_config={"Badge": BADGE, "Predicted": SMALL, "Qualified": SMALL},
+    show_table(
+        table,
+        weekend["Driver"].eq(favourite()).reset_index(drop=True),
+        {"Predicted": PLACE, "Badge": BADGE, "Driver": NAME, "Qualified": PLACE},
     )
     st.caption(how_it_works(bundle_version))

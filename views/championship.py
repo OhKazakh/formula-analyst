@@ -1,4 +1,3 @@
-import base64
 import math
 from dataclasses import dataclass
 
@@ -8,7 +7,16 @@ import streamlit as st
 from src import championship, races, seasons
 from views import data, logos, theme
 from views.links import requested, requested_int
-from views.state import favourite, pick_favourite, with_favourite
+from views.state import (
+    favourite,
+    pick_favourite,
+    remember,
+    remember_tab,
+    remembered_round,
+    remembered_season,
+    remembered_tab,
+    with_favourite,
+)
 from views.teammates import teammates_view
 from views.text import surname
 
@@ -28,15 +36,7 @@ def pill(status: str) -> str:
     # An empty cell, where None would print "None".
     if status not in PILLS:
         return ""
-    fill, ink = PILLS[status]
-    svg = (
-        f'<svg xmlns="http://www.w3.org/2000/svg" width="{PILL_WIDTH}" height="22" '
-        f'viewBox="0 0 {PILL_WIDTH} 22"><rect width="{PILL_WIDTH}" height="22" rx="11" '
-        f'fill="{fill}"/><text x="{PILL_WIDTH / 2:g}" y="15" text-anchor="middle" '
-        f'font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="700" '
-        f'fill="{ink}">{status}</text></svg>'
-    )
-    return "data:image/svg+xml;base64," + base64.b64encode(svg.encode()).decode()
+    return theme.pill(status, *PILLS[status], PILL_WIDTH)
 
 
 def short_event(season: seasons.Season, round_number: int) -> str:
@@ -523,10 +523,11 @@ def render() -> None:
         st.info("No championship data is bundled.")
         return
     requested_year = requested_int("season")
+    wanted_year = remembered_season() or requested_year
     year = st.sidebar.selectbox(
         "Season",
         years,
-        index=years.index(requested_year) if requested_year in years else 0,
+        index=years.index(wanted_year) if wanted_year in years else 0,
         key="championship_season",
     )
     season: seasons.Season = data.season(year, bundle_version)
@@ -537,24 +538,28 @@ def render() -> None:
         return
 
     requested_round = requested_int("round") if requested_year == year else None
+    wanted_round = remembered_round(year) or requested_round
     after = (
         st.select_slider(
             "Standings after",
             options=rounds,
-            value=requested_round if requested_round in rounds else rounds[-1],
+            value=wanted_round if wanted_round in rounds else rounds[-1],
             format_func=lambda r: f"Round {r} · {season.event_name(r)}",
             key=f"standings_after-{year}",
         )
         if len(rounds) > 1
         else rounds[0]
     )
+    remember(year, after)
     drivers = championship.standings(season.results, after)["Driver"].tolist()
     liked = pick_favourite(drivers)
     colors = championship.team_colors(season.results, season.driver_styles)
 
+    view = remembered_tab("championship_view", VIEWS) or requested_view()
     drivers_tab, teams_tab, teammates_tab = st.tabs(
-        VIEWS, default=requested_view(), key="championship_view", on_change="rerun"
+        VIEWS, default=view, key="championship_view", on_change="rerun"
     )
+    remember_tab("championship_view", st.session_state.get("championship_view", view or VIEWS[0]))
     params = {
         "season": str(year),
         "round": str(after),
