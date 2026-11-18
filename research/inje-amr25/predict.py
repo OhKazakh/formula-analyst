@@ -81,6 +81,8 @@ BRAKING_ALLOWANCE = 100.0
 # The AMR25's two cars, Alonso (14) and Stroll (18), in the app's bundled 2025 data.
 AMR25 = {"ALO": 14, "STR": 18}
 FULL_THROTTLE = 90
+BIN = 20.0  # km/h, for the acceleration and braking tables
+MIN_SAMPLES = 30
 
 
 def seconds(text: str) -> float:
@@ -270,20 +272,33 @@ def main_straight(geometry: dict) -> dict:
 # The AMR25 in the bundled 2025 races
 
 
-def saved_races(year: int = 2025) -> list[tuple[str, Path]]:
+def saved_sessions(year: int = 2025):
     os.environ.setdefault("FORMULA_ANALYST_OFFLINE", "1")
     sys.path.insert(0, str(ROOT))
     from src import races
 
     saved = races.saved_sessions(ROOT / "data")
-    chosen = saved[(saved["Year"] == year) & (saved["Session"] == races.RACE)]
-    return list(zip(chosen["EventName"], chosen["Path"], strict=True))
+    return saved[saved["Year"] == year]
 
 
-def load(path: Path):
-    from src import races
+def load_amr25(year: int = 2025) -> list[dict]:
+    """Every bundled race of the season, with the AMR25's and the pole sitter's qualifying laps."""
+    saved = saved_sessions(year)
+    from src import races, sessions
 
-    return races.read_race(path)
+    loaded = []
+    for row in saved[saved["Session"] == races.RACE].itertuples():
+        weekend = saved[(saved["Round"] == row.Round) & (saved["Session"] == "Qualifying")]
+        best = pole = None
+        if not weekend.empty:
+            qualifying = sessions.saved_qualifying(weekend["Path"].iloc[0]).dropna(subset=["Best"])
+            mine = qualifying[qualifying["Driver"].isin(AMR25)]
+            if not mine.empty:
+                best, pole = float(mine["Best"].min()), float(qualifying["Best"].min())
+        loaded.append(
+            {"event": row.EventName, "race": races.read_race(row.Path), "quali": best, "pole": pole}
+        )
+    return loaded
 
 
 def corner_samples(race, driver: str) -> list[tuple[float, float]]:
@@ -307,18 +322,26 @@ def corner_samples(race, driver: str) -> list[tuple[float, float]]:
     return samples
 
 
-def corner_speed(samples: list[tuple[float, float]], radius: float) -> dict:
+def fit_corners(samples: list[tuple[float, float]]) -> dict:
     """Corner speed from radius, as a power law fitted to the AMR25's own corners."""
     r, v = np.log([s[0] for s in samples]), np.log([s[1] for s in samples])
     slope, intercept = np.polyfit(r, v, 1)
     spread = float(np.std(v - (slope * r + intercept)))
-    centre = slope * math.log(radius) + intercept
     return {
         "corners": len(samples),
         "slope": float(slope),
+        "intercept": float(intercept),
+        "spread": spread,
+    }
+
+
+def corner_speed(fit: dict, radius: float) -> dict:
+    centre = fit["slope"] * math.log(radius) + fit["intercept"]
+    return {
+        **fit,
         "speed": math.exp(centre),
-        "low": math.exp(centre - spread),
-        "high": math.exp(centre + spread),
+        "low": math.exp(centre - fit["spread"]),
+        "high": math.exp(centre + fit["spread"]),
     }
 
 
@@ -353,14 +376,13 @@ def fastest_lap(race, driver: str) -> int | None:
     return None if laps.empty else int(laps.loc[laps["LapTimeSeconds"].idxmin(), "LapNumber"])
 
 
-def top_speed(straight: dict) -> dict:
+def top_speed(straight: dict, loaded: list[dict], corners: dict) -> dict:
     """The speed an AMR25 reached as far from a corner like Inje's as Turn 1 is."""
     reach = straight["corner_to_turn_1_m"]
-    samples, matches = [], []
-    for event, path in saved_races():
-        race = load(path)
+    matches = []
+    for weekend in loaded:
+        race = weekend["race"]
         for driver, number in AMR25.items():
-            samples += corner_samples(race, driver)
             trace = race.trace(driver)
             if trace.empty:
                 continue
@@ -369,7 +391,7 @@ def top_speed(straight: dict) -> dict:
                 if long_enough and not run["drs"]:
                     matches.append(
                         {
-                            "event": event,
+                            "event": weekend["event"],
                             "driver": driver,
                             "car": number,
                             "lap": fastest_lap(race, driver),
@@ -382,7 +404,7 @@ def top_speed(straight: dict) -> dict:
                             "at_turn_1": float(np.interp(reach, run["distance"], run["speed"])),
                         }
                     )
-    corner = corner_speed(samples, straight["corner_radius_m"])
+    corner = corner_speed(corners, straight["corner_radius_m"])
     within = [m for m in matches if corner["low"] <= m["apex_speed"] <= corner["high"]]
     closeness = lambda m: abs(m["apex_speed"] - corner["speed"])  # noqa: E731
     best = min(within or matches, key=closeness)
@@ -397,6 +419,127 @@ def top_speed(straight: dict) -> dict:
         "range_kmh": [min(speeds), max(speeds)],
         "candidates": sorted(within, key=closeness),
     }
+
+
+# The computer lap
+
+
+def performance(loaded: list[dict]) -> dict:
+    """How hard the AMR25 accelerates and brakes at each speed, from its 2025 laps.
+
+    Acceleration is the 75th percentile of flat-out samples without DRS, braking the 10th, so
+    both describe what the car can do rather than what it did on an average sample.
+    """
+    accelerating, braking = [], []
+    for weekend in loaded:
+        for driver in AMR25:
+            trace = weekend["race"].trace(driver).sort_values("Distance")
+            if trace.empty:
+                continue
+            speed = trace["Speed"].to_numpy(dtype=float) / 3.6
+            dt = np.diff(trace["Time"].to_numpy(dtype=float))
+            rate = np.where(dt > 0, np.diff(speed) / np.maximum(dt, 1e-3), np.nan)
+            middle = (speed[1:] + speed[:-1]) / 2
+            brake = trace["Brake"].astype(bool).to_numpy()
+            flat = (trace["Throttle"].to_numpy() >= 98) & ~brake
+            flat &= ~trace["DRS"].astype(bool).to_numpy()
+            # A sample counts when the car was flat out, or braking, at both its ends.
+            for store, state in ((accelerating, flat), (braking, brake)):
+                both = state[1:] & state[:-1]
+                store += list(zip(middle[both], rate[both], strict=True))
+    tables = {}
+    for name, samples, percentile in (("accel", accelerating, 75), ("brake", braking, 10)):
+        samples = np.array(samples)
+        speeds, values = [], []
+        for low in np.arange(0, 100, BIN / 3.6):
+            inside = samples[(samples[:, 0] >= low) & (samples[:, 0] < low + BIN / 3.6)]
+            if len(inside) >= MIN_SAMPLES:
+                speeds.append(low + BIN / 7.2)
+                values.append(abs(float(np.percentile(inside[:, 1], percentile))))
+        tables[name] = (np.array(speeds), np.array(values))
+    # Flat out, the car stops gaining speed where acceleration runs out.
+    speeds, values = tables["accel"]
+    tables["accel"] = (np.append(speeds, speeds[-1] + BIN / 3.6), np.append(values, 0.0))
+    return tables
+
+
+def simulate(radius: np.ndarray, step: float, corners: dict, car: dict) -> np.ndarray:
+    """Speed round a closed lap, as fast as the corners, acceleration and braking allow.
+
+    The classic two-pass lap simulation: corner speeds cap every point, a forward pass
+    accelerates out of each corner and a backward pass brakes into the next.
+    """
+    accel, brake = car["accel"], car["brake"]
+    with np.errstate(divide="ignore"):
+        limit = np.exp(corners["intercept"]) * radius ** corners["slope"] / 3.6
+    limit = np.minimum(limit, accel[0][-1])
+    start = int(np.argmin(limit))
+    limit = np.roll(limit, -start)
+    forward = limit.copy()
+    for i in range(len(limit) - 1):
+        gain = 2 * np.interp(forward[i], *accel) * step
+        forward[i + 1] = min(limit[i + 1], math.sqrt(forward[i] ** 2 + gain))
+    backward = forward.copy()
+    for i in range(len(limit) - 2, -1, -1):
+        loss = 2 * np.interp(backward[i + 1], *brake) * step
+        backward[i] = min(forward[i], math.sqrt(backward[i + 1] ** 2 + loss))
+    return np.roll(backward, start)
+
+
+def lap_seconds(speed: np.ndarray, step: float) -> float:
+    return float(np.sum(step / ((speed + np.roll(speed, -1)) / 2)))
+
+
+def outline_radius(points: np.ndarray) -> tuple[np.ndarray, float]:
+    distance, resampled = resample(points)
+    return radii(resampled), distance[-1] + STEP
+
+
+def computer_lap(geometry: dict, loaded: list[dict], corners: dict) -> dict:
+    """The simulated Inje lap, corrected by how the simulator did on the 2025 circuits."""
+    car = performance(loaded)
+    checks = []
+    for weekend in loaded:
+        race = weekend["race"]
+        traces = [race.trace(driver) for driver in AMR25]
+        laps = race.laps[race.laps["Driver"].isin(AMR25)]["LapTimeSeconds"].dropna()
+        if race.track.empty or laps.empty or all(trace.empty for trace in traces):
+            continue
+        radius, length = outline_radius(race.track[["X", "Y"]].to_numpy(dtype=float))
+        lap_length = max(trace["Distance"].max() for trace in traces if not trace.empty)
+        step = STEP * lap_length / length
+        simulated = lap_seconds(simulate(radius, step, corners, car), step)
+        checks.append(
+            {
+                "event": weekend["event"],
+                "simulated": simulated,
+                "race_lap": float(laps.min()),
+                "quali_lap": weekend["quali"],
+                "pole": weekend["pole"],
+            }
+        )
+    table = pd.DataFrame(checks)
+    origin = geometry["course"][0]
+    radius, length = outline_radius(metres(geometry["course"], origin))
+    step = STEP * INJE_LENGTH / length
+    speed = simulate(radius, step, corners, car)
+    simulated = lap_seconds(speed, step)
+    result = {"simulated": simulated, "max_kmh": float(speed.max() * 3.6), "checks": checks}
+    for name, column in (("qualifying", "quali_lap"), ("race", "race_lap")):
+        ratio = (table[column] / table["simulated"]).dropna()
+        low, middle, high = np.percentile(ratio, [25, 50, 75])
+        result[name] = {
+            "ratio": float(middle),
+            "lap": simulated * middle,
+            "low": simulated * low,
+            "high": simulated * high,
+            "circuits": int(len(ratio)),
+        }
+    gap = (table["quali_lap"] / table["pole"] - 1).dropna()
+    result["gap_to_pole"] = float(gap.median())
+    result["speed_trace"] = (speed * 3.6).round(1).tolist()
+    result["step_m"] = step
+    return result
 
 
 # Output
@@ -506,6 +649,69 @@ def chart(fit: tuple[float, float, float], amr25_kic: float, amr25: dict, path: 
     plt.close(figure)
 
 
+def speed_chart(computer: dict, straight: dict, path: Path) -> None:
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    carbon, surface, text, muted, grid, soft = (
+        "#15151E",
+        "#1C1C25",
+        "#FFFFFF",
+        "#AAAAAA",
+        "#303037",
+        "#DA291C",
+    )
+    speed = np.array(computer["speed_trace"])
+    distance = np.arange(len(speed)) * computer["step_m"] / 1000
+    figure, axes = plt.subplots(figsize=(16, 7), dpi=100)
+    figure.patch.set_facecolor(carbon)
+    axes.set_facecolor(surface)
+    axes.fill_between(distance, speed, color=soft, alpha=0.15)
+    axes.plot(distance, speed, color=soft, lw=2.5)
+    top = int(np.argmax(speed))
+    axes.annotate(
+        f"{speed[top]:.0f} km/h at the end of the {straight['straight_m']:.0f} m straight",
+        (distance[top], speed[top]),
+        xytext=(-20, 14),
+        textcoords="offset points",
+        ha="right",
+        color=text,
+        fontsize=13,
+    )
+    axes.set_xlim(0, distance[-1])
+    axes.set_ylim(0, max(340, speed.max() + 30))
+    axes.set_xlabel("Distance round the OpenStreetMap course (km)", color=muted, fontsize=13)
+    axes.set_ylabel("Speed (km/h)", color=muted, fontsize=13)
+    axes.tick_params(colors=muted, labelsize=12)
+    axes.grid(color=grid, lw=0.8)
+    for spine in axes.spines.values():
+        spine.set_color(grid)
+    quali = computer["qualifying"]
+    axes.set_title(
+        "The computer lap: an AMR25 round Inje Speedium",
+        color=text,
+        fontsize=20,
+        fontweight="bold",
+        loc="left",
+        pad=30,
+    )
+    axes.text(
+        0,
+        1.02,
+        f"Simulated {lap_time(computer['simulated'], 1)}; corrected by the AMR25's real "
+        f"2025 qualifying laps, {lap_time(quali['lap'], 1)} ({lap_time(quali['low'], 1)} to "
+        f"{lap_time(quali['high'], 1)}).",
+        transform=axes.transAxes,
+        color=muted,
+        fontsize=13,
+    )
+    figure.tight_layout()
+    figure.savefig(path, facecolor=carbon)
+    plt.close(figure)
+
+
 def main() -> int:
     print("1. Bridge: Korean class lap records")
     for name, (kic, inje) in BRIDGE.items():
@@ -547,7 +753,8 @@ def main() -> int:
         print(f"   WARNING: {', '.join(disagree)} disagree by more than {DISAGREEMENT:g} s")
 
     print("\n5. Inje's main straight from OpenStreetMap")
-    straight = main_straight(osm_geometry())
+    geometry = osm_geometry()
+    straight = main_straight(geometry)
     print(f"   OSM full course {straight['osm_length_m']:.0f} m, scaled to {INJE_LENGTH:.0f} m")
     print(
         f"   Main straight {straight['straight_m']:.0f} m, "
@@ -560,7 +767,10 @@ def main() -> int:
     )
 
     print("\n6. Top speed from the AMR25's 2025 data")
-    speed = top_speed(straight)
+    loaded = load_amr25()
+    samples = [s for w in loaded for driver in AMR25 for s in corner_samples(w["race"], driver)]
+    corners = fit_corners(samples)
+    speed = top_speed(straight, loaded, corners)
     corner, match = speed["corner"], speed["match"]
     print(
         f"   Corner speed vs radius over {corner['corners']} AMR25 corners: "
@@ -594,13 +804,33 @@ def main() -> int:
         f"{straight['corner_to_turn_1_m']:.0f} m from the apex: {top[0]:.0f} to {top[1]:.0f} km/h"
     )
 
-    full = ranges["qualifying"]
-    middle = sum(full) / 2
+    print("\n7. Computer lap: a lap simulation of the AMR25 round Inje")
+    computer = computer_lap(geometry, loaded, corners)
+    print(
+        f"   Simulated from Inje's corners and the AMR25's cornering, acceleration and braking: "
+        f"{lap_time(computer['simulated'])}, {computer['max_kmh']:.0f} km/h at most"
+    )
+    for name in ("qualifying", "race"):
+        check = computer[name]
+        print(
+            f"   {name.capitalize()}: on {check['circuits']} circuits of 2025 the AMR25's real "
+            f"laps took {check['ratio']:.3f} times the simulator's -> {lap_time(check['lap'], 1)} "
+            f"({lap_time(check['low'], 1)} to {lap_time(check['high'], 1)})"
+        )
+
+    quali = ranges["qualifying"]
+    gap = computer["gap_to_pole"]
+    amr25_quali = (quali[0] * (1 + gap), quali[1] * (1 + gap))
+    middle = sum(quali) / 2
     demo = (middle + DEMO_SLOWER[0], middle + DEMO_SLOWER[1])
     print(
-        f"\n7. Full pace {lap_time(full[0], 1)} to {lap_time(full[1], 1)}; realistic demo "
-        f"(judgement: {DEMO_SLOWER[0]:g} to {DEMO_SLOWER[1]:g} s slower than "
-        f"{lap_time(middle, 1)}) {lap_time(demo[0], 1)} to {lap_time(demo[1], 1)}"
+        f"\n8. Qualifying lap for a pole-level car: {lap_time(quali[0], 1)} to "
+        f"{lap_time(quali[1], 1)}. The AMR25 qualified a median {gap:.1%} off pole in 2025: "
+        f"{lap_time(amr25_quali[0], 1)} to {lap_time(amr25_quali[1], 1)}"
+    )
+    print(
+        f"   Realistic demo (judgement: {DEMO_SLOWER[0]:g} to {DEMO_SLOWER[1]:g} s slower than "
+        f"{lap_time(middle, 1)}): {lap_time(demo[0], 1)} to {lap_time(demo[1], 1)}"
     )
 
     results = {
@@ -617,12 +847,15 @@ def main() -> int:
             "same_straight": speed["same_straight"],
             "candidates": speed["candidates"],
         },
+        "computer_lap": computer,
+        "qualifying_lap": {"pole_level": list(quali), "amr25": list(amr25_quali), "gap": gap},
         "demo": {"full_pace_middle": middle, "slower_by": list(DEMO_SLOWER), "range": list(demo)},
     }
     (HERE / "results.json").write_text(json.dumps(results, indent=2) + "\n")
     amr25_kic = seconds(F1_KIC_2013["qualifying"]) * era
     chart(fit, amr25_kic, predictions["qualifying"], HERE / "chart.png")
-    print("\nWrote results.json and chart.png")
+    speed_chart(computer, straight, HERE / "computer-lap.png")
+    print("\nWrote results.json, chart.png and computer-lap.png")
     return 1 if disagree else 0
 
 

@@ -19,20 +19,28 @@ I put the 2013 Korean Grand Prix laps through that line: Sebastian Vettel's pole
 
 ![Korean class records at KIC and Inje with the fitted line extended to the AMR25](chart.png)
 
-For top speed, I measured Inje's main straight in OpenStreetMap, because I found no published figure. It is 648 m long and follows a corner of 39 m radius. In the AMR25's 2025 data, corner speed rises with the square root of the radius, which puts that corner at about 110 km/h. The closest match is São Paulo 2025, where both cars left corners at 112 to 117 km/h. I read their speed 756 to 856 m from the apex, the distance from Inje's corner to Turn 1.
+For top speed, I measured Inje's main straight in OpenStreetMap, as I found no published figure: 648 m after a corner of 39 m radius, which the AMR25's 2025 corners put at about 110 km/h. At São Paulo 2025 both cars left corners at 112 to 117 km/h, and I read their speed 756 to 856 m later, the distance from Inje's corner to Turn 1.
 
 ## Result
 
 | | Lap or speed |
 | --- | --- |
-| Full pace, one flying lap | 1:07.8 to 1:10.8 |
-| Full pace, race fuel and tyres | 1:10.8 to 1:13.4 |
+| Qualifying lap, pole-level car | 1:07.8 to 1:10.8 |
+| Qualifying lap, AMR25 (1.1% off pole in 2025) | 1:08.6 to 1:11.6 |
+| Race lap, race fuel and tyres | 1:10.8 to 1:13.4 |
+| Computer lap, qualifying trim | 1:17.1 (1:14.5 to 1:18.9) |
 | Realistic demo, my judgement | 1:17.3 to 1:24.3 |
 | Top speed, no DRS | 301 to 305 km/h |
 
 Two cross-checks land within 1.2 s of these ranges. GT3 cars raced at both circuits, so Inje's GT3 record (1:32.888) scaled by the F1 to GT3 ratio at KIC gives 1:10.7 at race pace. LMP2 cars never raced at KIC, so I used Shanghai 2013, where F1 and LMP2 cars qualified in the same year: Inje's LMP2 record (1:25.148) becomes 1:06.7, 1.2 s quicker than my qualifying range.
 
-A demo run uses demo tyres and a driver ambassador, with safety margins, so I added 8 to 15 s to the middle of the full-pace range. Even 1:24.3 would beat Inje's lap record, the LMP2 car's 1:25.148 from 2014.
+The bridge works from pole laps, so it predicts the fastest 2025 car. The AMR25 qualified a median 1.1% off pole in 2025, which gives its own qualifying lap.
+
+The computer lap simulates the AMR25 round Inje, with corner speeds, acceleration and braking from its 2025 telemetry, scaled by how the simulator compared with the car's real qualifying laps on the 24 circuits of 2025. It lands about 6 s slower than the bridge. It missed real laps by up to 13% on dry 2025 circuits and can't see Inje's banking and hills, so I trust the bridge more.
+
+![Speed round Inje in the computer lap](computer-lap.png)
+
+A demo run uses demo tyres and a driver ambassador, with safety margins, so I added 8 to 15 s to the middle of the pole-level qualifying range. Even 1:24.3 would beat Inje's lap record, the LMP2 car's 1:25.148 from 2014.
 
 ## Limits
 

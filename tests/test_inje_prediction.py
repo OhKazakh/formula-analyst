@@ -1,6 +1,8 @@
 import importlib.util
+import math
 from pathlib import Path
 
+import numpy as np
 import pytest
 
 SCRIPT = Path(__file__).parents[1] / "research" / "inje-amr25" / "predict.py"
@@ -45,3 +47,22 @@ def test_the_2013_pole_bridges_to_the_expected_range(predict):
 def test_lap_times_read_as_minutes_and_seconds(predict, value, decimals, text):
     assert predict.lap_time(value, decimals) == text
     assert predict.seconds("1:35.239") == pytest.approx(95.239)
+
+
+def test_the_simulator_holds_a_circle_at_its_corner_speed(predict):
+    angle = np.linspace(0, 2 * np.pi, 400, endpoint=False)
+    circle = np.column_stack([100 * np.cos(angle), 100 * np.sin(angle)])
+    _, points = predict.resample(np.vstack([circle, circle[:1]]))
+    # 20 km/h times the square root of the radius: 200 km/h on a 100 m circle.
+    corners = {"slope": 0.5, "intercept": math.log(20)}
+    car = {
+        "accel": (np.array([0.0, 100.0]), np.array([10.0, 10.0])),
+        "brake": (np.array([0.0, 100.0]), np.array([30.0, 30.0])),
+    }
+
+    speed = predict.simulate(predict.radii(points), predict.STEP, corners, car)
+
+    assert speed * 3.6 == pytest.approx(200, rel=0.02)
+    assert predict.lap_seconds(speed, predict.STEP) == pytest.approx(
+        2 * math.pi * 100 / (200 / 3.6), rel=0.02
+    )
