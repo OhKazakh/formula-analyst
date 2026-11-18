@@ -2,7 +2,6 @@ import json
 from pathlib import Path
 
 import streamlit as st
-import streamlit.components.v1 as components
 
 from src import races
 from views import data
@@ -29,7 +28,7 @@ def replay_tab(race: races.Race, bundle_version: str) -> None:
     # The data sits inside a script tag, so a "</" in it must not close the tag.
     payload = json.dumps(replay).replace("</", "<\\/")
     page = TEMPLATE.read_text().replace("/*DATA*/", payload).replace("/*HEIGHT*/", str(HEIGHT))
-    components.html(page, height=HEIGHT + 8)
+    st.iframe(page, height=HEIGHT + 8)
     st.caption(
         "Press play, pick a speed or drag the bar. 1× plays a race minute every second. "
         "Positions within a lap are estimated from lap times and the winner's fastest-lap speed "
