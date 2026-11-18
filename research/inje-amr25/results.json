@@ -1,0 +1,216 @@
+{
+  "fit": {
+    "a": 0.6601686350856435,
+    "b": 9.812063322012062,
+    "r": 0.9966656827391872,
+    "ratio": 0.7295771411061744
+  },
+  "era_factor": 0.9567508111972723,
+  "predictions": {
+    "qualifying": {
+      "linear": 70.78212323512035,
+      "ratio": 67.84928234503899
+    },
+    "race": {
+      "linear": 73.42101854783294,
+      "ratio": 70.76562461821828
+    }
+  },
+  "ranges": {
+    "qualifying": [
+      67.84928234503899,
+      70.78212323512035
+    ],
+    "race": [
+      70.76562461821828,
+      73.42101854783294
+    ]
+  },
+  "cross_checks": [
+    {
+      "name": "GT3",
+      "pace": "race",
+      "circuit": "Korea International Circuit, race laps",
+      "ratio": 0.7958863243837337,
+      "estimate": 70.73095037488541,
+      "off_by": 0.034674243332872834
+    },
+    {
+      "name": "LMP2",
+      "pace": "qualifying",
+      "circuit": "Shanghai 2013, qualifying",
+      "ratio": 0.8185890160539928,
+      "estimate": 66.68669642184267,
+      "off_by": 1.1625859231963176
+    }
+  ],
+  "straight": {
+    "osm_length_m": 3950.0,
+    "scale": 0.9893670886075949,
+    "straight_m": 648.0354430379747,
+    "straight_to_pit_lane_m": 54.91582418218002,
+    "corner_radius_m": 38.66664863459349,
+    "final_bend_radius_m": 68.39009432407325,
+    "corner_to_turn_1_m": 855.8025316455696
+  },
+  "top_speed": {
+    "range_kmh": [
+      301.0,
+      304.8410797687517
+    ],
+    "corner_kmh": {
+      "corners": 772,
+      "slope": 0.5591672699011572,
+      "speed": 109.75598623956131,
+      "low": 83.93990175797943,
+      "high": 143.51192058994312
+    },
+    "match": {
+      "event": "S\u00e3o Paulo Grand Prix",
+      "driver": "STR",
+      "car": 18,
+      "lap": 56,
+      "apex_speed": 112.0,
+      "apex_at": 377.3861083984375,
+      "run_m": 882.7919921875,
+      "at_braking": 303.3368277340586,
+      "at_turn_1": 303.0
+    },
+    "same_straight": [
+      {
+        "event": "S\u00e3o Paulo Grand Prix",
+        "driver": "ALO",
+        "car": 14,
+        "lap": 48,
+        "apex_speed": 115.0,
+        "apex_at": 3219.439453125,
+        "run_m": 967.84912109375,
+        "at_braking": 301.67391359756493,
+        "at_turn_1": 304.8410797687517
+      },
+      {
+        "event": "S\u00e3o Paulo Grand Prix",
+        "driver": "STR",
+        "car": 18,
+        "lap": 56,
+        "apex_speed": 112.0,
+        "apex_at": 377.3861083984375,
+        "run_m": 882.7919921875,
+        "at_braking": 303.3368277340586,
+        "at_turn_1": 303.0
+      },
+      {
+        "event": "S\u00e3o Paulo Grand Prix",
+        "driver": "STR",
+        "car": 18,
+        "lap": 56,
+        "apex_speed": 117.0,
+        "apex_at": 3214.971435546875,
+        "run_m": 1014.574462890625,
+        "at_braking": 301.0,
+        "at_turn_1": 303.5294934584976
+      }
+    ],
+    "candidates": [
+      {
+        "event": "S\u00e3o Paulo Grand Prix",
+        "driver": "STR",
+        "car": 18,
+        "lap": 56,
+        "apex_speed": 112.0,
+        "apex_at": 377.3861083984375,
+        "run_m": 882.7919921875,
+        "at_braking": 303.3368277340586,
+        "at_turn_1": 303.0
+      },
+      {
+        "event": "Azerbaijan Grand Prix",
+        "driver": "STR",
+        "car": 18,
+        "lap": 50,
+        "apex_speed": 113.0,
+        "apex_at": 4030.512451171875,
+        "run_m": 1877.514892578125,
+        "at_braking": 303.1310636641516,
+        "at_turn_1": 311.09287824474285
+      },
+      {
+        "event": "Azerbaijan Grand Prix",
+        "driver": "ALO",
+        "car": 14,
+        "lap": 50,
+        "apex_speed": 114.0,
+        "apex_at": 4049.88037109375,
+        "run_m": 1866.38037109375,
+        "at_braking": 299.0,
+        "at_turn_1": 315.30901807417143
+      },
+      {
+        "event": "S\u00e3o Paulo Grand Prix",
+        "driver": "ALO",
+        "car": 14,
+        "lap": 48,
+        "apex_speed": 115.0,
+        "apex_at": 3219.439453125,
+        "run_m": 967.84912109375,
+        "at_braking": 301.67391359756493,
+        "at_turn_1": 304.8410797687517
+      },
+      {
+        "event": "S\u00e3o Paulo Grand Prix",
+        "driver": "STR",
+        "car": 18,
+        "lap": 56,
+        "apex_speed": 117.0,
+        "apex_at": 3214.971435546875,
+        "run_m": 1014.574462890625,
+        "at_braking": 301.0,
+        "at_turn_1": 303.5294934584976
+      },
+      {
+        "event": "Miami Grand Prix",
+        "driver": "STR",
+        "car": 18,
+        "lap": 50,
+        "apex_speed": 122.0,
+        "apex_at": 1638.9144287109375,
+        "run_m": 1286.0819091796875,
+        "at_braking": 310.5350666895613,
+        "at_turn_1": 314.0
+      },
+      {
+        "event": "Abu Dhabi Grand Prix",
+        "driver": "ALO",
+        "car": 14,
+        "lap": 54,
+        "apex_speed": 94.0,
+        "apex_at": 1435.9871826171875,
+        "run_m": 1008.0511474609375,
+        "at_braking": 305.65383957362235,
+        "at_turn_1": 307.98356380042986
+      },
+      {
+        "event": "Las Vegas Grand Prix",
+        "driver": "ALO",
+        "car": 14,
+        "lap": 41,
+        "apex_speed": 89.0,
+        "apex_at": 5136.26318359375,
+        "run_m": 992.02587890625,
+        "at_braking": 323.53001203113246,
+        "at_turn_1": 324.74431620821707
+      }
+    ]
+  },
+  "demo": {
+    "full_pace_middle": 69.31570279007967,
+    "slower_by": [
+      8.0,
+      15.0
+    ],
+    "range": [
+      77.31570279007967,
+      84.31570279007967
+    ]
+  }
+}
