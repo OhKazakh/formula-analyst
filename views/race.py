@@ -9,6 +9,7 @@ from src.charts import FALLBACK_COLOR
 from views import data, logos, theme
 from views.conditions_tab import conditions_tab
 from views.links import requested, requested_int
+from views.loading import loading
 from views.long_runs_tab import long_runs_tab
 from views.overview_tab import overview_tab
 from views.pace_tab import pace_tab, practice_pace_tab
@@ -313,7 +314,10 @@ def render() -> None:
     year, event, session = sidebar(bundle_version)
     title = event if session == races.RACE else f"{event} {session.lower()}"
 
-    with st.spinner("Loading timing data. The first load of a session takes about a minute."):
+    with loading(
+        f"Loading the {year} {title}",
+        lambda: data.venue_facts(year, event, bundle_version),
+    ):
         try:
             race = data.race(year, event, session, bundle_version)
         except races.RaceDataUnavailable as exc:

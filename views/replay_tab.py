@@ -6,6 +6,7 @@ import streamlit.components.v1 as components
 
 from src import races
 from views import data
+from views.loading import loading
 from views.state import favourite
 
 TEMPLATE = Path(__file__).with_name("replay.html")
@@ -17,7 +18,10 @@ def replay_tab(race: races.Race, bundle_version: str) -> None:
     if race.track.empty or not {"LapStartTime", "Time"} <= set(race.laps.columns):
         st.info("A track map isn't available for this session.")
         return
-    replay = data.replay_data(race.year, race.event, race.session, bundle_version, race)
+    with loading(
+        "Building the replay", lambda: data.venue_facts(race.year, race.event, bundle_version)
+    ):
+        replay = data.replay_data(race.year, race.event, race.session, bundle_version, race)
     if not replay:
         st.info("There are no lap times to replay for this session.")
         return

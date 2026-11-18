@@ -2,7 +2,16 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-from src import analysis, degradation, ideal_lap, predictions, races, seasons, teammates
+from src import (
+    analysis,
+    degradation,
+    ideal_lap,
+    predictions,
+    races,
+    seasons,
+    teammates,
+    trivia,
+)
 
 
 @st.cache_data(ttl="1h", show_spinner=False)
@@ -111,6 +120,16 @@ def computer_laps(
     if level is None:
         return none, "the simulation hasn't matched real laps at this circuit reliably enough"
     return ideal_lap.computer_laps(simulated, level), ""
+
+
+@st.cache_data(show_spinner=False, max_entries=32)
+def venue_facts(year: int, event: str, bundle_version: str) -> list[str]:
+    loaded = [seasons.load_season(season) for season in seasons.saved_seasons()]
+    results = pd.concat([s.results.assign(Year=s.year) for s in loaded], ignore_index=True)
+    schedule = pd.concat([s.schedule.assign(Year=s.year) for s in loaded], ignore_index=True)
+    return trivia.venue_facts(results, schedule, year, event) + trivia.season_facts(
+        results, schedule, year
+    )
 
 
 def show(figure: go.Figure) -> None:

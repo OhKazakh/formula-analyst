@@ -4,6 +4,7 @@ import streamlit as st
 from src import analysis, ideal_lap, races, sessions
 from views import data, logos, theme, tyres
 from views.data import show
+from views.loading import loading
 from views.state import favourite
 
 BADGE = st.column_config.ImageColumn(" ", width=44)
@@ -143,7 +144,13 @@ def computer_section(
     race: races.Race, results: pd.DataFrame, labels: list[str], bundle_version: str
 ) -> None:
     best = results[labels].min(axis=1)
-    cars, missing = data.computer_laps(race.year, race.event, race.session, bundle_version, race)
+    with loading(
+        "Simulating every car round the track",
+        lambda: data.venue_facts(race.year, race.event, bundle_version),
+    ):
+        cars, missing = data.computer_laps(
+            race.year, race.event, race.session, bundle_version, race
+        )
     computer = results["Team"].map(cars)
     versus = best - computer
     st.subheader("What was the perfect lap?" if missing else "Did anyone beat the computer?")
