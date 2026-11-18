@@ -2,10 +2,10 @@ name: Update data
 
 on:
   schedule:
-    # Saturday night for qualifying and the race prediction, the morning after a race weekend,
-    # and midweek for late data and penalties.
-    - cron: "0 23 * * 6"
-    - cron: "0 6 * * 1"
+    # Every two hours from Friday to Monday morning, so each session lands soon after OpenF1
+    # frees it, 30 minutes after it ends; live data is paid. Midweek for late penalties.
+    - cron: "15 */2 * * 5,6,0"
+    - cron: "15 0-12/2 * * 1"
     - cron: "0 6 * * 3"
   workflow_dispatch:
 
