@@ -41,6 +41,25 @@ def test_weather_by_lap_takes_the_last_reading_before_each_lap_ends():
     }
 
 
+def test_a_dropped_track_reading_is_skipped():
+    weather = pd.DataFrame(
+        {
+            "Time": [0.0, 150.0, 250.0, 260.0],
+            "AirTemp": [30.0, 29.0, 28.0, 28.0],
+            "TrackTemp": [50.0, 48.0, 46.0, 0.0],
+            "Humidity": [40.0, 45.0, 60.0, 60.0],
+            "WindSpeed": [1.2, 3.4, 2.0, 2.0],
+            "Rainfall": [False, False, False, False],
+        }
+    )
+
+    by_lap = conditions.weather_by_lap(weather, laps())
+    by_minute = conditions.weather_by_minute(weather)
+
+    assert by_lap["TrackTemp"].tolist() == [50.0, 48.0, 46.0]
+    assert 0.0 not in by_minute["TrackTemp"].tolist()
+
+
 @pytest.mark.parametrize(
     ("category", "message", "expected"),
     [

@@ -27,11 +27,17 @@ def lap_end_times(laps: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame({"LapNumber": ends.index.astype(int), "Seconds": ends.to_numpy()})
 
 
+# The track sensor sometimes drops out and the feed sends 0.0 instead of a gap.
+def _readings(weather: pd.DataFrame) -> pd.DataFrame:
+    readings = weather.dropna(subset=["Time", "TrackTemp"])
+    return readings[readings["TrackTemp"] > 0].sort_values("Time")
+
+
 def weather_by_lap(weather: pd.DataFrame, laps: pd.DataFrame) -> pd.DataFrame:
     columns = ["LapNumber", "AirTemp", "TrackTemp", "Humidity", "WindSpeed", "Rainfall"]
     if weather.empty or "Time" not in laps:
         return pd.DataFrame(columns=columns)
-    readings = weather.dropna(subset=["Time"]).sort_values("Time")
+    readings = _readings(weather)
     merged = pd.merge_asof(
         lap_end_times(laps).sort_values("Seconds"),
         readings,
@@ -45,7 +51,7 @@ def weather_by_lap(weather: pd.DataFrame, laps: pd.DataFrame) -> pd.DataFrame:
 # Laps line up across drivers only in a race, so other sessions are plotted against time.
 def weather_by_minute(weather: pd.DataFrame) -> pd.DataFrame:
     columns = ["Minute", "AirTemp", "TrackTemp", "Humidity", "WindSpeed", "Rainfall"]
-    readings = weather.dropna(subset=["Time", "TrackTemp"]).sort_values("Time")
+    readings = _readings(weather)
     if readings.empty:
         return pd.DataFrame(columns=columns)
     minutes = (readings["Time"] // 60).astype(int)
