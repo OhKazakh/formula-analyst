@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pytest
 
 from src import predictions, race_model
 
@@ -73,3 +74,33 @@ def test_every_race_gets_a_full_predicted_order():
     assert upcoming["Position"].isna().all()
     # Every leaf needs 40 results, so the front row shares one and can tie.
     assert upcoming.sort_values("Predicted")["QualiPosition"].iloc[0] <= 2
+
+
+def weekends() -> pd.DataFrame:
+    return pd.DataFrame(
+        {
+            "Year": 2026,
+            "Round": [1, 1, 1, 2, 2, 2, 3, 3, 3],
+            "Driver": ["NOR", "PIA", "VER"] * 3,
+            "QualiPosition": [1.0, 2.0, 3.0, 2.0, 1.0, 3.0, 1.0, 3.0, 2.0],
+            "Predicted": [1, 2, 3, 2, 1, 3, 1, 3, 2],
+            # VER didn't start round 2, and round 3 hasn't been run.
+            "Position": [1.0, 3.0, 2.0, 1.0, 2.0, np.nan, np.nan, np.nan, np.nan],
+        }
+    )
+
+
+def test_upcoming_weekend_needs_every_finish_missing():
+    assert predictions.upcoming_weekend(weekends()) == (2026, 3)
+    assert predictions.upcoming_weekend(weekends()[weekends()["Round"] < 3]) is None
+
+
+def test_season_record_compares_the_pick_with_the_winner():
+    record = predictions.season_record(weekends(), 2026).set_index("Round")
+
+    assert list(record.index) == [1, 2]
+    assert record.loc[1, "Called"] and not record.loc[2, "Called"]
+    assert (record.loc[2, "Picked"], record.loc[2, "Winner"]) == ("PIA", "NOR")
+    assert record.loc[1, "Podium"] == 3
+    assert record.loc[1, "ModelError"] == pytest.approx(2 / 3)
+    assert record.loc[2, "GridError"] == pytest.approx(1.0)

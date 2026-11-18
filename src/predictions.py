@@ -13,6 +13,17 @@ FORM_RACES = 5
 FEATURES = ["QualiPosition", "QualiGap", "LongRun", "Form", "TeamForm"]
 TABLE_COLUMNS = ["Year", "Round", "Driver", "Team", *FEATURES, "Position"]
 PREDICTION_COLUMNS = ["Year", "Round", "Driver", "Team", "QualiPosition", "Predicted", "Position"]
+RECORD_COLUMNS = [
+    "Round",
+    "Picked",
+    "PickedFrom",
+    "Winner",
+    "WinnerFrom",
+    "Called",
+    "Podium",
+    "ModelError",
+    "GridError",
+]
 
 
 def model_dir(root: Path = races.DATA_DIR) -> Path:
@@ -105,6 +116,51 @@ def scores(predictions: pd.DataFrame, column: str) -> dict[str, float]:
         "podium": round(float(np.mean(podiums)), 3),
         "position_error": round(float(np.mean(errors)), 2),
     }
+
+
+def upcoming_weekend(predictions: pd.DataFrame) -> tuple[int, int] | None:
+    """The latest weekend predicted but not raced yet, when nobody has a finishing position.
+
+    A driver who didn't start has no position either, so one gap doesn't make a race upcoming.
+    """
+    if predictions.empty:
+        return None
+    waiting = predictions["Position"].isna().groupby([predictions["Year"], predictions["Round"]])
+    waiting = waiting.all()
+    waiting = waiting[waiting]
+    if waiting.empty:
+        return None
+    year, round_number = waiting.index.max()
+    return int(year), int(round_number)
+
+
+def season_record(predictions: pd.DataFrame, year: int) -> pd.DataFrame:
+    """Each race of a season: the model's pick against the winner, the podium and the errors."""
+    rows = []
+    for round_number, weekend in predictions[predictions["Year"] == year].groupby("Round"):
+        raced = weekend.dropna(subset=["Position"])
+        if raced.empty:
+            continue
+        # The pick stands even if that driver didn't start.
+        picked = weekend.loc[weekend["Predicted"].idxmin()]
+        winner = raced.loc[raced["Position"].idxmin()]
+        podium = set(weekend.loc[weekend["Predicted"] <= 3, "Driver"]) & set(
+            raced.loc[raced["Position"] <= 3, "Driver"]
+        )
+        rows.append(
+            {
+                "Round": int(round_number),
+                "Picked": picked["Driver"],
+                "PickedFrom": picked["QualiPosition"],
+                "Winner": winner["Driver"],
+                "WinnerFrom": winner["QualiPosition"],
+                "Called": picked["Driver"] == winner["Driver"],
+                "Podium": len(podium),
+                "ModelError": (raced["Predicted"] - raced["Position"]).abs().mean(),
+                "GridError": (raced["QualiPosition"] - raced["Position"]).abs().mean(),
+            }
+        )
+    return pd.DataFrame(rows, columns=RECORD_COLUMNS)
 
 
 def load_predictions(root: Path = races.DATA_DIR) -> pd.DataFrame:
