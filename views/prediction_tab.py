@@ -57,6 +57,35 @@ def show_table(table: pd.DataFrame, marked: pd.Series, columns: dict) -> None:
     )
 
 
+def next_race(bundle_version: str) -> tuple[int, str, pd.Series] | None:
+    """The race the model has predicted that hasn't been run yet, and its pick to win."""
+    table = data.race_predictions(bundle_version)
+    upcoming = table[table["Position"].isna()]
+    if upcoming.empty:
+        return None
+    year, round_number = upcoming[["Year", "Round"]].max()
+    saved = data.bundled_sessions(bundle_version)
+    names = saved.loc[(saved["Year"] == year) & (saved["Round"] == round_number), "EventName"]
+    if names.empty:
+        return None
+    weekend = upcoming[(upcoming["Year"] == year) & (upcoming["Round"] == round_number)]
+    return int(year), str(names.iloc[0]), weekend.sort_values("Predicted").iloc[0]
+
+
+def next_race_banner(bundle_version: str, year: int, event: str) -> None:
+    """Points to the next race's prediction from the race the app opens on."""
+    found = next_race(bundle_version)
+    if found is None or found[:2] == (year, event):
+        return
+    next_year, name, pick = found
+    link = f"?season={next_year}&race={races.slugify(name)}&session=qualifying&tab=prediction"
+    st.info(
+        f"**{name}**: the model picks **{pick['Driver']}** to win from "
+        f"P{pick['QualiPosition']:.0f}. [See the prediction]({link})",
+        icon=":material/insights:",
+    )
+
+
 def model_record(bundle_version: str) -> str:
     metrics = data.prediction_metrics(bundle_version)
     if not metrics:
@@ -80,11 +109,16 @@ def how_it_works(bundle_version: str) -> str:
 
 
 def prediction_tab(race: races.Race, bundle_version: str) -> None:
-    st.subheader("How predictable was it?")
-    weekend = weekend_predictions(race, bundle_version).dropna(subset=["Position"])
+    """The forecast after qualifying, and once the race is run, how close it came."""
+    weekend = weekend_predictions(race, bundle_version)
     if weekend.empty:
         st.info("There's no prediction for this race: it needs its qualifying session.")
         return
+    if weekend["Position"].isna().all():
+        upcoming_prediction(race, bundle_version)
+        return
+    st.subheader("How predictable was it?")
+    weekend = weekend.dropna(subset=["Position"])
     weekend = weekend.sort_values("Position")
     picked = weekend.loc[weekend["Predicted"].idxmin()]
     winner = weekend.iloc[0]
@@ -142,10 +176,8 @@ def prediction_tab(race: races.Race, bundle_version: str) -> None:
 
 
 def upcoming_prediction(race: races.Race, bundle_version: str) -> None:
-    """The predicted race result, shown with qualifying until the race is run."""
+    """The predicted race result, made after qualifying and shown until the race is run."""
     weekend = weekend_predictions(race, bundle_version)
-    if weekend.empty or weekend["Position"].notna().any():
-        return
     st.subheader("How will the race go?")
     weekend = weekend.sort_values("Predicted")
     favourite_pick = weekend.iloc[0]

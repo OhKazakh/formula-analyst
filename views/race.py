@@ -12,11 +12,12 @@ from views.links import requested, requested_int
 from views.long_runs_tab import long_runs_tab
 from views.overview_tab import overview_tab
 from views.pace_tab import pace_tab, practice_pace_tab
-from views.prediction_tab import prediction_tab
+from views.prediction_tab import next_race_banner, prediction_tab
 from views.replay_tab import replay_tab
 from views.results_tab import practice_tab, qualifying_tab
 from views.sectors_tab import sectors_tab
 from views.state import (
+    initial,
     keep_widget_state,
     pick_favourite,
     remember,
@@ -148,16 +149,15 @@ def event_sessions(year: int, event: str, bundle_version: str) -> list[str]:
 
 # The choice carries over to the next Grand Prix when it has the same session.
 def pick_session(year: int, event: str, names: list[str]) -> str:
-    wanted = st.session_state.get(SESSION_CHOICE)
-    if wanted is None:
-        wanted = {races.slugify(name): name for name in names}.get(requested("session"))
-    fallback = races.RACE if races.RACE in names else names[-1]
-    choice = st.sidebar.selectbox(
-        "Session",
-        names,
-        index=names.index(wanted if wanted in names else fallback),
-        key=f"session:{year}:{event}",
-    )
+    def choose() -> int:
+        wanted = st.session_state.get(SESSION_CHOICE)
+        if wanted is None:
+            wanted = {races.slugify(name): name for name in names}.get(requested("session"))
+        fallback = races.RACE if races.RACE in names else names[-1]
+        return names.index(wanted if wanted in names else fallback)
+
+    key = f"session:{year}:{event}"
+    choice = st.sidebar.selectbox("Session", names, index=initial(key, choose), key=key)
     st.session_state[SESSION_CHOICE] = choice
     return choice
 
@@ -173,21 +173,30 @@ def sidebar(bundle_version: str) -> tuple[int, str, str]:
         st.sidebar.error("No race data is available.")
         st.stop()
     years = sorted(years_available, reverse=True)
-    wanted_year = remembered_season() or requested_int("season")
-    default_year = years.index(wanted_year) if wanted_year in years else 0
-    year = st.sidebar.selectbox("Season", years, index=default_year, key="race_season")
+
+    def choose_year() -> int:
+        wanted = remembered_season() or requested_int("season")
+        return years.index(wanted) if wanted in years else 0
+
+    year = st.sidebar.selectbox(
+        "Season", years, index=initial("race_season", choose_year), key="race_season"
+    )
 
     events = season_events(year, bundled, online)
     if not events:
         st.sidebar.warning("No completed races for this season yet.")
         st.stop()
     countries = event_countries(year, bundle_version, online)
-    # The round picked on the championship page wins over the link the visit started from.
-    round_events = bundled[(bundled["Year"] == year) & (bundled["Round"] == remembered_round(year))]
-    remembered_event = next(iter(round_events["EventName"]), None)
-    requested_event = {races.slugify(name): name for name in events}.get(requested("race"))
-    wanted = remembered_event if remembered_event in events else requested_event
-    default = events.index(wanted or latest_race(year, bundled, events))
+
+    def choose_event() -> int:
+        # The round picked on the championship page wins over the link the visit started from.
+        chosen = bundled[(bundled["Year"] == year) & (bundled["Round"] == remembered_round(year))]
+        remembered_event = next(iter(chosen["EventName"]), None)
+        requested_event = {races.slugify(name): name for name in events}.get(requested("race"))
+        wanted = remembered_event if remembered_event in events else requested_event
+        return events.index(wanted or latest_race(year, bundled, events))
+
+    default = initial("race_event", choose_event, context=year)
     event = st.sidebar.selectbox(
         "Grand Prix",
         events,
@@ -329,12 +338,15 @@ def render() -> None:
     else:
         facts = qualifying_facts(race) if kind == "qualifying" else practice_facts(race)
     header(race, facts, season)
+    next_race_banner(bundle_version, year, event)
 
     clean = analysis.representative_laps(race.laps)
-    # Predictions are for Grand Prix races only, not sprints.
-    labels = TABS[kind] + (["Prediction"] if session == races.RACE else [])
+    # The forecast comes with Grand Prix qualifying and stays with the race; sprints have none.
+    labels = TABS[kind] + (["Prediction"] if session in (races.RACE, "Qualifying") else [])
     key = f"race_tab:{kind}"
-    default = remembered_tab(key, labels) or requested_tab(labels)
+    default = initial(
+        key, lambda: remembered_tab(key, labels) or requested_tab(labels), context=tuple(labels)
+    )
     tabs = st.tabs(labels, default=default, key=key, on_change="rerun")
     remember_tab(key, st.session_state.get(key, default or labels[0]))
     params = {"season": str(year), "race": races.slugify(event)}
@@ -350,9 +362,7 @@ def render() -> None:
         "Pace": lambda: pace_tab(race, clean) if kind == "race" else practice_pace_tab(race, clean),
         "Strategy": lambda: strategy_tab(race, clean, bundle_version),
         "Telemetry": lambda: telemetry_tab(race),
-        "Results": lambda: (
-            qualifying_tab(race, bundle_version) if kind == "qualifying" else practice_tab(race)
-        ),
+        "Results": lambda: qualifying_tab(race) if kind == "qualifying" else practice_tab(race),
         "Long runs": lambda: long_runs_tab(race),
         "Sectors": lambda: sectors_tab(race),
         "Conditions": lambda: conditions_tab(race),

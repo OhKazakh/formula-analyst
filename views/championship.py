@@ -9,6 +9,7 @@ from views import data, logos, theme
 from views.links import requested, requested_int
 from views.state import (
     favourite,
+    initial,
     pick_favourite,
     remember,
     remember_tab,
@@ -523,13 +524,13 @@ def render() -> None:
         st.info("No championship data is bundled.")
         return
     requested_year = requested_int("season")
-    wanted_year = remembered_season() or requested_year
-    year = st.sidebar.selectbox(
-        "Season",
-        years,
-        index=years.index(wanted_year) if wanted_year in years else 0,
-        key="championship_season",
-    )
+
+    def choose_year() -> int:
+        wanted = remembered_season() or requested_year
+        return years.index(wanted) if wanted in years else 0
+
+    picker = "championship_season"
+    year = st.sidebar.selectbox("Season", years, index=initial(picker, choose_year), key=picker)
     season: seasons.Season = data.season(year, bundle_version)
     rounds = season.completed_rounds
     st.title(f"{year} Championship")
@@ -538,14 +539,19 @@ def render() -> None:
         return
 
     requested_round = requested_int("round") if requested_year == year else None
-    wanted_round = remembered_round(year) or requested_round
+    slider = f"standings_after-{year}"
+
+    def choose_round() -> int:
+        wanted = remembered_round(year) or requested_round
+        return wanted if wanted in rounds else rounds[-1]
+
     after = (
         st.select_slider(
             "Standings after",
             options=rounds,
-            value=wanted_round if wanted_round in rounds else rounds[-1],
+            value=initial(slider, choose_round),
             format_func=lambda r: f"Round {r} · {season.event_name(r)}",
-            key=f"standings_after-{year}",
+            key=slider,
         )
         if len(rounds) > 1
         else rounds[0]
@@ -555,7 +561,9 @@ def render() -> None:
     liked = pick_favourite(drivers)
     colors = championship.team_colors(season.results, season.driver_styles)
 
-    view = remembered_tab("championship_view", VIEWS) or requested_view()
+    view = initial(
+        "championship_view", lambda: remembered_tab("championship_view", VIEWS) or requested_view()
+    )
     drivers_tab, teams_tab, teammates_tab = st.tabs(
         VIEWS, default=view, key="championship_view", on_change="rerun"
     )

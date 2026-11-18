@@ -1,4 +1,6 @@
 import re
+from collections.abc import Callable
+from typing import TypeVar
 
 import streamlit as st
 
@@ -26,6 +28,20 @@ def race_key(race: races.Race, name: str) -> str:
 def keep_widget_state() -> None:
     for key in [key for key in st.session_state if str(key).startswith(WIDGET_PREFIX)]:
         st.session_state[key] = st.session_state[key]
+
+
+T = TypeVar("T")
+
+
+# Streamlit resets a widget whose default changes between reruns, which undoes the very click
+# that changed it. So a default is worked out when its widget appears, then kept as it is.
+def initial(widget: str, choose: Callable[[], T], context: object = None) -> T:
+    store = f"initial:{widget}"
+    saved = st.session_state.get(store)
+    if widget not in st.session_state or saved is None or saved[0] != context:
+        saved = (context, choose())
+        st.session_state[store] = saved
+    return saved[1]
 
 
 def remember(season: int, round_number: int) -> None:
