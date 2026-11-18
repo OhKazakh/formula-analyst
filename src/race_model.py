@@ -15,7 +15,7 @@ FOLDS = 5
 
 
 # Every feature can only push a driver further back: a worse grid slot, a bigger qualifying
-# gap, slower long runs or weaker form. Without that the trees chase noise in 190 races.
+# gap, slower long runs or weaker form. Without that the trees chase noise in about 200 races.
 def regressor() -> HistGradientBoostingRegressor:
     return HistGradientBoostingRegressor(
         learning_rate=0.05,
