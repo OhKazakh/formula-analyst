@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
 
-from src import analysis, races, sessions
+from src import analysis, races, sectors, sessions
 from views import logos, theme, tyres
 from views.data import show
 from views.state import favourite
@@ -73,6 +73,15 @@ def qualifying_tab(race: races.Race) -> None:
             "Gap": results["Gap"].map(gap_text),
         }
     )
+    if sectors.has_sectors(race.laps):
+        # A driver's best three sectors of the session, and how much they left on track.
+        ideal = sectors.theoretical_best(race.laps).set_index("Driver")
+        table["Ideal"] = results["Driver"].map(ideal["Theoretical"]).map(lap_time)
+        table["Gain"] = (
+            results["Driver"]
+            .map(ideal["Gain"])
+            .map(lambda gain: f"{gain:.3f}" if pd.notna(gain) else "")
+        )
     st.dataframe(
         fastest_cells(table, labels, results[labels]),
         hide_index=True,
@@ -83,7 +92,9 @@ def qualifying_tab(race: races.Race) -> None:
     st.caption(
         f"Each driver's best lap in {', '.join(labels[:-1])} and {labels[-1]}, without laps "
         "deleted by the stewards, with the fastest in each part in purple. The gap is to pole, "
-        "from the last part each driver reached. Grid penalties aren't applied."
+        "from the last part each driver reached. Grid penalties aren't applied. The ideal lap "
+        "adds up a driver's best three sectors of the session, and the gain is how much quicker "
+        "that is than their fastest lap."
     )
 
 
