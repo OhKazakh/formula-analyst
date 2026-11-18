@@ -12,7 +12,6 @@ from views.links import requested, requested_int
 from views.long_runs_tab import long_runs_tab
 from views.overview_tab import overview_tab
 from views.pace_tab import pace_tab, practice_pace_tab
-from views.prediction_tab import next_race_banner, prediction_tab
 from views.replay_tab import replay_tab
 from views.results_tab import practice_tab, qualifying_tab
 from views.sectors_tab import sectors_tab
@@ -338,11 +337,9 @@ def render() -> None:
     else:
         facts = qualifying_facts(race) if kind == "qualifying" else practice_facts(race)
     header(race, facts, season)
-    next_race_banner(bundle_version, year, event)
 
     clean = analysis.representative_laps(race.laps)
-    # The forecast comes with Grand Prix qualifying and stays with the race; sprints have none.
-    labels = TABS[kind] + (["Prediction"] if session in (races.RACE, "Qualifying") else [])
+    labels = TABS[kind]
     key = f"race_tab:{kind}"
     default = initial(
         key, lambda: remembered_tab(key, labels) or requested_tab(labels), context=tuple(labels)
@@ -366,7 +363,6 @@ def render() -> None:
         "Long runs": lambda: long_runs_tab(race),
         "Sectors": lambda: sectors_tab(race),
         "Conditions": lambda: conditions_tab(race),
-        "Prediction": lambda: prediction_tab(race, bundle_version),
     }
     for label, tab in zip(labels, tabs, strict=True):
         if tab.open:
