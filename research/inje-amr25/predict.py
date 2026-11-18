@@ -545,7 +545,9 @@ def computer_lap(geometry: dict, loaded: list[dict], corners: dict) -> dict:
 # Output
 
 
-def chart(fit: tuple[float, float, float], amr25_kic: float, amr25: dict, path: Path) -> None:
+def chart(
+    fit: tuple[float, float, float], amr25_kic: float, amr25: dict, gap: float, path: Path
+) -> None:
     import matplotlib
 
     matplotlib.use("Agg")
@@ -590,9 +592,10 @@ def chart(fit: tuple[float, float, float], amr25_kic: float, amr25: dict, path: 
         color=muted,
         fontsize=12,
     )
-    low, high = sorted([amr25["ratio"], amr25["linear"]])
+    # The bridge predicts a pole lap; the AMR25 qualified `gap` off pole in 2025.
+    low, high = (time * (1 + gap) for time in sorted([amr25["ratio"], amr25["linear"]]))
     axes.vlines(amr25_kic, low, high, color=soft, lw=4, zorder=4)
-    axes.scatter([amr25_kic], [amr25["linear"]], s=220, color=soft, zorder=5)
+    axes.scatter([amr25_kic], [amr25["linear"] * (1 + gap)], s=220, color=soft, zorder=5)
     axes.annotate(
         f"AMR25, predicted\n{lap_time(low, 1)} to {lap_time(high, 1)}",
         (amr25_kic, (low + high) / 2),
@@ -606,7 +609,7 @@ def chart(fit: tuple[float, float, float], amr25_kic: float, amr25: dict, path: 
     )
     axes.annotate(
         "",
-        xy=(amr25_kic, amr25["linear"]),
+        xy=(amr25_kic, amr25["linear"] * (1 + gap)),
         xytext=(f1_kic, bridged),
         arrowprops={"arrowstyle": "->", "color": muted, "lw": 1.2},
     )
@@ -853,7 +856,7 @@ def main() -> int:
     }
     (HERE / "results.json").write_text(json.dumps(results, indent=2) + "\n")
     amr25_kic = seconds(F1_KIC_2013["qualifying"]) * era
-    chart(fit, amr25_kic, predictions["qualifying"], HERE / "chart.png")
+    chart(fit, amr25_kic, predictions["qualifying"], gap, HERE / "chart.png")
     speed_chart(computer, straight, HERE / "computer-lap.png")
     print("\nWrote results.json, chart.png and computer-lap.png")
     return 1 if disagree else 0
