@@ -1,3 +1,4 @@
+from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
@@ -309,3 +310,39 @@ def test_practice_order_puts_the_fastest_first():
     )
 
     assert races.fastest_first(["AAA", "CCC", "BBB", "DDD"], laps) == ["BBB", "AAA", "CCC", "DDD"]
+
+
+def qualifying_without_circuit(year: int, telemetry: pd.DataFrame | None = None) -> races.Race:
+    race = make_race()
+    return replace(
+        race,
+        year=year,
+        session="Qualifying",
+        telemetry=race.telemetry if telemetry is None else telemetry,
+        track=pd.DataFrame(columns=races.TRACK_COLUMNS),
+        corners=pd.DataFrame(columns=races.CORNER_COLUMNS),
+        map_corners=pd.DataFrame(columns=races.MAP_CORNER_COLUMNS),
+    )
+
+
+def test_qualifying_before_its_race_borrows_the_circuit_from_another_year(tmp_path):
+    races.save_race(make_race(), tmp_path)
+    races.save_race(qualifying_without_circuit(2025), tmp_path)
+
+    loaded = races.load_race(2025, "Italian Grand Prix", "Qualifying", root=tmp_path)
+
+    assert loaded.year == 2025
+    pd.testing.assert_frame_equal(loaded.track, make_race().track, check_dtype=False)
+    pd.testing.assert_frame_equal(loaded.corners, make_race().corners)
+
+
+def test_a_circuit_of_another_length_is_not_borrowed(tmp_path):
+    races.save_race(make_race(), tmp_path)
+    longer = pd.DataFrame(
+        {"Driver": ["AAA", "AAA", "BBB"], "Distance": [0.0, 20.0, 0.0], "Speed": [300.0] * 3}
+    )
+    races.save_race(qualifying_without_circuit(2025, longer), tmp_path)
+
+    loaded = races.load_race(2025, "Italian Grand Prix", "Qualifying", root=tmp_path)
+
+    assert loaded.track.empty

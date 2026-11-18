@@ -179,7 +179,7 @@ def computer_section(
         "speeds, acceleration and braking on its fastest laps here and tuned on dry qualifying "
         "at this circuit in other years. Each driver's best lap is set against their car's. "
         "It's rough: in the 2018 to 2026 sessions that have one, it was within a second of a "
-        "car's best lap 77% of the time, so a small gap either way means little. Green means "
+        "car's best lap 76% of the time, so a small gap either way means little. Green means "
         "the driver beat it."
     )
 

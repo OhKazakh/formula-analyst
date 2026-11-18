@@ -100,10 +100,12 @@ def computer_laps(
     none = pd.Series(dtype=float)
     if ideal_lap.wet(_race.weather, _race.laps):
         return none, "it was wet, and the computer only drives in the dry"
+    if _race.track.empty or _race.corners.empty:
+        return none, "there's no track outline for this circuit yet"
     simulated = ideal_lap.simulated_laps(_race.laps, _race.telemetry, _race.track, _race.corners)
     if simulated.empty:
-        return none, "there's no track outline or car data to simulate"
-    length = ideal_lap.lap_length(_race.telemetry)
+        return none, "the car data didn't line up with the track outline"
+    length = races.lap_length(_race.telemetry)
     typical = float(simulated["Simulated"].median())
     level = ideal_lap.track_level(computer_levels(bundle_version), event, year, length, typical)
     if level is None:

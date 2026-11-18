@@ -28,7 +28,6 @@ CORNER_RADII = (10.0, 600.0)  # metres; outside this a "corner" is noise or a st
 BIN = 20 / 3.6  # m/s, for the acceleration and braking tables
 FULL_THROTTLE = 98
 SAMPLE_GAP = (0.05, 0.5)  # seconds; longer gaps in the feed hide what the car did
-SAME_LAYOUT = 0.02  # lap lengths this close count as the same layout of a circuit
 TUNING_YEARS = (2, 3)  # at least and at most this many other years tune a circuit
 TUNING_SPREAD = 0.03  # years further apart than this mean the outline can't be trusted
 PLAUSIBLE = 0.05  # further than this from the circuit's usual lap times, the data was misread
@@ -137,10 +136,6 @@ def lap_seconds(speed: np.ndarray, step: float) -> float:
     return float(np.sum(step / ((speed + np.roll(speed, -1)) / 2)))
 
 
-def lap_length(telemetry: pd.DataFrame) -> float:
-    return float(telemetry.groupby("Driver")["Distance"].max().median())
-
-
 def apexes(distance: np.ndarray, speed: np.ndarray) -> np.ndarray:
     """The slowest point of every slow corner, which no two cars can mistake for another."""
     found = []
@@ -216,7 +211,7 @@ def simulated_laps(
         return empty
     points = resample(track[["X", "Y"]].to_numpy(dtype=float))
     radius = radii(points)
-    length = lap_length(telemetry)
+    length = races.lap_length(telemetry)
     # The outline and the lap differ a little in length, so they're lined up in proportion.
     step = length / len(points)
     along = np.arange(len(points)) * step
@@ -279,7 +274,7 @@ def track_level(
     fewest, most = TUNING_YEARS
     dry = ~levels["Wet"].astype(bool)
     other = levels[(levels["Year"] != year) & (levels["EventName"] == event) & dry]
-    other = other[(other["Length"] / length - 1).abs() <= SAME_LAYOUT]
+    other = other[(other["Length"] / length - 1).abs() <= races.SAME_LAYOUT]
     # The nearest seasons first, the earlier one on a tie.
     distance = (other["Year"] - year).abs() * 2 + (other["Year"] > year)
     nearest = other.assign(Distance=distance).nsmallest(most, "Distance")
@@ -313,7 +308,7 @@ def build(root: Path = races.DATA_DIR) -> Path:
             {
                 "Year": row.Year,
                 "EventName": row.EventName,
-                "Length": lap_length(race.telemetry),
+                "Length": races.lap_length(race.telemetry),
                 "Wet": wet(race.weather, race.laps),
                 "Level": float((simulated["Best"] / simulated["Simulated"]).median()),
                 "Lap": float(simulated["Best"].median()),

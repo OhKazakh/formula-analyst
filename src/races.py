@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import os
 import re
 import unicodedata
@@ -26,6 +27,7 @@ CACHE_DIR = ROOT / "cache"
 DATA_DIR = ROOT / "data"
 
 OFFLINE_ENV = "FORMULA_ANALYST_OFFLINE"
+SAME_LAYOUT = 0.02  # lap lengths this close count as the same layout of a circuit
 LIVE_TIMING = "https://livetiming.formula1.com"
 # The archive itself needs an F1 TV login since October 2026, so probe a file inside it.
 LIVE_TIMING_PROBE = f"{LIVE_TIMING}/static/2024/Index.json"
@@ -170,17 +172,53 @@ def load_race(year: int, event: str, session: str = RACE, root: Path = DATA_DIR)
     saved_path = None if match.empty else match["Path"].iloc[0]
     race = read_race(saved_path) if saved_path else load_live_race(year, event, session)
     main = weekend[weekend["Session"] == RACE]
-    if session == RACE or not race.track.empty or main.empty:
-        return race
-    # Other sessions borrow the circuit from the race, and its colours for anyone missing.
-    circuit = read_race(main["Path"].iloc[0])
-    return replace(
-        race,
-        corners=circuit.corners,
-        track=circuit.track,
-        map_corners=circuit.map_corners,
-        driver_styles=circuit.driver_styles | race.driver_styles,
-    )
+    if session != RACE and race.track.empty and not main.empty:
+        # Other sessions borrow the circuit from the race, and its colours for anyone missing.
+        circuit = read_race(main["Path"].iloc[0])
+        race = replace(
+            race,
+            corners=circuit.corners,
+            track=circuit.track,
+            map_corners=circuit.map_corners,
+            driver_styles=circuit.driver_styles | race.driver_styles,
+        )
+    if race.track.empty or race.corners.empty:
+        # The race hasn't been run yet, or its data came without the circuit.
+        circuit = circuit_from_another_year(saved, year, event, lap_length(race.telemetry))
+        if circuit is not None:
+            race = replace(
+                race,
+                corners=circuit.corners,
+                track=circuit.track,
+                map_corners=circuit.map_corners,
+            )
+    return race
+
+
+def lap_length(telemetry: pd.DataFrame) -> float:
+    if telemetry.empty:
+        return float("nan")
+    return float(telemetry.groupby("Driver")["Distance"].max().median())
+
+
+def circuit_from_another_year(
+    saved: pd.DataFrame, year: int, event: str, length: float
+) -> Race | None:
+    """The same Grand Prix's race in the nearest year with a circuit, if the layout matches.
+
+    A lap length within 2% keeps out a changed layout or a new venue under an old name.
+    """
+    if math.isnan(length):
+        return None
+    others = saved[(saved["EventName"] == event) & (saved["Session"] == RACE)]
+    others = others[others["Year"] != year]
+    for path in others.sort_values("Year", key=lambda years: (years - year).abs())["Path"]:
+        circuit = read_race(path)
+        if circuit.track.empty or circuit.corners.empty:
+            continue
+        if abs(lap_length(circuit.telemetry) / length - 1) <= SAME_LAYOUT:
+            return circuit
+    return None
 
 
 def load_live_race(year: int, event: str, session: str = RACE) -> Race:
