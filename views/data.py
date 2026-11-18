@@ -2,7 +2,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-from src import analysis, degradation, predictions, races, seasons, teammates
+from src import analysis, degradation, ideal_lap, predictions, races, seasons, teammates
 
 
 @st.cache_data(ttl="1h", show_spinner=False)
@@ -85,6 +85,30 @@ def race_predictions(bundle_version: str) -> pd.DataFrame:
 @st.cache_data(show_spinner=False)
 def prediction_metrics(bundle_version: str) -> dict:
     return predictions.load_metrics()
+
+
+@st.cache_data(show_spinner=False)
+def computer_levels(bundle_version: str) -> pd.DataFrame:
+    return ideal_lap.saved_levels()
+
+
+@st.cache_data(show_spinner=False, max_entries=16)
+def computer_laps(
+    year: int, event: str, session: str, bundle_version: str, _race: races.Race
+) -> tuple[pd.Series, str]:
+    """Each car's computer lap, or why there isn't one."""
+    none = pd.Series(dtype=float)
+    if ideal_lap.wet(_race.weather, _race.laps):
+        return none, "it was wet, and the computer only drives in the dry"
+    simulated = ideal_lap.simulated_laps(_race.laps, _race.telemetry, _race.track, _race.corners)
+    if simulated.empty:
+        return none, "there's no track outline or car data to simulate"
+    length = ideal_lap.lap_length(_race.telemetry)
+    typical = float(simulated["Simulated"].median())
+    level = ideal_lap.track_level(computer_levels(bundle_version), event, year, length, typical)
+    if level is None:
+        return none, "the simulation hasn't matched real laps at this circuit reliably enough"
+    return ideal_lap.computer_laps(simulated, level), ""
 
 
 def show(figure: go.Figure) -> None:

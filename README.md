@@ -11,7 +11,7 @@ A race analysis dashboard built on [FastF1](https://github.com/theOehrly/Fast-F1
 - **Race:** positions and gaps lap by lap, a timing screen for any lap, a replay on the track map, pace and tyre degradation, pit stops and undercuts, and two drivers' fastest laps compared channel by channel.
 - **Strategy:** a model trained on races since 2019 predicts how much time each tyre compound loses, and a simulator ranks one- and two-stop plans against the winner's.
 - **Race predictions:** after qualifying, a model trained on every race since 2018 predicts the finishing order from the grid, practice long runs and recent form. Its own page shows the next forecast, the model's record and every race checked against the result.
-- **Practice, qualifying and sprints:** results, gaps to pole, long runs and sector times for every session of the weekend.
+- **Practice, qualifying and sprints:** results, gaps to pole, long runs and sector times for every session of the weekend, plus a perfect lap from the session's fastest sectors and a computer lap simulated for each car in qualifying.
 - **Championship:** drivers' and teams' standings after any round, who can still win the title and what it would take, simulated title chances, teammate head-to-heads, and points through the season.
 - Weather, race control decisions, penalties and team radio for every session.
 - Shareable links for every view, a favourite driver highlighted throughout, and light and dark themes.

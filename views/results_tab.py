@@ -1,12 +1,13 @@
 import pandas as pd
 import streamlit as st
 
-from src import analysis, races, sectors, sessions
-from views import logos, theme, tyres
+from src import analysis, ideal_lap, races, sessions
+from views import data, logos, theme, tyres
 from views.data import show
 from views.state import favourite
 
 BADGE = st.column_config.ImageColumn(" ", width=44)
+COMPUTER_GAP = "vs computer"
 
 
 def lap_time(seconds: float) -> str:
@@ -26,7 +27,12 @@ def team_badges(race: races.Race, table: pd.DataFrame) -> list[str]:
     ]
 
 
-def fastest_cells(table: pd.DataFrame, columns: list[str], times: pd.DataFrame):
+def fastest_cells(
+    table: pd.DataFrame,
+    columns: list[str],
+    times: pd.DataFrame,
+    beaten: pd.Series | None = None,
+):
     chosen = favourite()
 
     def colours(_: pd.DataFrame) -> pd.DataFrame:
@@ -36,12 +42,51 @@ def fastest_cells(table: pd.DataFrame, columns: list[str], times: pd.DataFrame):
         for column in columns:
             fastest = times[column].min()
             styles.loc[(times[column] == fastest).to_numpy(), column] = theme.FASTEST
+        if beaten is not None:
+            styles.loc[beaten.to_numpy(), COMPUTER_GAP] = theme.PERSONAL_BEST
         return styles
 
     return table.style.apply(colours, axis=None)
 
 
-def qualifying_tab(race: races.Race) -> None:
+def signed(seconds: float) -> str:
+    return "" if pd.isna(seconds) else f"{seconds:+.3f}".replace("-", "−")
+
+
+def perfect_lap_text(laps: pd.DataFrame, fastest: float) -> str:
+    perfect = ideal_lap.perfect_lap(laps)
+    if perfect.empty or perfect["Time"].sum() > fastest:
+        return ""
+    total = perfect["Time"].sum()
+    owners = ", ".join(f"S{row.Sector} {row.Driver}" for row in perfect.itertuples())
+    return (
+        f"The **perfect lap**, the session's fastest three sectors joined up ({owners}), is "
+        f"{lap_time(total)}: {fastest - total:.3f} s quicker than the fastest lap anyone drove."
+    )
+
+
+def computer_text(drivers: pd.Series, versus: pd.Series) -> str:
+    if versus.isna().all():
+        return ""
+    text = "The **computer lap** simulates each car round this track, and "
+    beaten = versus[versus < 0].sort_values()
+    if len(beaten) == 1:
+        driver = drivers[beaten.index[0]]
+        return text + f"**{driver}** beat theirs by {-beaten.iloc[0]:.3f} s."
+    if len(beaten) > 1:
+        driver = drivers[beaten.index[0]]
+        return (
+            text + f"{len(beaten)} drivers beat theirs, **{driver}** by the most: "
+            f"{-beaten.iloc[0]:.3f} s."
+        )
+    closest = versus.idxmin()
+    return (
+        text + f"nobody beat theirs. **{drivers[closest]}** came closest, "
+        f"{versus[closest]:.3f} s off."
+    )
+
+
+def qualifying_tab(race: races.Race, bundle_version: str) -> None:
     sprint = race.session != "Qualifying"
     st.subheader("Who took pole for the sprint?" if sprint else "Who took pole?")
     results = sessions.qualifying_results(race.laps, race.order, race.session)
@@ -64,6 +109,16 @@ def qualifying_tab(race: races.Race) -> None:
         )
     )
 
+    best = results[labels].min(axis=1)
+    cars, missing = data.computer_laps(race.year, race.event, race.session, bundle_version, race)
+    computer = results["Team"].map(cars)
+    versus = best - computer
+    for line in (perfect_lap_text(race.laps, best.min()), computer_text(results["Driver"], versus)):
+        if line:
+            st.markdown(line)
+    if missing:
+        st.caption(f"No computer lap for this session: {missing}.")
+
     table = pd.DataFrame(
         {
             "Pos": results["Position"],
@@ -71,19 +126,16 @@ def qualifying_tab(race: races.Race) -> None:
             "Driver": results["Driver"],
             **{label: results[label].map(lap_time) for label in labels},
             "Gap": results["Gap"].map(gap_text),
+            "Best lap": best.map(lap_time),
         }
     )
-    if sectors.has_sectors(race.laps):
-        # A driver's best three sectors of the session, and how much they left on track.
-        ideal = sectors.theoretical_best(race.laps).set_index("Driver")
-        table["Ideal"] = results["Driver"].map(ideal["Theoretical"]).map(lap_time)
-        table["Gain"] = (
-            results["Driver"]
-            .map(ideal["Gain"])
-            .map(lambda gain: f"{gain:.3f}" if pd.notna(gain) else "")
-        )
+    beaten = None
+    if computer.notna().any():
+        table["Computer"] = computer.map(lap_time)
+        table[COMPUTER_GAP] = versus.map(signed)
+        beaten = versus < 0
     st.dataframe(
-        fastest_cells(table, labels, results[labels]),
+        fastest_cells(table, labels, results[labels], beaten),
         hide_index=True,
         width="stretch",
         height=35 * (len(table) + 1) + 3,
@@ -92,9 +144,13 @@ def qualifying_tab(race: races.Race) -> None:
     st.caption(
         f"Each driver's best lap in {', '.join(labels[:-1])} and {labels[-1]}, without laps "
         "deleted by the stewards, with the fastest in each part in purple. The gap is to pole, "
-        "from the last part each driver reached. Grid penalties aren't applied. The ideal lap "
-        "adds up a driver's best three sectors of the session, and the gain is how much quicker "
-        "that is than their fastest lap."
+        "from the last part each driver reached. Grid penalties aren't applied. The perfect lap "
+        "joins the session's fastest time through each of the three timing sectors. The computer "
+        "lap is a simulation of each car, built from its corner speeds, acceleration and braking "
+        "on its fastest laps here and tuned on dry qualifying at this circuit in other years. "
+        "It's rough: in the 2018 to 2026 sessions that have one, it was within a second of a "
+        "car's best lap 77% of the time, so a small gap either way means little. A green gap "
+        "means the driver beat it."
     )
 
 

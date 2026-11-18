@@ -359,7 +359,9 @@ def render() -> None:
         "Pace": lambda: pace_tab(race, clean) if kind == "race" else practice_pace_tab(race, clean),
         "Strategy": lambda: strategy_tab(race, clean, bundle_version),
         "Telemetry": lambda: telemetry_tab(race),
-        "Results": lambda: qualifying_tab(race) if kind == "qualifying" else practice_tab(race),
+        "Results": lambda: (
+            qualifying_tab(race, bundle_version) if kind == "qualifying" else practice_tab(race)
+        ),
         "Long runs": lambda: long_runs_tab(race),
         "Sectors": lambda: sectors_tab(race),
         "Conditions": lambda: conditions_tab(race),

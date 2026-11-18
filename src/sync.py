@@ -8,7 +8,7 @@ import fastf1
 import pandas as pd
 from fastf1.exceptions import ErgastError, RateLimitExceededError
 
-from src import model, openf1, race_model, races, seasons, team_logos
+from src import ideal_lap, model, openf1, race_model, races, seasons, team_logos
 
 # Formula 1's own archive needs an F1 TV login since October 2026; OpenF1 is free.
 LOADERS = {"openf1": openf1.load_session, "fastf1": races.load_live_race}
@@ -195,6 +195,8 @@ def main(argv: list[str] | None = None) -> int:
     if added and not args.skip_model:
         path = race_model.build()
         print(f"saved  {path.relative_to(races.ROOT)} race predictions", flush=True)
+        path = ideal_lap.build()
+        print(f"saved  {path.relative_to(races.ROOT)} computer lap tuning", flush=True)
     return 1 if failures else 0
 
 
