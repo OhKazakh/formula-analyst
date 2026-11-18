@@ -20,6 +20,8 @@ INITIALS = {
 }
 LIGHT_INK = "#FFFFFF"
 DARK_INK = "#15151E"
+# Marks stay white like formula1.com's, unless the team colour is nearly white itself.
+NEAR_WHITE = 1.25
 SIZE = 28
 # Turns a white mark carbon, for team colours too light for white.
 DARK_MARK = (
@@ -63,7 +65,7 @@ def badge_svg(team: str, color: str | None, year: int | None = None) -> str:
     )
     logo = _logo(year, team) if year else None
     if logo:
-        dark = foreground == DARK_INK
+        dark = contrast(fill, LIGHT_INK) < NEAR_WHITE
         body = (
             (DARK_MARK if dark else "")
             + square
