@@ -324,8 +324,8 @@ def render() -> None:
         return
     st.markdown(
         "After qualifying, a model trained on every race since 2018 predicts the finishing order "
-        "from the grid, practice long runs and recent form. The forecast goes up on Saturday "
-        "night and is checked against the result after the race."
+        "from the grid, practice long runs and recent form. The forecast goes up within a few "
+        "hours of qualifying and is checked against the result after the race."
     )
     overall(bundle_version)
 
@@ -333,8 +333,8 @@ def render() -> None:
     if upcoming is None:
         st.subheader("What's next?")
         st.info(
-            "No race is waiting to be run. The next forecast appears after qualifying, when the "
-            "Saturday night update runs."
+            "No race is waiting to be run. The next forecast appears within a few hours of the "
+            "next qualifying session."
         )
     else:
         weekend, name, _ = upcoming
