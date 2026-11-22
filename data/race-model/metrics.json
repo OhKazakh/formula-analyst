@@ -2,8 +2,8 @@
   "races": 193,
   "folds": 5,
   "model": {
-    "winner": 0.544,
-    "podium": 0.675,
+    "winner": 0.528,
+    "podium": 0.67,
     "position_error": 3.39
   },
   "qualifying": {

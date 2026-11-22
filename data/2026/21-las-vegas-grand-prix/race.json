@@ -1,0 +1,305 @@
+{
+  "format": 2,
+  "year": 2026,
+  "round": 21,
+  "event": "Las Vegas Grand Prix",
+  "session": "Race",
+  "total_laps": 50,
+  "order": [
+    "VER",
+    "NOR",
+    "PIA",
+    "ANT",
+    "GAS",
+    "COL",
+    "HAM",
+    "SAI",
+    "RUS",
+    "LEC",
+    "HUL",
+    "BOR",
+    "BEA",
+    "LAW",
+    "HAD",
+    "CAM",
+    "STR",
+    "BOT",
+    "ALO",
+    "LIN",
+    "PER",
+    "ALB"
+  ],
+  "corners": [
+    {
+      "Number": 1,
+      "Letter": "",
+      "Distance": 255.33804987033392
+    },
+    {
+      "Number": 2,
+      "Letter": "",
+      "Distance": 355.3308406221252
+    },
+    {
+      "Number": 3,
+      "Letter": "",
+      "Distance": 546.1430560194876
+    },
+    {
+      "Number": 4,
+      "Letter": "",
+      "Distance": 674.8705283837506
+    },
+    {
+      "Number": 5,
+      "Letter": "",
+      "Distance": 1517.104192740006
+    },
+    {
+      "Number": 6,
+      "Letter": "",
+      "Distance": 1777.9836003360451
+    },
+    {
+      "Number": 7,
+      "Letter": "",
+      "Distance": 2017.2663754653358
+    },
+    {
+      "Number": 8,
+      "Letter": "",
+      "Distance": 2071.8958644697846
+    },
+    {
+      "Number": 9,
+      "Letter": "",
+      "Distance": 2193.6245805014046
+    },
+    {
+      "Number": 10,
+      "Letter": "",
+      "Distance": 2689.2031297847448
+    },
+    {
+      "Number": 11,
+      "Letter": "",
+      "Distance": 2945.985299754154
+    },
+    {
+      "Number": 12,
+      "Letter": "",
+      "Distance": 3179.389453472247
+    },
+    {
+      "Number": 13,
+      "Letter": "",
+      "Distance": 3943.2553765937337
+    },
+    {
+      "Number": 14,
+      "Letter": "",
+      "Distance": 5119.901832049297
+    },
+    {
+      "Number": 15,
+      "Letter": "",
+      "Distance": 5175.6057605930455
+    },
+    {
+      "Number": 16,
+      "Letter": "",
+      "Distance": 5248.120244327316
+    },
+    {
+      "Number": 17,
+      "Letter": "",
+      "Distance": 5985.2136979997
+    }
+  ],
+  "map_corners": [
+    {
+      "Label": "1",
+      "X": -166.2,
+      "Y": 427.5
+    },
+    {
+      "Label": "2",
+      "X": -245.8,
+      "Y": 290.4
+    },
+    {
+      "Label": "3",
+      "X": -72.6,
+      "Y": 126.6
+    },
+    {
+      "Label": "4",
+      "X": -194.1,
+      "Y": 11.6
+    },
+    {
+      "Label": "5",
+      "X": -1085.0,
+      "Y": -3.3
+    },
+    {
+      "Label": "6",
+      "X": -1051.4,
+      "Y": 316.7
+    },
+    {
+      "Label": "7",
+      "X": -1232.8,
+      "Y": 341.5
+    },
+    {
+      "Label": "8",
+      "X": -1286.9,
+      "Y": 283.6
+    },
+    {
+      "Label": "9",
+      "X": -1450.5,
+      "Y": 393.0
+    },
+    {
+      "Label": "10",
+      "X": -1516.3,
+      "Y": -88.9
+    },
+    {
+      "Label": "11",
+      "X": -1734.4,
+      "Y": -225.2
+    },
+    {
+      "Label": "12",
+      "X": -1808.5,
+      "Y": -502.0
+    },
+    {
+      "Label": "13",
+      "X": -1078.9,
+      "Y": -801.8
+    },
+    {
+      "Label": "14",
+      "X": 127.4,
+      "Y": -808.2
+    },
+    {
+      "Label": "15",
+      "X": 82.8,
+      "Y": -699.9
+    },
+    {
+      "Label": "16",
+      "X": 209.3,
+      "Y": -687.0
+    },
+    {
+      "Label": "17",
+      "X": 200.9,
+      "Y": 96.9
+    }
+  ],
+  "driver_styles": {
+    "VER": {
+      "color": "#4781d7",
+      "linestyle": "solid"
+    },
+    "NOR": {
+      "color": "#f47600",
+      "linestyle": "solid"
+    },
+    "PIA": {
+      "color": "#f47600",
+      "linestyle": "dashed"
+    },
+    "ANT": {
+      "color": "#00d7b6",
+      "linestyle": "solid"
+    },
+    "GAS": {
+      "color": "#00a1e8",
+      "linestyle": "solid"
+    },
+    "COL": {
+      "color": "#00a1e8",
+      "linestyle": "dashed"
+    },
+    "HAM": {
+      "color": "#ed1131",
+      "linestyle": "solid"
+    },
+    "SAI": {
+      "color": "#1868db",
+      "linestyle": "solid"
+    },
+    "RUS": {
+      "color": "#00d7b6",
+      "linestyle": "dashed"
+    },
+    "LEC": {
+      "color": "#ed1131",
+      "linestyle": "dashed"
+    },
+    "HUL": {
+      "color": "#f50537",
+      "linestyle": "solid"
+    },
+    "BOR": {
+      "color": "#f50537",
+      "linestyle": "dashed"
+    },
+    "BEA": {
+      "color": "#9c9fa2",
+      "linestyle": "solid"
+    },
+    "LAW": {
+      "color": "#6c98ff",
+      "linestyle": "solid"
+    },
+    "HAD": {
+      "color": "#4781d7",
+      "linestyle": "dashed"
+    },
+    "CAM": {
+      "color": "#9c9fa2",
+      "linestyle": "dashed"
+    },
+    "STR": {
+      "color": "#229971",
+      "linestyle": "solid"
+    },
+    "BOT": {
+      "color": "#909090",
+      "linestyle": "solid"
+    },
+    "ALO": {
+      "color": "#229971",
+      "linestyle": "dashed"
+    },
+    "LIN": {
+      "color": "#6c98ff",
+      "linestyle": "dashed"
+    },
+    "PER": {
+      "color": "#909090",
+      "linestyle": "dashed"
+    },
+    "ALB": {
+      "color": "#1868db",
+      "linestyle": "dashed"
+    }
+  },
+  "compound_colors": {
+    "SOFT": "#da291c",
+    "MEDIUM": "#ffd12e",
+    "HARD": "#f0f0ec",
+    "INTERMEDIATE": "#43b02a",
+    "WET": "#0067ad",
+    "UNKNOWN": "#00ffff",
+    "TEST-UNKNOWN": "#434649"
+  }
+}
