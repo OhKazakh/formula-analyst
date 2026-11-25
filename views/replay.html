@@ -256,6 +256,8 @@ function order(t) {
     || (a.state.running - b.state.running) || stopped(a, b) || (grid(a.car.code) - grid(b.car.code)));
 }
 
+// Driver codes, colours and compounds come from the timing feeds; escape them before they become HTML.
+const safe = value => String(value).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"})[c]);
 const rows = document.getElementById("rows");
 function drawTower(states) {
   const leader = states[0];
@@ -271,12 +273,12 @@ function drawTower(states) {
     const compound = item.state.lap.compound;
     const colour = (DATA.compounds || {})[compound] || "#888888";
     const tyre = compound
-      ? `<span class="tyre" style="border-color:${colour};color:${colour}" title="${compound.toLowerCase()}">${LETTERS[compound] || "?"}</span>`
+      ? `<span class="tyre" style="border-color:${safe(colour)};color:${safe(colour)}" title="${safe(compound.toLowerCase())}">${LETTERS[compound] || "?"}</span>`
       : "<span></span>";
     const classes = ["row", out ? "out" : "", car.code === DATA.favourite ? "favourite" : ""].join(" ");
     return `<div class="${classes}"><span class="pos">${index + 1}</span>`
-      + `<span class="bar" style="background:${car.color}"></span><span class="code">${car.code}</span>`
-      + `<span class="gap">${gap}</span>${tyre}</div>`;
+      + `<span class="bar" style="background:${safe(car.color)}"></span><span class="code">${safe(car.code)}</span>`
+      + `<span class="gap">${safe(gap)}</span>${tyre}</div>`;
   }).join("");
 }
 
