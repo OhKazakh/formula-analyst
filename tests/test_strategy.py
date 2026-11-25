@@ -128,3 +128,44 @@ def test_plan_time_matches_the_best_plan():
     )
 
     assert time == pytest.approx(best.time)
+
+
+def test_rejoin_places_a_stop_among_the_gaps_at_that_lap():
+    laps = race_with_stops()
+    stops = strategy.pit_stops(laps)
+
+    result = strategy.rejoin(laps, stops, "AAA", 5)
+
+    assert result.loss == pytest.approx(25.0)
+    assert (result.position_before, result.position_after) == (1, 2)
+    assert result.ahead[0] == "BBB"
+    assert result.ahead[1] == pytest.approx(24.0)
+    assert result.behind is None
+    assert result.actual_position is None
+
+
+def test_rejoin_reports_where_a_real_stop_came_out():
+    laps = race_with_stops()
+    result = strategy.rejoin(laps, strategy.pit_stops(laps), "AAA", 10)
+
+    # The made-up laps don't add the stop to AAA's race time, so it stays in front.
+    assert result.actual_position == 1
+
+
+def test_rejoin_needs_a_timed_lap_and_a_pit_loss():
+    laps = race_with_stops()
+    stops = strategy.pit_stops(laps)
+
+    assert strategy.rejoin(laps, stops, "AAA", 99) is None
+    assert strategy.rejoin(laps, stops.iloc[0:0], "AAA", 5) is None
+
+
+def test_rejoin_figure_draws_the_ring_and_the_arc():
+    laps = race_with_stops()
+    result = strategy.rejoin(laps, strategy.pit_stops(laps), "AAA", 5)
+
+    styles = {"AAA": {"color": "#E10600"}, "BBB": {"color": "#3671C6"}}
+    figure = strategy.rejoin_figure(result, styles, 90.0)
+
+    assert figure.layout.polar.angularaxis.direction == "clockwise"
+    assert len(figure.data) == 6

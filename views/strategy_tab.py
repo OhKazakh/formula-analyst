@@ -74,6 +74,49 @@ def pit_stops_section(race: races.Race) -> None:
     )
 
 
+def rejoin_section(race: races.Race) -> None:
+    st.subheader("Where would a stop have put them?")
+    stops = strategy.pit_stops(race.laps)
+    if strategy.pit_loss(stops) is None or race.total_laps < 3:
+        st.info("This session has no pit stops to measure a pit loss from.")
+        return
+    left, right = st.columns([1, 2])
+    driver = left.selectbox("Driver", race.drivers, key=race_key(race, "rejoin_driver"))
+    own = stops[stops["Driver"] == driver]["Lap"]
+    lap = right.slider(
+        "Pits at the end of lap",
+        1,
+        race.total_laps - 1,
+        int(own.iloc[0]) if not own.empty else race.total_laps // 2,
+        key=race_key(race, f"rejoin_lap_{driver}"),
+    )
+    result = strategy.rejoin(race.laps, stops, driver, lap)
+    if result is None:
+        st.info(f"{driver} has no timed lap {lap}.")
+        return
+    text = (
+        f"If **{driver}** had pitted at the end of lap {lap}, a {result.loss:.1f} s stop "
+        f"puts them **P{result.position_after}** (from P{result.position_before})"
+    )
+    if result.ahead:
+        text += f", {result.ahead[1]:.1f} s behind {result.ahead[0]}"
+    if result.behind:
+        text += f" and {result.behind[1]:.1f} s ahead of {result.behind[0]}"
+    text += "."
+    if result.actual_position is not None:
+        text += f" {driver} did stop on that lap and came out P{result.actual_position}."
+    st.markdown(text)
+    lap_time = analysis.representative_laps(race.laps)["LapTimeSeconds"].median()
+    show(strategy.rejoin_figure(result, race.driver_styles, lap_time))
+    conditions = "under a safety car or VSC" if result.neutralised else "under green flags"
+    st.caption(
+        f"The ring is one lap at race pace ({lap_time:.1f} s), with the leader at the top and "
+        f"every car clockwise by its gap at the line. The pit loss is the median time lost of "
+        f"{plural(result.stops, 'stop')} made {conditions}, so it assumes the others keep their "
+        "gaps while the stop happens."
+    )
+
+
 def wear_rates(race: races.Race, clean: pd.DataFrame) -> None:
     st.subheader("How fast did the tyres degrade?")
     left, right = st.columns(2)
@@ -258,6 +301,8 @@ def strategy_tab(race: races.Race, clean: pd.DataFrame, bundle_version: str) -> 
     tyre_strategy(race)
     st.divider()
     pit_stops_section(race)
+    st.divider()
+    rejoin_section(race)
     st.divider()
     wear_rates(race, clean)
     st.divider()

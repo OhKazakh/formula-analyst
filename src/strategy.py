@@ -8,7 +8,7 @@ import pandas as pd
 import plotly.graph_objects as go
 
 from src import analysis
-from src.charts import OUTLINE, finish
+from src.charts import ACCENT, NEUTRAL, OUTLINE, driver_style, finish, hard_to_see
 
 MAX_PIT_LANE = 60.0
 UNDERCUT_GAP = 3.0
@@ -17,6 +17,7 @@ MIN_STINT = 5
 SOFTEST_FIRST = ("SOFT", "MEDIUM", "HARD")
 STOP_COLUMNS = ["Driver", "Team", "Lap", "PitLane", "TimeLost", "From", "To"]
 UNDERCUT_COLUMNS = ["Lap", "Attacker", "Defender", "Gap", "Worked"]
+HOVER_GAP = " · +%{customdata:.1f} s<extra></extra>"
 
 
 def pit_stops(laps: pd.DataFrame) -> pd.DataFrame:
@@ -57,6 +58,186 @@ def pit_loss(stops: pd.DataFrame) -> float | None:
     lost = stops["TimeLost"].dropna()
     lost = lost[(lost > 5) & (lost < 60)]
     return float(lost.median()) if not lost.empty else None
+
+
+@dataclass(frozen=True)
+class Rejoin:
+    driver: str
+    lap: int
+    loss: float
+    stops: int  # how many stops the loss is the median of
+    neutralised: bool  # safety car or VSC on the lap, so the loss is the neutralised one
+    gap_before: float
+    position_before: int
+    gap_after: float
+    position_after: int
+    ahead: tuple[str, float] | None  # the car ahead and how far ahead of the driver
+    behind: tuple[str, float] | None  # the car behind and how far behind the driver
+    gaps: pd.DataFrame  # everyone's gap to the leader at the end of the lap
+    actual_position: int | None  # where the driver came out if they really stopped on this lap
+
+
+def _neutral(laps: pd.DataFrame) -> set[int]:
+    laps_under = analysis.neutralised_laps(laps)
+    return set(laps_under["SC"]) | set(laps_under["VSC"])
+
+
+def rejoin(laps: pd.DataFrame, stops: pd.DataFrame, driver: str, lap: int) -> Rejoin | None:
+    """Where a driver comes out if they pit at the end of `lap`.
+
+    Their gap to the leader at the line plus the race's pit loss, set among everyone else's
+    gaps on that lap. It assumes the others keep their gaps for the lap the stop takes,
+    the usual pit-window estimate. A stop under a safety car or VSC costs less, so the loss
+    comes from stops made in the same conditions when there are any.
+    """
+    neutral = _neutral(laps)
+    under = lap in neutral or lap + 1 in neutral
+    same = stops[stops["Lap"].isin(neutral) == under] if not stops.empty else stops
+    loss = pit_loss(same) if not same.empty else None
+    if loss is None:
+        loss, same, under = pit_loss(stops), stops, False
+    if loss is None:
+        return None
+    gaps = analysis.gap_to_leader(laps)
+    on_lap = gaps[gaps["LapNumber"] == lap].sort_values("Gap").reset_index(drop=True)
+    own = on_lap[on_lap["Driver"] == driver]
+    if own.empty:
+        return None
+    gap = float(own["Gap"].iloc[0])
+    after = gap + loss
+    others = on_lap[on_lap["Driver"] != driver]
+    in_front, behind = others[others["Gap"] <= after], others[others["Gap"] > after]
+    actual = None
+    if not stops[(stops["Driver"] == driver) & (stops["Lap"] == lap)].empty:
+        nxt = gaps[gaps["LapNumber"] == lap + 1].sort_values("Gap").reset_index(drop=True)
+        hit = nxt.index[nxt["Driver"] == driver]
+        actual = int(hit[0]) + 1 if len(hit) else None
+    lost = same["TimeLost"].dropna()
+    return Rejoin(
+        driver=driver,
+        lap=int(lap),
+        loss=loss,
+        stops=int(((lost > 5) & (lost < 60)).sum()),
+        neutralised=under,
+        gap_before=gap,
+        position_before=int(own.index[0]) + 1,
+        gap_after=after,
+        position_after=len(in_front) + 1,
+        ahead=(in_front.iloc[-1]["Driver"], after - float(in_front.iloc[-1]["Gap"]))
+        if not in_front.empty
+        else None,
+        behind=(behind.iloc[0]["Driver"], float(behind.iloc[0]["Gap"]) - after)
+        if not behind.empty
+        else None,
+        gaps=on_lap,
+        actual_position=actual,
+    )
+
+
+def rejoin_figure(result: Rejoin, styles: analysis.Styles, lap_time: float) -> go.Figure:
+    """The lap as a clock: one lap of race pace around the ring, the leader at the top and
+    everyone else clockwise by their gap. The driver's pit loss is the arc they travel."""
+    angle = lambda gap: (gap / lap_time) * 360.0  # noqa: E731
+    figure = go.Figure()
+    figure.add_trace(
+        go.Scatterpolar(
+            r=[1.0] * 361,
+            theta=list(range(361)),
+            mode="lines",
+            line={"color": NEUTRAL, "width": 2},
+            hoverinfo="skip",
+            showlegend=False,
+        )
+    )
+    arc = np.linspace(angle(result.gap_before), angle(result.gap_after), 60)
+    figure.add_trace(
+        go.Scatterpolar(
+            r=[1.0] * len(arc),
+            theta=arc,
+            mode="lines",
+            opacity=0.35,
+            line={"color": ACCENT, "width": 14},
+            hoverinfo="skip",
+            showlegend=False,
+        )
+    )
+    others = result.gaps[result.gaps["Driver"] != result.driver]
+    marker_colors = [driver_style(styles, driver)[0] for driver in others["Driver"]]
+    figure.add_trace(
+        go.Scatterpolar(
+            r=[1.0] * len(others),
+            theta=[angle(gap) for gap in others["Gap"]],
+            mode="markers",
+            showlegend=False,
+            marker={
+                "size": 12,
+                "color": marker_colors,
+                "line": {
+                    "color": [
+                        OUTLINE if hard_to_see(c) else "rgba(0,0,0,0)" for c in marker_colors
+                    ],
+                    "width": 1,
+                },
+            },
+            customdata=np.column_stack([others["Driver"], others["Gap"]]),
+            hovertemplate="<b>%{customdata[0]}</b> · +%{customdata[1]:.1f} s<extra></extra>",
+        )
+    )
+    angles, radii, last = [angle(gap) for gap in others["Gap"]], [], None
+    for a in angles:
+        close = last is not None and abs(a - last[0]) < 7
+        radii.append(1.3 if close and last[1] == 1.17 else 1.17)
+        last = (a, radii[-1])
+    figure.add_trace(
+        go.Scatterpolar(
+            r=radii,
+            theta=angles,
+            mode="text",
+            text=others["Driver"],
+            textfont={"size": 11},
+            hoverinfo="skip",
+            showlegend=False,
+        )
+    )
+    figure.add_trace(
+        go.Scatterpolar(
+            r=[1.0],
+            theta=[angle(result.gap_before)],
+            mode="markers",
+            showlegend=False,
+            marker={"size": 14, "color": "rgba(0,0,0,0)", "line": {"color": ACCENT, "width": 2}},
+            hovertemplate=f"<b>{result.driver}</b> on lap {result.lap}{HOVER_GAP}",
+            customdata=[result.gap_before],
+        )
+    )
+    figure.add_trace(
+        go.Scatterpolar(
+            r=[1.0, 0.78],
+            theta=[angle(result.gap_after)] * 2,
+            mode="markers+text",
+            text=["", f"{result.driver} P{result.position_after}"],
+            textfont={"size": 13, "color": ACCENT},
+            marker={"size": [18, 0], "color": ACCENT},
+            showlegend=False,
+            hovertemplate=f"<b>{result.driver}</b> after the stop{HOVER_GAP}",
+            customdata=[result.gap_after, result.gap_after],
+        )
+    )
+    figure.update_layout(
+        polar={
+            "bgcolor": "rgba(0, 0, 0, 0)",
+            "radialaxis": {"visible": False, "range": [0, 1.4]},
+            "angularaxis": {
+                "rotation": 90,
+                "direction": "clockwise",
+                "showticklabels": False,
+                "showgrid": False,
+                "showline": False,
+                "ticks": "",
+            },
+        }
+    )
+    return finish(figure, 520, showlegend=False)
 
 
 def pit_stop_figure(stops: pd.DataFrame, colors: dict[str, str]) -> go.Figure:
