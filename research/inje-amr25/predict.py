@@ -242,11 +242,11 @@ def run_length(run: tuple[int, int], count: int, step: float = STEP) -> float:
     return ((run[1] - run[0]) % count + 1) * step
 
 
-def main_straight(geometry: dict) -> dict:
+def main_straight(geometry: dict, length: float = INJE_LENGTH) -> dict:
     origin = geometry["course"][0]
     course, pit = metres(geometry["course"], origin), metres(geometry["pit_lane"], origin)
     distance, points = resample(course)
-    scale = INJE_LENGTH / (distance[-1] + STEP)
+    scale = length / (distance[-1] + STEP)
     radius = radii(points)
     runs = straights(radius)
     longest = max(runs, key=lambda run: run_length(run, len(points)))
@@ -495,7 +495,9 @@ def outline_radius(points: np.ndarray) -> tuple[np.ndarray, float]:
     return radii(resampled), distance[-1] + STEP
 
 
-def computer_lap(geometry: dict, loaded: list[dict], corners: dict) -> dict:
+def computer_lap(
+    geometry: dict, loaded: list[dict], corners: dict, length: float = INJE_LENGTH
+) -> dict:
     """The simulated Inje lap, corrected by how the simulator did on the 2025 circuits."""
     car = performance(loaded)
     checks = []
@@ -505,9 +507,9 @@ def computer_lap(geometry: dict, loaded: list[dict], corners: dict) -> dict:
         laps = race.laps[race.laps["Driver"].isin(AMR25)]["LapTimeSeconds"].dropna()
         if race.track.empty or laps.empty or all(trace.empty for trace in traces):
             continue
-        radius, length = outline_radius(race.track[["X", "Y"]].to_numpy(dtype=float))
+        radius, outline = outline_radius(race.track[["X", "Y"]].to_numpy(dtype=float))
         lap_length = max(trace["Distance"].max() for trace in traces if not trace.empty)
-        step = STEP * lap_length / length
+        step = STEP * lap_length / outline
         simulated = lap_seconds(simulate(radius, step, corners, car), step)
         checks.append(
             {
@@ -520,8 +522,8 @@ def computer_lap(geometry: dict, loaded: list[dict], corners: dict) -> dict:
         )
     table = pd.DataFrame(checks)
     origin = geometry["course"][0]
-    radius, length = outline_radius(metres(geometry["course"], origin))
-    step = STEP * INJE_LENGTH / length
+    radius, outline = outline_radius(metres(geometry["course"], origin))
+    step = STEP * length / outline
     speed = simulate(radius, step, corners, car)
     simulated = lap_seconds(speed, step)
     result = {"simulated": simulated, "max_kmh": float(speed.max() * 3.6), "checks": checks}

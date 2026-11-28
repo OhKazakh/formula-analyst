@@ -2,6 +2,8 @@
 
 Aston Martin runs its 2025 car, the AMR25, at Inje Speedium on 28 November 2026, at the Run Universe Festival. The festival has a prediction game for the fastest lap and the top speed, so I worked out both from lap records and timing data before the day.
 
+On the day the car ran a shorter layout than the one I modelled. The prediction below is as I published it; [What happened](#what-happened) compares it with the run.
+
 ## Method
 
 No F1 car has raced at Inje. F1 raced at the Korea International Circuit (KIC) in Yeongam from 2010 to 2013, and six Korean racing classes hold lap records at both circuits. Plotted against each other, those records fall on a straight line: Inje = 0.660 × KIC + 9.81 s, with a correlation of 0.997.
@@ -52,6 +54,28 @@ A demo run uses demo tyres and a driver ambassador, with safety margins, so I ad
 
 To rerun it: `python research/inje-amr25/predict.py`
 
+## What happened
+
+On 28 November 2026 Jessica Hawkins drove the AMR25 on Inje's Course A, a 2.577 km layout, not the 3.908 km full course I modelled. Her timed run went 55.438, 54.493, 54.108 and 53.675 s, and her top-speed run reached 242, 272, 271 and 273 km/h. The weather was cold, and the report doesn't say which tyres or engine mode the car used.
+
+My entry missed. I predicted a full-course lap without checking which layout the event would use, and I led with flat-out pace for a demo run.
+
+To see what the method says about the lap she actually drove, `afterwards.py` builds Course A from OpenStreetMap: the full course plus the A Course link across it, which measures within 1.2% of the published length. The lap records only exist for the full course, so the computer lap carries them across. In the simulator Course A takes 0.642 of a full-course lap, a little under its 0.659 share of the distance, because it cuts a twisty section and keeps the main straight. It also joins that straight through a tighter corner, 33 m instead of 39 m, onto a longer run of 719 m.
+
+| Course A | Predicted | Actual |
+| --- | --- | --- |
+| Qualifying lap, AMR25 | 44.1 to 46.0 s | |
+| Race lap | 45.4 to 47.1 s | |
+| Realistic demo, the same judgement | 49.6 to 54.1 s | 53.675 s |
+| Top speed, no DRS | 306 to 308 km/h | 273 km/h |
+
+- The demo judgement held on a layout it wasn't made for: 53.675 s is inside it, near the slow end, and 17 to 22% off the AMR25's qualifying pace.
+- The lap-record bridge wasn't tested, because the car never ran flat out.
+- Top speed missed by 33 to 35 km/h. Three runs within 2 km/h of each other point to a limit on the car, most likely a demo engine mode or a lift before Turn 1, not to the straight.
+- Next time I'd confirm the layout first, and for a demo event lead with the demo number.
+
+To rerun it: `python research/inje-amr25/afterwards.py`
+
 ## Sources
 
 - Korean class lap records: WVZine, [KIC](https://wvzine.com/?p=3845) and [Inje](https://wvzine.com/?p=3835)
@@ -60,5 +84,6 @@ To rerun it: `python research/inje-amr25/predict.py`
 - Inje lap records: [Inje Speedium](https://en.wikipedia.org/wiki/Inje_Speedium)
 - KIC GT3 record: [Korea International Circuit](https://en.wikipedia.org/wiki/Korea_International_Circuit)
 - Shanghai 2013: [2013 Chinese Grand Prix](https://en.wikipedia.org/wiki/2013_Chinese_Grand_Prix), [2013 6 Hours of Shanghai](https://en.wikipedia.org/wiki/2013_6_Hours_of_Shanghai)
-- Circuit geometry: OpenStreetMap ways [651693293](https://www.openstreetmap.org/way/651693293) and [677355827](https://www.openstreetmap.org/way/677355827), © OpenStreetMap contributors, ODbL
+- Circuit geometry: OpenStreetMap ways [651693293](https://www.openstreetmap.org/way/651693293), [677355827](https://www.openstreetmap.org/way/677355827) and, for Course A, [677355824](https://www.openstreetmap.org/way/677355824), © OpenStreetMap contributors, ODbL
+- The run on 28 November: [autoracing.co.kr](https://www.autoracing.co.kr/news/articleView.html?idxno=50652)
 - AMR25 telemetry: the 2025 race data bundled with [Formula Analyst](https://github.com/OhKazakh/formula-analyst), from the official timing feed via [FastF1](https://github.com/theOehrly/Fast-F1)
